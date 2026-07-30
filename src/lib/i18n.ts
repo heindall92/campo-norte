@@ -24,7 +24,7 @@ const es: Dict = {
   nav_settings: "Ajustes",
   dash_title: "De {from} a {to}",
   dash_sub:
-    "KPIs de negocio a 6 meses: origen, tiempo del CEO, recurrencia, ocupación, margen y dashboard diario.",
+    "Ritmo hacia 1M €, de dónde vienen los interesados, ocupación y margen por salida — números vivos del negocio.",
   ytd: "YTD (demo)",
   pace: "Ritmo anualizado",
   gap: "Gap a 1M",
@@ -104,7 +104,7 @@ const en: Dict = {
   nav_settings: "Settings",
   dash_title: "From {from} to {to}",
   dash_sub:
-    "6-month business KPIs: origin, CEO time, recurrence, occupancy, margin and a daily dashboard.",
+    "Pace to €1M, where prospects come from, occupancy and margin per departure — live business numbers.",
   ytd: "YTD (demo)",
   pace: "Annualized pace",
   gap: "Gap to €1M",

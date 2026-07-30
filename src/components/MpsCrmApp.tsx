@@ -1017,20 +1017,10 @@ function HubPanel({ lang }: { lang: Lang }) {
 
 function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
   const hub = useDataHub();
-  const { leads, clients, meta } = hub;
+  const { leads } = hub;
   const margins = routeMargins();
   const origins = computeOriginFromLeads(leads);
   const progress = progressToMillion();
-  const businessKpis = useMemo(
-    () =>
-      computeBusinessKpis(lang, {
-        leads,
-        clients,
-        expeditions: EXPEDITIONS,
-        hubUpdatedAt: meta?.updatedAt ?? null,
-      }),
-    [lang, leads, clients, meta?.updatedAt],
-  );
   const colors = theme === "dark" ? ORIGIN_COLORS_DARK : ORIGIN_COLORS_LIGHT;
   const chart = theme === "dark" ? "#2dd4bf" : "#0f766e";
   const chart2 = theme === "dark" ? "#38bdf8" : "#0369a1";
@@ -1076,38 +1066,6 @@ function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
           />
         </div>
       </div>
-
-      <Card
-        title={lang === "es" ? "KPIs de negocio · 6 meses" : "Business KPIs · 6 months"}
-        subtitle={
-          lang === "es"
-            ? "Lo que el CEO mide. Origen, tiempo, recurrencia, ocupación, margen y visibilidad diaria."
-            : "What the CEO measures. Origin, time, recurrence, occupancy, margin and daily visibility."
-        }
-      >
-        <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {businessKpis.map((k) => (
-            <li
-              key={k.id}
-              className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-4"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-semibold text-[var(--ink)]">{k.title}</p>
-                <Badge tone={k.tone}>{k.display}</Badge>
-              </div>
-              <p className="mt-2 text-xs leading-relaxed text-[var(--ink-muted)]">{k.detail}</p>
-              {k.target != null && k.current != null && k.unit === "pct" && (
-                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--ink)_10%,transparent)]">
-                  <div
-                    className="h-full rounded-full bg-[var(--accent)]"
-                    style={{ width: `${Math.min(100, Math.round((k.current / k.target) * 100))}%` }}
-                  />
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      </Card>
 
       <div className="grid gap-5 lg:grid-cols-3">
         <Card
@@ -2518,6 +2476,17 @@ function AutomationsPanel({ lang }: { lang: Lang }) {
 
 function ProposalPanel({ lang }: { lang: Lang }) {
   const es = lang === "es";
+  const hub = useDataHub();
+  const businessKpis = useMemo(
+    () =>
+      computeBusinessKpis(lang, {
+        leads: hub.leads,
+        clients: hub.clients,
+        expeditions: EXPEDITIONS,
+        hubUpdatedAt: hub.meta?.updatedAt ?? null,
+      }),
+    [lang, hub.leads, hub.clients, hub.meta?.updatedAt],
+  );
 
   return (
     <div className="space-y-5">
@@ -2618,61 +2587,57 @@ function ProposalPanel({ lang }: { lang: Lang }) {
       </div>
 
       <Card
-        title={es ? "Cómo sabremos que funciona (6 meses)" : "How we’ll know it works (6 months)"}
+        title={es ? "Lo que Miguel mide en 6 meses" : "What Miguel measures in 6 months"}
+        subtitle={
+          es
+            ? "Metas de negocio (no de tecnología). Los números vivos salen del Hub."
+            : "Business goals (not tech goals). Live numbers come from the Hub."
+        }
       >
-        <p className="mb-3 text-sm text-[var(--ink-muted)]">
-          {es
-            ? "No son metas de «IA». Son metas de negocio que Miguel puede revisar en una reunión."
-            : "These aren’t “AI” goals. They’re business goals Miguel can review in a meeting."}
-        </p>
-        <ul className="grid gap-2 sm:grid-cols-2 text-sm text-[var(--ink)]">
-          {(es
-            ? [
-                ["Origen claro", "Saber de dónde viene el 95 % de los interesados"],
-                ["Tiempo de Miguel", "Bajar ~60 % el trabajo administrativo repetitivo"],
-                ["Clientes dormidos", "Reactivar un 15 % de quienes viajaron y no volvieron"],
-                ["Ocupación", "Llenar mejor cada salida"],
-                ["Margen", "Ver y mejorar lo que deja cada ruta"],
-                ["Visión diaria", "Una pantalla con el pulso del negocio cada mañana"],
-              ]
-            : [
-                ["Clear origin", "Know where 95% of prospects come from"],
-                ["Miguel’s time", "Cut ~60% of repetitive admin work"],
-                ["Dormant clients", "Reactivate 15% of past travellers who didn’t return"],
-                ["Occupancy", "Fill each departure better"],
-                ["Margin", "See and improve what each route earns"],
-                ["Daily view", "One screen with the business pulse every morning"],
-              ]
-          ).map(([label, k]) => (
+        <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {businessKpis.map((k) => (
             <li
-              key={label}
-              className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2"
+              key={k.id}
+              className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-4"
             >
-              <span className="font-semibold text-[var(--accent)]">{label}</span>
-              <span className="mt-0.5 block text-[var(--ink-muted)]">{k}</span>
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm font-semibold text-[var(--ink)]">{k.title}</p>
+                <Badge tone={k.tone}>{k.display}</Badge>
+              </div>
+              <p className="mt-2 text-xs leading-relaxed text-[var(--ink-muted)]">{k.detail}</p>
+              {k.target != null && k.current != null && k.unit === "pct" && (
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--ink)_10%,transparent)]">
+                  <div
+                    className="h-full rounded-full bg-[var(--accent)]"
+                    style={{
+                      width: `${Math.min(100, Math.round((k.current / k.target) * 100))}%`,
+                    }}
+                  />
+                </div>
+              )}
             </li>
           ))}
         </ul>
       </Card>
 
-      <Card title={es ? "Las primeras 2–4 semanas" : "The first 2–4 weeks"}>
+      <Card title={es ? "Las primeras 2–4 semanas (en cristiano)" : "First 2–4 weeks (plainly)"}>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-4">
             <p className="flex items-center gap-2 font-semibold text-[var(--ink)]">
               <Zap className="h-4 w-4 text-[var(--accent)]" />{" "}
-              {es ? "Qué recibe el equipo" : "What the team gets"}
+              {es ? "Qué tienes en la mano" : "What you get"}
             </p>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-[var(--ink-muted)]">
               {(es
                 ? [
-                    "Todos los leads y clientes en un solo sitio (importados del Excel / Brevo)",
-                    "Campo «de dónde vino» en cada interesado",
-                    "Lista semanal: los 15 más calientes + clientes que hace tiempo no viajan",
+                    "Todos los interesados y clientes juntos (traídos del Excel / newsletter)",
+                    "En cada ficha: «¿de dónde vino esta persona?»",
+                    "Cada semana: lista de los 15 más calientes + quienes hace tiempo no viajan",
                   ]
                 : [
-                    "All leads and clients in one place (imported from sheets / Brevo)",
-                    "A “where they came from” field on every prospect",
-                    "Weekly list: top 15 hot leads + clients who haven’t travelled in a while",
+                    "All prospects and clients together (from sheets / newsletter)",
+                    "On every record: “where did this person come from?”",
+                    "Each week: top 15 hot leads + people who haven’t travelled in a while",
                   ]
               ).map((li) => (
                 <li key={li}>{li}</li>
@@ -2682,19 +2647,19 @@ function ProposalPanel({ lang }: { lang: Lang }) {
           <div className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-4">
             <p className="flex items-center gap-2 font-semibold text-[var(--ink)]">
               <Target className="h-4 w-4 text-[var(--accent)]" />{" "}
-              {es ? "Cómo se nota el cambio" : "How you’ll feel the change"}
+              {es ? "Cómo notarás que funciona" : "How you’ll know it works"}
             </p>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-[var(--ink-muted)]">
               {(es
                 ? [
-                    "Menos «¿de dónde salió este?» en cada reunión",
-                    "Miguel deja de peinar el buzón a ciegas: trabaja una lista corta",
-                    "Laura o Miguel hacen llamadas reales sobre esa lista (humano, no bot)",
+                    "En las reuniones ya no preguntáis «¿esto de dónde salió?»",
+                    "Miguel trabaja una lista corta, no el buzón entero",
+                    "Laura o Miguel llaman de verdad a esa lista (persona, no robot)",
                   ]
                 : [
-                    "Fewer “where did this come from?” moments in every meeting",
-                    "Miguel stops scanning the inbox blind: he works a short list",
-                    "Laura or Miguel make real calls from that list (human, not a bot)",
+                    "Meetings stop asking “where did this come from?”",
+                    "Miguel works a short list, not the whole inbox",
+                    "Laura or Miguel actually call that list (a person, not a bot)",
                   ]
               ).map((li) => (
                 <li key={li}>{li}</li>
