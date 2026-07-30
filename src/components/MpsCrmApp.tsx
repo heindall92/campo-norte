@@ -2745,90 +2745,50 @@ function ProposalPanel({ lang }: { lang: Lang }) {
   );
 }
 
-/** Deck HTML con contraste oscuro/claro intacto + PPTX descargable */
-const PITCH_HTML_URL = "/deck/presentation.html";
+/** Slides exportadas a pixel (carpeta /slides) + PPTX descargable */
 const PITCH_PPTX_URL = "/deck/Propuesta-Empresarial-30MPS-Yoandy-Ramirez-Delgado.pptx";
-const PITCH_SLIDE_COUNT = 15;
+const PITCH_SLIDE_IMAGES = Array.from(
+  { length: 17 },
+  (_, i) => `/deck/slides/${String(i + 1).padStart(2, "0")}.jpg`,
+);
 
 function SlidesPanel({ lang }: { lang: Lang }) {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const slides = PITCH_SLIDE_IMAGES;
   const [i, setI] = useState(0);
-  const [stageReady, setStageReady] = useState(false);
-
-  function goTo(n: number) {
-    const next = Math.max(0, Math.min(PITCH_SLIDE_COUNT - 1, n));
-    setI(next);
-    const stage = iframeRef.current?.contentDocument?.querySelector("deck-stage") as
-      | (HTMLElement & { goTo?: (idx: number) => void })
-      | null;
-    stage?.goTo?.(next);
-  }
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") {
         e.preventDefault();
-        setI((v) => {
-          const next = Math.min(PITCH_SLIDE_COUNT - 1, v + 1);
-          const stage = iframeRef.current?.contentDocument?.querySelector("deck-stage") as
-            | (HTMLElement & { goTo?: (idx: number) => void })
-            | null;
-          stage?.goTo?.(next);
-          return next;
-        });
+        setI((v) => Math.min(slides.length - 1, v + 1));
       }
       if (e.key === "ArrowLeft" || e.key === "PageUp") {
         e.preventDefault();
-        setI((v) => {
-          const next = Math.max(0, v - 1);
-          const stage = iframeRef.current?.contentDocument?.querySelector("deck-stage") as
-            | (HTMLElement & { goTo?: (idx: number) => void })
-            | null;
-          stage?.goTo?.(next);
-          return next;
-        });
+        setI((v) => Math.max(0, v - 1));
       }
-      if (e.key === "Home") goTo(0);
-      if (e.key === "End") goTo(PITCH_SLIDE_COUNT - 1);
+      if (e.key === "Home") setI(0);
+      if (e.key === "End") setI(slides.length - 1);
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  });
-
-  useEffect(() => {
-    if (!stageReady) return;
-    goTo(0);
-  }, [stageReady]);
-
-  function onIframeLoad() {
-    let tries = 0;
-    const tick = () => {
-      const stage = iframeRef.current?.contentDocument?.querySelector("deck-stage");
-      if (stage) {
-        setStageReady(true);
-        return;
-      }
-      if (tries++ < 40) window.setTimeout(tick, 150);
-    };
-    tick();
-  }
+  }, [slides.length]);
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-2.5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
-            Business Case · 30 MPS
+            Propuesta empresarial · 30 MPS
           </p>
           <h2 className="mt-0.5 truncate font-[family-name:var(--mps-display)] text-lg text-[var(--ink)] md:text-xl">
             {lang === "es"
-              ? "De artesanal a escalable, sin dejar de ser 30 MPS"
-              : "From artisan to scalable — still 30 MPS"}
+              ? "Propuesta Empresarial · Yoandy Ramírez Delgado"
+              : "Business Proposal · Yoandy Ramírez Delgado"}
           </h2>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--ink-muted)]">
-            {i + 1} {t(lang, "slides_of")} {PITCH_SLIDE_COUNT}
+            {i + 1} {t(lang, "slides_of")} {slides.length}
           </p>
           <a
             href={PITCH_PPTX_URL}
@@ -2842,20 +2802,18 @@ function SlidesPanel({ lang }: { lang: Lang }) {
       </div>
 
       <div
-        className="mx-auto w-full max-w-[min(100%,920px)] overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[#E7E4D3] shadow-lg"
+        className="mx-auto flex w-full max-w-[min(100%,920px)] items-center justify-center overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[color-mix(in_oklab,var(--ink)_18%,#6b7280)] shadow-lg"
         style={{ height: "min(52vh, 520px)", maxHeight: "calc(100dvh - 13.5rem)" }}
       >
-        <iframe
-          ref={iframeRef}
-          src={PITCH_HTML_URL}
-          title={
+        <img
+          src={slides[i]}
+          alt={
             lang === "es"
-              ? "Presentación · De artesanal a escalable"
-              : "Pitch · From artisan to scalable"
+              ? `Diapositiva ${i + 1} de ${slides.length}`
+              : `Slide ${i + 1} of ${slides.length}`
           }
-          className="block h-full w-full border-0"
-          onLoad={onIframeLoad}
-          allowFullScreen
+          className="h-full w-full select-none object-contain"
+          draggable={false}
         />
       </div>
 
@@ -2863,34 +2821,34 @@ function SlidesPanel({ lang }: { lang: Lang }) {
         <button
           type="button"
           disabled={i === 0}
-          onClick={() => goTo(i - 1)}
+          onClick={() => setI((v) => Math.max(0, v - 1))}
           className="inline-flex items-center gap-2 rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-1.5 text-sm font-semibold text-[var(--ink)] disabled:opacity-40"
         >
           <ArrowLeft className="h-4 w-4" /> {t(lang, "slides_prev")}
         </button>
         <button
           type="button"
-          disabled={i === PITCH_SLIDE_COUNT - 1}
-          onClick={() => goTo(i + 1)}
+          disabled={i === slides.length - 1}
+          onClick={() => setI((v) => Math.min(slides.length - 1, v + 1))}
           className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-40"
         >
           {t(lang, "slides_next")} <ArrowRight className="h-4 w-4" />
         </button>
         <span className="text-xs text-[var(--ink-muted)]">
           {lang === "es"
-            ? "Tonos oscuros y claros originales · flechas / espacio"
-            : "Original dark/light tones · arrows / space"}
+            ? "Capturas reales · flechas / espacio"
+            : "Pixel captures · arrows / space"}
         </span>
       </div>
 
       <div className="flex flex-wrap gap-1.5">
-        {Array.from({ length: PITCH_SLIDE_COUNT }, (_, idx) => (
+        {slides.map((src, idx) => (
           <button
-            key={idx}
+            key={src}
             type="button"
             title={`${lang === "es" ? "Diapositiva" : "Slide"} ${idx + 1}`}
             aria-label={`${lang === "es" ? "Diapositiva" : "Slide"} ${idx + 1}`}
-            onClick={() => goTo(idx)}
+            onClick={() => setI(idx)}
             className={cn(
               "h-2 rounded-full transition-all",
               idx === i ? "w-8 bg-[var(--accent)]" : "w-2 bg-[color-mix(in_oklab,var(--ink)_25%,transparent)]",
