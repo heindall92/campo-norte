@@ -9,13 +9,12 @@ import {
   STATUS_LABEL,
   type Client,
 } from "@/lib/demo-data";
+import { useDataHub } from "@/lib/data";
 import { GESTORIA_EXPORT_FIELDS, LEGAL_CITATIONS, VERIFACTU_CHECKLIST } from "@/lib/legal-verifactu";
 import { downloadInvoicePdf } from "@/lib/invoice-pdf";
 import {
-  INVOICES,
   INVOICE_STATUS_LABEL,
   PAYMENT_LABEL,
-  RESERVATIONS,
   RESERVATION_STATUS_LABEL,
   TAX_REGIME_LABEL,
   downloadGestoriaPack,
@@ -42,7 +41,7 @@ import {
   Trash2,
   Utensils,
 } from "lucide-react";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 function euro(n: number, lang: Lang) {
   return new Intl.NumberFormat(lang === "en" ? "en-GB" : "es-ES", {
@@ -140,13 +139,18 @@ export function AutomationsEcosystemPanel({ lang }: { lang: Lang }) {
 }
 
 export function ReservationsPanel({ lang }: { lang: Lang }) {
-  const [reservations, setReservations] = useState<Reservation[]>(() => [...RESERVATIONS]);
-  const [openId, setOpenId] = useState<string | null>(RESERVATIONS[0]?.id ?? null);
+  const hub = useDataHub();
+  const reservations = hub.reservations;
+  const [openId, setOpenId] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | ReservationStatus>("all");
   const [modal, setModal] = useState<{ mode: "create" | "edit"; reservation: Reservation } | null>(
     null,
   );
+
+  useEffect(() => {
+    if (!openId && reservations[0]) setOpenId(reservations[0].id);
+  }, [reservations, openId]);
 
   const list = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -163,28 +167,20 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
     });
   }, [q, reservations, statusFilter]);
 
-  function saveReservation(r: Reservation) {
-    setReservations((prev) => {
-      const idx = prev.findIndex((x) => x.id === r.id);
-      if (idx >= 0) {
-        const next = [...prev];
-        next[idx] = r;
-        return next;
-      }
-      return [r, ...prev];
-    });
+  async function saveReservation(r: Reservation) {
+    await hub.saveReservation(r);
     setOpenId(r.id);
     setModal(null);
   }
 
-  function deleteReservation(id: string) {
+  async function deleteReservation(id: string) {
     const ok = window.confirm(
       lang === "es"
         ? "¿Eliminar esta reserva y toda su logística? Knowledge y Content Factory dejan de tener esta fuente."
         : "Delete this booking and all its logistics? Knowledge and Content Factory lose this source.",
     );
     if (!ok) return;
-    setReservations((prev) => prev.filter((r) => r.id !== id));
+    await hub.deleteReservation(id);
     if (openId === id) setOpenId(null);
   }
 
@@ -200,18 +196,17 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
     setModal({ mode: "create", reservation: copy });
   }
 
-  function patchReservation(id: string, patch: Partial<Reservation>) {
-    setReservations((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+  async function patchReservation(id: string, patch: Partial<Reservation>) {
+    const current = reservations.find((r) => r.id === id);
+    if (!current) return;
+    await hub.saveReservation({ ...current, ...patch });
   }
 
-  function togglePrep(id: string, index: number) {
-    setReservations((prev) =>
-      prev.map((r) => {
-        if (r.id !== id) return r;
-        const prep = r.prep.map((p, i) => (i === index ? { ...p, done: !p.done } : p));
-        return { ...r, prep };
-      }),
-    );
+  async function togglePrep(id: string, index: number) {
+    const current = reservations.find((r) => r.id === id);
+    if (!current) return;
+    const prep = current.prep.map((p, i) => (i === index ? { ...p, done: !p.done } : p));
+    await hub.saveReservation({ ...current, prep });
   }
 
   const statuses = Object.keys(RESERVATION_STATUS_LABEL) as ReservationStatus[];
@@ -547,9 +542,15 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
 }
 
 export function InvoicesVerifactuPanel({ lang }: { lang: Lang }) {
-  const [openId, setOpenId] = useState<string | null>(INVOICES[0]?.id ?? null);
+  const hub = useDataHub();
+  const invoices = hub.invoices;
+  const [openId, setOpenId] = useState<string | null>(null);
   const [legalOpen, setLegalOpen] = useState(false);
   const [checklistOpen, setChecklistOpen] = useState(false);
+
+  useEffect(() => {
+    if (!openId && invoices[0]) setOpenId(invoices[0].id);
+  }, [invoices, openId]);
 
   return (
     <div className="space-y-5">
@@ -563,7 +564,7 @@ export function InvoicesVerifactuPanel({ lang }: { lang: Lang }) {
         action={
           <button
             type="button"
-            onClick={() => downloadGestoriaPack()}
+            onClick={() => downloadGestoriaPack(invoices)}
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
           >
             <Download className="h-4 w-4" />
@@ -582,7 +583,7 @@ export function InvoicesVerifactuPanel({ lang }: { lang: Lang }) {
         </div>
 
         <ul className="space-y-3">
-          {INVOICES.map((inv) => {
+          {invoices.map((inv) => {
             const open = openId === inv.id;
             return (
               <li

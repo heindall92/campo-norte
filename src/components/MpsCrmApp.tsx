@@ -1,6 +1,5 @@
 import { COMPANY, GOLDEN_RULE, MPS_ANNEX, MPS_ASSUMPTIONS, TEAM } from "@/lib/assumptions";
 import {
-  CLIENTS,
   EXPERIENCE_LABEL,
   KNOWLEDGE_ANSWERS,
   type KnowledgeItem,
@@ -11,15 +10,22 @@ import {
   ROUTE_LABEL,
   SEGMENT_LABEL,
   STATUS_LABEL,
-  leadStats,
-  originBreakdown,
   progressToMillion,
   routeMargins,
   type Client,
   type Lead,
   type LeadOrigin,
+  type LeadStatus,
   type VehicleMode,
 } from "@/lib/demo-data";
+import {
+  blankLead,
+  computeLeadStats,
+  computeOriginFromLeads,
+  downloadTextFile,
+  supabaseConfigured,
+  useDataHub,
+} from "@/lib/data";
 import { SLIDES, t, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
@@ -38,9 +44,12 @@ import {
   BookOpen,
   Car,
   ClipboardList,
+  Cloud,
   Database,
+  Download,
   FileText,
   Gauge,
+  HardDrive,
   LayoutDashboard,
   Lightbulb,
   Mail,
@@ -50,16 +59,18 @@ import {
   Phone,
   Plus,
   Presentation,
+  RefreshCw,
   Search,
   Sparkles,
   Sun,
   Target,
+  Upload,
   Users,
   Workflow,
   CalendarDays,
   Zap,
 } from "lucide-react";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Area,
   AreaChart,
@@ -214,7 +225,13 @@ function scoreTone(score: number): "good" | "warn" | "bad" | "neutral" {
 }
 
 function HubPanel({ lang }: { lang: Lang }) {
-  const { sorted } = leadStats();
+  const hub = useDataHub();
+  const { sorted } = computeLeadStats(hub.leads);
+  const leadsFileRef = useRef<HTMLInputElement>(null);
+  const clientsFileRef = useRef<HTMLInputElement>(null);
+  const snapshotFileRef = useRef<HTMLInputElement>(null);
+  const [flash, setFlash] = useState<string | null>(null);
+
   const fields =
     lang === "es"
       ? [
@@ -248,9 +265,57 @@ function HubPanel({ lang }: { lang: Lang }) {
           "Owner",
         ];
 
+  async function onCsvFile(
+    file: File | undefined,
+    kind: "leads" | "clients",
+  ) {
+    if (!file) return;
+    const text = await file.text();
+    const result =
+      kind === "leads" ? await hub.importLeadsCsv(text) : await hub.importClientsCsv(text);
+    const msg =
+      lang === "es"
+        ? `Importados ${result.added} · actualizados ${result.updated}${result.errors.length ? ` · ${result.errors.length} avisos` : ""}`
+        : `Added ${result.added} · updated ${result.updated}${result.errors.length ? ` · ${result.errors.length} warnings` : ""}`;
+    setFlash(msg);
+  }
+
   return (
     <div className="space-y-5">
       <Card title={t(lang, "hub_title")} subtitle={t(lang, "hub_sub")}>
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <Badge tone={hub.mode === "supabase" ? "good" : "brand"}>
+            {hub.mode === "supabase" ? (
+              <span className="inline-flex items-center gap-1">
+                <Cloud className="h-3 w-3" /> Postgres / Supabase
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1">
+                <HardDrive className="h-3 w-3" /> Local · persistente
+              </span>
+            )}
+          </Badge>
+          {hub.meta?.seededFromDemo ? (
+            <Badge tone="warn">
+              {lang === "es" ? "Semilla demo (editable)" : "Demo seed (editable)"}
+            </Badge>
+          ) : (
+            <Badge tone="good">
+              {lang === "es" ? "Datos operativos" : "Operational data"}
+            </Badge>
+          )}
+          <Badge>
+            {hub.leads.length} leads · {hub.clients.length}{" "}
+            {lang === "es" ? "clientes" : "clients"} · {hub.reservations.length}{" "}
+            {lang === "es" ? "reservas" : "bookings"}
+          </Badge>
+          {hub.meta?.updatedAt && (
+            <Badge tone="neutral">
+              Sync {new Date(hub.meta.updatedAt).toLocaleString(lang === "en" ? "en-GB" : "es-ES")}
+            </Badge>
+          )}
+        </div>
+
         <div className="mb-4 flex flex-wrap gap-2">
           {fields.map((f) => (
             <Badge key={f} tone="brand">
@@ -258,15 +323,192 @@ function HubPanel({ lang }: { lang: Lang }) {
             </Badge>
           ))}
         </div>
+
         <p className="text-sm text-[var(--ink-muted)]">
           {lang === "es"
-            ? "Fase 1 del Growth OS: una ficha por lead. Web + Brevo + hojas → n8n/Make → Hub. Sin esto, el resto es teatro."
-            : "Growth OS Phase 1: one record per lead. Web + Brevo + sheets → n8n/Make → Hub. Without this, the rest is theatre."}
+            ? "Fase 1 activa: CRM conectado al Data Hub. Los cambios en leads, clientes, reservas y facturas se guardan. Importa Excel/CSV o conecta Supabase (Postgres) con .env.local."
+            : "Phase 1 live: CRM wired to the Data Hub. Lead, client, booking and invoice edits persist. Import Excel/CSV or connect Supabase (Postgres) via .env.local."}
         </p>
+
+        {hub.error && (
+          <div className="mt-3 rounded-xl border border-[color-mix(in_oklab,var(--danger)_35%,transparent)] bg-[color-mix(in_oklab,var(--danger)_10%,transparent)] px-3 py-2 text-sm text-[var(--danger)]">
+            {hub.error}
+            <button type="button" className="ml-2 underline" onClick={hub.clearError}>
+              OK
+            </button>
+          </div>
+        )}
+        {flash && (
+          <div className="mt-3 rounded-xl border border-[color-mix(in_oklab,var(--ok)_35%,transparent)] bg-[color-mix(in_oklab,var(--ok)_10%,transparent)] px-3 py-2 text-sm text-[var(--ok)]">
+            {flash}
+          </div>
+        )}
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => leadsFileRef.current?.click()}
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
+          >
+            <Upload className="h-4 w-4" />
+            {lang === "es" ? "Importar leads CSV" : "Import leads CSV"}
+          </button>
+          <button
+            type="button"
+            onClick={() => clientsFileRef.current?.click()}
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-strong)] px-3 py-2 text-sm font-semibold text-[var(--ink)]"
+          >
+            <Upload className="h-4 w-4" />
+            {lang === "es" ? "Importar clientes CSV" : "Import clients CSV"}
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              downloadTextFile(
+                `30mps-leads-${new Date().toISOString().slice(0, 10)}.csv`,
+                hub.getLeadsCsv(),
+                "text/csv;charset=utf-8",
+              )
+            }
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold text-[var(--ink)]"
+          >
+            <Download className="h-4 w-4" />
+            CSV leads
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              downloadTextFile(
+                `30mps-clients-${new Date().toISOString().slice(0, 10)}.csv`,
+                hub.getClientsCsv(),
+                "text/csv;charset=utf-8",
+              )
+            }
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold text-[var(--ink)]"
+          >
+            <Download className="h-4 w-4" />
+            CSV clientes
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              downloadTextFile(
+                `30mps-hub-backup-${new Date().toISOString().slice(0, 10)}.json`,
+                JSON.stringify(hub.exportSnapshot(), null, 2),
+                "application/json",
+              )
+            }
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold text-[var(--ink)]"
+          >
+            <Download className="h-4 w-4" />
+            Backup JSON
+          </button>
+          <button
+            type="button"
+            onClick={() => snapshotFileRef.current?.click()}
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold text-[var(--ink)]"
+          >
+            <Upload className="h-4 w-4" />
+            Restaurar JSON
+          </button>
+          <button
+            type="button"
+            onClick={() => void hub.refresh()}
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold text-[var(--ink)]"
+          >
+            <RefreshCw className="h-4 w-4" />
+            {lang === "es" ? "Recargar" : "Refresh"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const ok = window.confirm(
+                lang === "es"
+                  ? "¿Restablecer a la semilla demo? Se perderán los datos operativos de este Hub."
+                  : "Reset to demo seed? Operational Hub data will be lost.",
+              );
+              if (ok) void hub.resetToSeed();
+            }}
+            className="inline-flex items-center gap-2 rounded-lg border border-[color-mix(in_oklab,var(--danger)_35%,transparent)] px-3 py-2 text-sm font-semibold text-[var(--danger)]"
+          >
+            {lang === "es" ? "Reset semilla" : "Reset seed"}
+          </button>
+        </div>
+
+        <input
+          ref={leadsFileRef}
+          type="file"
+          accept=".csv,text/csv"
+          className="hidden"
+          onChange={(e) => {
+            void onCsvFile(e.target.files?.[0], "leads");
+            e.target.value = "";
+          }}
+        />
+        <input
+          ref={clientsFileRef}
+          type="file"
+          accept=".csv,text/csv"
+          className="hidden"
+          onChange={(e) => {
+            void onCsvFile(e.target.files?.[0], "clients");
+            e.target.value = "";
+          }}
+        />
+        <input
+          ref={snapshotFileRef}
+          type="file"
+          accept=".json,application/json"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            void file.text().then(async (text) => {
+              await hub.importSnapshotJson(text);
+              setFlash(lang === "es" ? "Snapshot restaurado" : "Snapshot restored");
+            });
+            e.target.value = "";
+          }}
+        />
+
+        <div className="mt-4 rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-3 text-sm text-[var(--ink-muted)]">
+          <p className="font-semibold text-[var(--ink)]">
+            {lang === "es" ? "Conectar Postgres (Supabase)" : "Connect Postgres (Supabase)"}
+          </p>
+          <ol className="mt-2 list-decimal space-y-1 pl-4">
+            <li>
+              {lang === "es" ? "Ejecuta" : "Run"} <code className="text-[var(--accent)]">supabase/schema.sql</code>
+            </li>
+            <li>
+              {lang === "es" ? "Copia" : "Copy"} <code className="text-[var(--accent)]">.env.example</code> →{" "}
+              <code className="text-[var(--accent)]">.env.local</code>
+            </li>
+            <li>
+              VITE_DATA_MODE=supabase · VITE_SUPABASE_URL · VITE_SUPABASE_ANON_KEY
+              {supabaseConfigured()
+                ? lang === "es"
+                  ? " (credenciales detectadas)"
+                  : " (credentials detected)"
+                : lang === "es"
+                  ? " (aún no configurado)"
+                  : " (not configured yet)"}
+            </li>
+            <li>
+              {lang === "es"
+                ? "Plantillas CSV en /templates/leads-import.csv y clients-import.csv"
+                : "CSV templates at /templates/leads-import.csv and clients-import.csv"}
+            </li>
+          </ol>
+        </div>
       </Card>
+
       <Card
-        title={lang === "es" ? "Vista de fichas (demo)" : "Record view (demo)"}
-        subtitle={lang === "es" ? "Simulación del Hub unificado" : "Unified Hub simulation"}
+        title={lang === "es" ? "Fichas del Hub" : "Hub records"}
+        subtitle={
+          lang === "es"
+            ? "Memoria única viva — misma fuente que Lead Intelligence"
+            : "Live single memory — same source as Lead Intelligence"
+        }
       >
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-left text-sm text-[var(--ink)]">
@@ -306,8 +548,9 @@ function HubPanel({ lang }: { lang: Lang }) {
 }
 
 function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
+  const { leads } = useDataHub();
   const margins = routeMargins();
-  const origins = originBreakdown();
+  const origins = computeOriginFromLeads(leads);
   const progress = progressToMillion();
   const colors = theme === "dark" ? ORIGIN_COLORS_DARK : ORIGIN_COLORS_LIGHT;
   const chart = theme === "dark" ? "#2dd4bf" : "#0f766e";
@@ -501,8 +744,31 @@ function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
 }
 
 function LeadsPanel({ lang }: { lang: Lang }) {
-  const { sorted, unknown, avg, total } = leadStats();
-  const [selected, setSelected] = useState<Lead>(sorted[0]);
+  const hub = useDataHub();
+  const { sorted, unknown, avg, total } = computeLeadStats(hub.leads);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selected = sorted.find((l) => l.id === selectedId) ?? sorted[0] ?? null;
+
+  useEffect(() => {
+    if (selected && selectedId !== selected.id) setSelectedId(selected.id);
+  }, [selected, selectedId]);
+
+  const statuses = Object.keys({
+    nuevo: 1,
+    en_contacto: 1,
+    cualificado: 1,
+    reservado: 1,
+    descartado: 1,
+  }) as LeadStatus[];
+
+  async function patchSelected(patch: Partial<Lead>) {
+    if (!selected) return;
+    await hub.saveLead({
+      ...selected,
+      ...patch,
+      lastTouchAt: new Date().toISOString().slice(0, 10),
+    });
+  }
 
   return (
     <div className="space-y-5">
@@ -511,6 +777,22 @@ function LeadsPanel({ lang }: { lang: Lang }) {
         <Kpi label={t(lang, "score_avg")} value={String(avg)} />
         <Kpi label={t(lang, "without_origin")} value={String(unknown)} />
       </div>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={async () => {
+            const lead = blankLead();
+            lead.name = lang === "es" ? "Nuevo lead" : "New lead";
+            lead.email = `lead-${lead.id.toLowerCase()}@pendiente.local`;
+            await hub.saveLead(lead);
+            setSelectedId(lead.id);
+          }}
+          className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
+        >
+          <Plus className="h-4 w-4" />
+          {lang === "es" ? "Añadir lead" : "Add lead"}
+        </button>
+      </div>
       <div className="grid gap-5 lg:grid-cols-5">
         <Card title={t(lang, "inbox")} subtitle={t(lang, "inbox_sub")} className="lg:col-span-3">
           <ul className="divide-y divide-[var(--glass-border)]">
@@ -518,10 +800,10 @@ function LeadsPanel({ lang }: { lang: Lang }) {
               <li key={lead.id}>
                 <button
                   type="button"
-                  onClick={() => setSelected(lead)}
+                  onClick={() => setSelectedId(lead.id)}
                   className={cn(
                     "flex w-full items-start justify-between gap-3 rounded-lg px-1 py-3 text-left transition hover:bg-[color-mix(in_oklab,var(--accent)_8%,transparent)]",
-                    selected.id === lead.id &&
+                    selected?.id === lead.id &&
                       "bg-[color-mix(in_oklab,var(--accent)_12%,transparent)]",
                   )}
                 >
@@ -542,25 +824,73 @@ function LeadsPanel({ lang }: { lang: Lang }) {
           </ul>
         </Card>
         <Card title={t(lang, "detail")} subtitle={t(lang, "detail_sub")} className="lg:col-span-2">
-          <p className="font-[family-name:var(--mps-display)] text-xl text-[var(--ink)]">
-            {selected.name}
-          </p>
-          <p className="text-sm text-[var(--ink-muted)]">{selected.email}</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Badge tone="brand">{ORIGIN_LABEL[selected.origin]}</Badge>
-            <Badge>{selected.status}</Badge>
-            <Badge>Owner: {selected.owner}</Badge>
-            <VehicleBadge vehicle={selected.vehicle} />
-          </div>
-          <ol className="mt-4 list-decimal space-y-2 pl-4 text-sm text-[var(--ink)]">
-            {selected.scoreReasons.map((r) => (
-              <li key={r}>{r}</li>
-            ))}
-          </ol>
-          <div className="mt-5 rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-3 text-sm">
-            <p className="font-semibold text-[var(--ink)]">{t(lang, "human_action")}</p>
-            <p className="mt-1 text-[var(--ink-muted)]">{t(lang, "human_action_body")}</p>
-          </div>
+          {selected ? (
+            <>
+              <p className="font-[family-name:var(--mps-display)] text-xl text-[var(--ink)]">
+                {selected.name}
+              </p>
+              <p className="text-sm text-[var(--ink-muted)]">{selected.email}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Badge tone="brand">{ORIGIN_LABEL[selected.origin]}</Badge>
+                <Badge>{selected.status}</Badge>
+                <Badge>Owner: {selected.owner}</Badge>
+                <VehicleBadge vehicle={selected.vehicle} />
+              </div>
+              <label className="mt-4 block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+                {lang === "es" ? "Estado (humano)" : "Status (human)"}
+                <select
+                  className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm text-[var(--ink)]"
+                  value={selected.status}
+                  onChange={(e) => void patchSelected({ status: e.target.value as LeadStatus })}
+                >
+                  {statuses.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+                {lang === "es" ? "Origen / UTM" : "Origin / UTM"}
+                <select
+                  className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm text-[var(--ink)]"
+                  value={selected.origin}
+                  onChange={(e) => void patchSelected({ origin: e.target.value as LeadOrigin })}
+                >
+                  {(Object.keys(ORIGIN_LABEL) as LeadOrigin[]).map((o) => (
+                    <option key={o} value={o}>
+                      {ORIGIN_LABEL[o]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <ol className="mt-4 list-decimal space-y-2 pl-4 text-sm text-[var(--ink)]">
+                {selected.scoreReasons.map((r) => (
+                  <li key={r}>{r}</li>
+                ))}
+              </ol>
+              <div className="mt-5 rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-3 text-sm">
+                <p className="font-semibold text-[var(--ink)]">{t(lang, "human_action")}</p>
+                <p className="mt-1 text-[var(--ink-muted)]">{t(lang, "human_action_body")}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const ok = window.confirm(
+                    lang === "es" ? "¿Eliminar este lead del Hub?" : "Delete this lead from the Hub?",
+                  );
+                  if (ok) void hub.deleteLead(selected.id);
+                }}
+                className="mt-4 text-xs font-semibold text-[var(--danger)] underline"
+              >
+                {lang === "es" ? "Eliminar lead" : "Delete lead"}
+              </button>
+            </>
+          ) : (
+            <p className="text-sm text-[var(--ink-muted)]">
+              {lang === "es" ? "No hay leads en el Hub." : "No leads in the Hub."}
+            </p>
+          )}
         </Card>
       </div>
     </div>
@@ -568,12 +898,17 @@ function LeadsPanel({ lang }: { lang: Lang }) {
 }
 
 function ClientsPanel({ lang }: { lang: Lang }) {
-  const [clients, setClients] = useState<Client[]>(() => [...CLIENTS]);
+  const hub = useDataHub();
+  const clients = hub.clients;
   const [q, setQ] = useState("");
-  const [openId, setOpenId] = useState<string | null>(CLIENTS[0]?.id ?? null);
+  const [openId, setOpenId] = useState<string | null>(null);
   const [modal, setModal] = useState<{ mode: "create" | "edit"; client: Client } | null>(
     null,
   );
+
+  useEffect(() => {
+    if (!openId && clients[0]) setOpenId(clients[0].id);
+  }, [clients, openId]);
 
   const list = useMemo(() => {
     const sorted = [...clients].sort((a, b) => b.reactivationPriority - a.reactivationPriority);
@@ -605,16 +940,8 @@ function ClientsPanel({ lang }: { lang: Lang }) {
     return "neutral";
   }
 
-  function saveClient(c: Client) {
-    setClients((prev) => {
-      const idx = prev.findIndex((x) => x.id === c.id);
-      if (idx >= 0) {
-        const next = [...prev];
-        next[idx] = c;
-        return next;
-      }
-      return [c, ...prev];
-    });
+  async function saveClient(c: Client) {
+    await hub.saveClient(c);
     setOpenId(c.id);
     setModal(null);
   }
@@ -1253,6 +1580,7 @@ export function MpsCrmApp() {
   const [lang, setLang] = useState<Lang>("es");
   const [theme, setTheme] = useState<Theme>("light");
   const [collapsed, setCollapsed] = useState(false);
+  const hub = useDataHub();
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -1261,6 +1589,14 @@ export function MpsCrmApp() {
   useEffect(() => {
     document.documentElement.dataset.theme = "light";
   }, []);
+
+  if (!hub.ready) {
+    return (
+      <div className="mps-crm mps-bg flex min-h-screen items-center justify-center text-[var(--ink)]">
+        <p className="text-sm text-[var(--ink-muted)]">Cargando Data Hub…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mps-crm mps-bg relative min-h-screen">
@@ -1434,7 +1770,11 @@ export function MpsCrmApp() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="glass-chip rounded-md px-2 py-1 text-xs font-semibold">
-              {t(lang, "demo_badge")}
+              {hub.mode === "supabase"
+                ? t(lang, "live_badge_supabase")
+                : hub.meta?.seededFromDemo
+                  ? t(lang, "live_badge_local_seed")
+                  : t(lang, "live_badge_local")}
             </span>
             <span className="glass-chip rounded-md px-2 py-1 text-xs font-semibold">
               {t(lang, "no_client_msgs")}

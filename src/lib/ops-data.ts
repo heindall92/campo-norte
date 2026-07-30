@@ -533,8 +533,8 @@ export function buildGestoriaExportCsv(invoices: Invoice[] = INVOICES): string {
   return [header, ...rows].join("\n");
 }
 
-export function downloadGestoriaPack() {
-  const csv = buildGestoriaExportCsv();
+export function downloadGestoriaPack(invoices: Invoice[] = INVOICES) {
+  const csv = buildGestoriaExportCsv(invoices);
   const legalIndex = [
     "# Paquete gestoría 30 MPS Adventures",
     `# Generado: ${new Date().toISOString()}`,

@@ -6,6 +6,9 @@ const es: Dict = {
   brand_sub: "Adventures · Growth OS",
   internal_only: "Solo equipo interno",
   demo_badge: "Demo · datos ficticios",
+  live_badge_local: "Hub local · datos vivos",
+  live_badge_local_seed: "Hub local · semilla editable",
+  live_badge_supabase: "Hub Postgres · Supabase",
   no_client_msgs: "Sin mensajes al cliente",
   nav_dashboard: "Dashboard ejecutivo",
   nav_leads: "Lead Intelligence",
@@ -75,13 +78,16 @@ const es: Dict = {
   theme_light: "Claro",
   theme_dark: "Oscuro",
   hub_title: "Data Hub",
-  hub_sub: "Memoria única: web + Brevo + hojas + reservas + facturas → ficha lead/cliente",
+  hub_sub: "Memoria única viva: web + Brevo + hojas + reservas + facturas → ficha lead/cliente (persistente)",
 };
 
 const en: Dict = {
   brand_sub: "Adventures · Growth OS",
   internal_only: "Internal team only",
   demo_badge: "Demo · fictional data",
+  live_badge_local: "Local Hub · live data",
+  live_badge_local_seed: "Local Hub · editable seed",
+  live_badge_supabase: "Postgres Hub · Supabase",
   no_client_msgs: "No customer-facing messages",
   nav_dashboard: "Executive dashboard",
   nav_leads: "Lead Intelligence",
@@ -150,7 +156,7 @@ const en: Dict = {
   theme_light: "Light",
   theme_dark: "Dark",
   hub_title: "Data Hub",
-  hub_sub: "Single memory: web + Brevo + sheets + bookings + invoices → lead/client record",
+  hub_sub: "Live single memory: web + Brevo + sheets + bookings + invoices → lead/client record (persistent)",
 };
 
 export const I18N: Record<Lang, Dict> = { es, en };
