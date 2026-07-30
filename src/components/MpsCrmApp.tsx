@@ -276,6 +276,41 @@ function SettingsPanel({ lang }: { lang: Lang }) {
           </li>
         </ul>
       </Card>
+
+      <Card
+        title={lang === "es" ? "Legal y privacidad" : "Legal & privacy"}
+        subtitle={
+          lang === "es"
+            ? "Aviso legal · Privacidad · Cookies (RGPD / LOPDGDD)"
+            : "Legal notice · Privacy · Cookies (GDPR)"
+        }
+      >
+        <p className="mb-3 text-sm text-[var(--ink-muted)]">
+          {lang === "es"
+            ? "Para la demo interna basta la mención RGPD de la presentación. Antes de producción real: validar textos, firmar DPA con Vercel/Supabase y mantener el registro de actividades (art. 30)."
+            : "For the internal demo, the pitch-deck GDPR note is enough. Before real production: validate copy, sign DPAs with Vercel/Supabase and keep the Art. 30 processing record."}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <a
+            href="/legal#aviso"
+            className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
+          >
+            {lang === "es" ? "Aviso legal" : "Legal notice"}
+          </a>
+          <a
+            href="/legal#privacidad"
+            className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
+          >
+            {lang === "es" ? "Privacidad" : "Privacy"}
+          </a>
+          <a
+            href="/legal#cookies"
+            className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
+          >
+            Cookies
+          </a>
+        </div>
+      </Card>
     </div>
   );
 }
@@ -1959,6 +1994,16 @@ export function MpsCrmApp() {
           <footer className="mt-8 flex flex-wrap items-center gap-2 border-t border-[var(--glass-border)] pt-4 text-xs text-[var(--ink-muted)]">
             <Lightbulb className="h-3.5 w-3.5" />
             {t(lang, "footer")} · {COMPANY.legal}
+            <span className="mx-1">·</span>
+            <a href="/legal#aviso" className="hover:text-[var(--accent)] hover:underline">
+              {lang === "es" ? "Aviso legal" : "Legal notice"}
+            </a>
+            <a href="/legal#privacidad" className="hover:text-[var(--accent)] hover:underline">
+              {lang === "es" ? "Privacidad" : "Privacy"}
+            </a>
+            <a href="/legal#cookies" className="hover:text-[var(--accent)] hover:underline">
+              Cookies
+            </a>
           </footer>
         </main>
       </div>

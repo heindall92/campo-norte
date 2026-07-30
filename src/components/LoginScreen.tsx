@@ -142,6 +142,17 @@ export function LoginScreen() {
         <p className="mt-6 text-center text-xs text-[var(--ink-muted)]">
           {COMPANY.tagline}
         </p>
+        <p className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center text-xs text-[var(--ink-muted)]">
+          <a href="/legal#aviso" className="hover:text-[var(--accent)] hover:underline">
+            Aviso legal
+          </a>
+          <a href="/legal#privacidad" className="hover:text-[var(--accent)] hover:underline">
+            Privacidad
+          </a>
+          <a href="/legal#cookies" className="hover:text-[var(--accent)] hover:underline">
+            Cookies
+          </a>
+        </p>
       </div>
     </div>
   );

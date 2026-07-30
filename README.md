@@ -28,6 +28,15 @@ npm run preview    # o: python3 serve.py  → http://0.0.0.0:8080
 
 ---
 
+## Legal · privacidad · cookies
+
+Ruta pública: [`/legal`](https://30mps.vercel.app/legal) (Aviso legal · Privacidad · Cookies).
+
+- Demo mañana: no crítico (solo equipo interno + datos semilla).
+- Producción real: validar textos con asesoría, firmar DPA Vercel/Supabase y mantener registro art. 30 RGPD.
+
+---
+
 ## Auth · notificaciones · panel usuario
 
 1. **Login** al entrar (Supabase Auth si hay `.env.local`; si no, cuentas demo del equipo).

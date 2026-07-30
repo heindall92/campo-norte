@@ -1,9 +1,24 @@
 import { useAuth } from "@/lib/auth";
+import { CookieNotice } from "@/components/CookieNotice";
+import { LegalPage } from "@/components/LegalPage";
 import { LoginScreen } from "@/components/LoginScreen";
 import { MpsCrmApp } from "@/components/MpsCrmApp";
 
+function isLegalPath() {
+  return window.location.pathname.replace(/\/+$/, "") === "/legal";
+}
+
 export default function App() {
   const { ready, user } = useAuth();
+
+  if (isLegalPath()) {
+    return (
+      <>
+        <LegalPage />
+        <CookieNotice />
+      </>
+    );
+  }
 
   if (!ready) {
     return (
@@ -14,8 +29,18 @@ export default function App() {
   }
 
   if (!user) {
-    return <LoginScreen />;
+    return (
+      <>
+        <LoginScreen />
+        <CookieNotice />
+      </>
+    );
   }
 
-  return <MpsCrmApp />;
+  return (
+    <>
+      <MpsCrmApp />
+      <CookieNotice />
+    </>
+  );
 }
