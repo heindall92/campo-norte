@@ -2117,11 +2117,11 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
   return (
     <div className="space-y-4">
       <Card
-        title={lang === "es" ? "AI Knowledge Assistant" : "AI Knowledge Assistant"}
+        title={lang === "es" ? "Knowledge Assistant · solo equipo" : "Knowledge Assistant · team only"}
         subtitle={
           lang === "es"
-            ? "Base documental + datos vivos del Hub (reservas, hoteles, costes, facturas). RAG interno. OpenAI/Claude/Gemini/Ollama sintetizan si están en Ajustes. Solo equipo."
-            : "Document base + live Hub data (bookings, hotels, costs, invoices). Internal RAG. OpenAI/Claude/Gemini/Ollama synthesize if configured. Team only."
+            ? "Siempre busca primero en docs + Hub (heurística). Si la IA está activa en Ajustes, resume esos fragmentos. Si no hay IA o falla → solo heurística. Nunca habla con el viajero."
+            : "Always searches docs + Hub first (heuristic). If AI is on in Settings, it summarizes those chunks. If AI is off or fails → heuristic only. Never messages the traveller."
         }
       >
         <div className="mb-4 flex flex-wrap gap-2">
@@ -2151,10 +2151,12 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
           </Badge>
           <Badge tone={aiReady() ? "good" : "neutral"}>
             {aiReady()
-              ? `${providerLabel()} RAG`
+              ? lang === "es"
+                ? `IA + heurística · ${providerLabel()}`
+                : `AI + heuristic · ${providerLabel()}`
               : lang === "es"
-                ? "Retrieval local"
-                : "Local retrieval"}
+                ? "Solo heurística (sin IA)"
+                : "Heuristic only (no AI)"}
           </Badge>
         </div>
       </Card>
@@ -2199,7 +2201,13 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
               ) : (
                 <Sparkles className="h-4 w-4" />
               )}
-              {lang === "es" ? "Consultar Knowledge" : "Query Knowledge"}
+              {lang === "es"
+                ? aiReady()
+                  ? `Consultar (IA · ${providerLabel()})`
+                  : "Consultar (heurística)"
+                : aiReady()
+                  ? `Ask (AI · ${providerLabel()})`
+                  : "Ask (heuristic)"}
             </button>
           </Card>
 
@@ -2210,12 +2218,21 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
             {!result ? (
               <p className="text-sm text-[var(--ink-muted)]">
                 {lang === "es"
-                  ? "Haz una pregunta. El sistema busca en docs (PDF/rutas/precios/costes/contratos/hoteles/proveedores/histórico) + Reservas/Expediciones/Facturas del Hub."
-                  : "Ask a question. The system searches docs + Hub bookings/expeditions/invoices."}
+                  ? "Haz una pregunta. Primero se buscan docs + Hub; con IA activa se resume; sin IA se muestra el mejor fragmento."
+                  : "Ask a question. Docs + Hub are searched first; with AI on they are summarized; without AI you get the best chunk."}
               </p>
             ) : (
               <>
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--ink)]">
+                <Badge tone={result.engine === "ai" ? "good" : "neutral"}>
+                  {result.engine === "ai"
+                    ? lang === "es"
+                      ? `Modo IA · ${result.provider ?? providerLabel()}`
+                      : `AI mode · ${result.provider ?? providerLabel()}`
+                    : lang === "es"
+                      ? "Modo heurística / retrieval"
+                      : "Heuristic / retrieval mode"}
+                </Badge>
+                <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[var(--ink)]">
                   {result.answer}
                 </p>
                 <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
@@ -2233,7 +2250,7 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
                   ))}
                 </ul>
                 <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
-                  {t(lang, "sources")} · {result.engine}
+                  {t(lang, "sources")}
                 </p>
                 <ul className="mt-2 space-y-1">
                   {result.sources.map((s) => (
@@ -2444,6 +2461,23 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
             {item && (
               <Card title={t(lang, "knowledge_a")}>
                 <p className="text-sm leading-relaxed text-[var(--ink)]">{item.a}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTab("ask");
+                    void runAsk(item.q);
+                  }}
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-strong)] px-3 py-2 text-sm font-semibold text-[var(--ink)]"
+                >
+                  <Sparkles className="h-4 w-4 text-[var(--accent)]" />
+                  {lang === "es"
+                    ? aiReady()
+                      ? `Preguntar con IA + heurística (${providerLabel()})`
+                      : "Preguntar con heurística (docs + Hub)"
+                    : aiReady()
+                      ? `Ask with AI + heuristic (${providerLabel()})`
+                      : "Ask with heuristic (docs + Hub)"}
+                </button>
                 <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
                   {lang === "es" ? "Por qué importa" : "Why it matters"}
                 </p>

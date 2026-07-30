@@ -7,13 +7,13 @@ import {
   type KnowledgeItem,
 } from "@/lib/demo-data";
 import type { Invoice, Reservation } from "@/lib/ops-data";
-import { ollamaChat, parseJsonFromModel } from "./ollama";
+import { aiChat, parseJsonFromModel } from "./chat";
 import {
   KNOWLEDGE_KIND_LABEL,
   loadKnowledgeDocs,
   type KnowledgeDoc,
 } from "./knowledge-store";
-import { loadOllamaSettings, ollamaReady } from "./settings";
+import { aiReady, loadAiSettings, providerLabel } from "./settings";
 
 export interface KnowledgeChunk {
   id: string;
@@ -28,7 +28,10 @@ export interface KnowledgeAskResult {
   answer: string;
   sources: string[];
   chunksUsed: KnowledgeChunk[];
-  engine: "ollama" | "retrieval";
+  /** ai = sintetizó con proveedor activo; retrieval = heurística extractiva local */
+  engine: "ai" | "retrieval";
+  /** Nombre del proveedor si engine === "ai" */
+  provider?: string;
   why: string[];
 }
 
@@ -57,12 +60,13 @@ function scoreChunk(queryTokens: string[], chunk: KnowledgeChunk): number {
   let hits = 0;
   for (const t of queryTokens) {
     if (set.has(t)) hits += 1;
-    // partial boost for year/route fragments
     else if (hay.some((h) => h.includes(t) || t.includes(h))) hits += 0.4;
   }
   const density = hits / queryTokens.length;
   const titleBoost = tokenize(chunk.title).some((t) => queryTokens.includes(t)) ? 0.25 : 0;
-  return density + titleBoost;
+  // Playbook FAQ: boost if the question title overlaps a lot
+  const faqBoost = chunk.id.startsWith("FAQ-") && titleBoost ? 0.35 : 0;
+  return density + titleBoost + faqBoost;
 }
 
 export function buildKnowledgeChunks(input: KnowledgeCorpusInput = {}): KnowledgeChunk[] {
@@ -164,34 +168,39 @@ export function retrieveKnowledgeChunks(
 
   if (ranked.length >= Math.min(3, topK)) return ranked.slice(0, topK);
 
-  // fallback: return a few diverse seed chunks so the CEO always gets something
   return (ranked.length ? ranked : chunks.slice(0, topK)).slice(0, topK);
 }
 
-function synthesizeWithoutLlm(question: string, top: KnowledgeChunk[]): KnowledgeAskResult {
+/** Heurística: respuesta extractiva sin LLM (siempre disponible). */
+function synthesizeHeuristic(question: string, top: KnowledgeChunk[]): KnowledgeAskResult {
   if (!top.length) {
     return {
       answer:
-        "No encontré fragmentos indexados para esa pregunta. Registra un PDF/ficha en la base documental o completa Reservas/Expediciones en el Hub.",
+        "No encontré nada en la base documental ni en el Hub para esa pregunta. Añade un documento en «Base documental» o completa reservas/expediciones.",
       sources: [],
       chunksUsed: [],
       engine: "retrieval",
       why: [
         "Sin contexto indexado el asistente no inventa cifras",
-        "Añade docs (costes, hoteles, contratos) o usa datos vivos del Hub",
+        "Activa la IA en Ajustes solo ayuda a redactar mejor — no inventa datos que no existan",
       ],
     };
   }
 
   const best = top[0];
+  const isFaq = best.id.startsWith("FAQ-");
   const extras = top.slice(1, 3).map((c) => `• ${c.title}: ${c.text.slice(0, 220)}…`);
+
   return {
     answer: [
-      `Según la base documental interna (retrieval, sin LLM):`,
+      isFaq
+        ? `Respuesta del playbook (heurística, sin IA):`
+        : `Según la base documental + Hub (heurística / retrieval, sin IA):`,
       ``,
       best.text,
       extras.length ? `\nTambién relevante:\n${extras.join("\n")}` : "",
       `\nPregunta: «${question}»`,
+      `\nTip: si activas IA en Ajustes, la misma búsqueda se resume en lenguaje más claro.`,
     ]
       .filter(Boolean)
       .join("\n"),
@@ -199,18 +208,19 @@ function synthesizeWithoutLlm(question: string, top: KnowledgeChunk[]): Knowledg
     chunksUsed: top,
     engine: "retrieval",
     why: [
-      "Respuesta extractiva desde documentos + Hub (sin llamar a Ollama)",
-      "Activa Ollama en Ajustes para síntesis narrativa con las mismas fuentes",
-      "Solo equipo interno — no se envía nada al viajero",
+      "Primero se buscan fragmentos (docs, playbook, reservas, facturas)",
+      "Sin IA: se muestra el mejor fragmento tal cual — no se inventa nada",
+      "Solo equipo interno — nunca se envía al viajero",
     ],
   };
 }
 
-async function synthesizeWithOllama(
+async function synthesizeWithAi(
   question: string,
   top: KnowledgeChunk[],
 ): Promise<KnowledgeAskResult> {
-  const settings = loadOllamaSettings();
+  const settings = loadAiSettings();
+  const label = providerLabel(settings);
   const context = top
     .map(
       (c, i) =>
@@ -218,20 +228,20 @@ async function synthesizeWithOllama(
     )
     .join("\n\n");
 
-  const { content } = await ollamaChat(
+  const { content } = await aiChat(
     [
       {
         role: "system",
         content: [
           "Eres el Knowledge Assistant interno de 30 MPS Adventures (solo equipo).",
-          "Responde en español con hechos del CONTEXTO. Si no está en el contexto, dilo claramente.",
+          "Responde en español con hechos del CONTEXTO. Si no está en el contexto, dilo claramente («no está en el sistema»).",
           "PROHIBIDO redactar mensajes al cliente o inventar hoteles/márgenes no citados.",
           "Devuelve JSON: answer (string), sources (array de strings de fuentes usadas), why (array de 2-3 razones de por qué importa al CEO).",
         ].join(" "),
       },
       {
         role: "user",
-        content: `Pregunta del CEO:\n${question}\n\nCONTEXTO INDEXADO (RAG):\n${context}`,
+        content: `Pregunta del equipo:\n${question}\n\nCONTEXTO INDEXADO (RAG):\n${context || "(sin fragmentos — dilo si falta dato)"}`,
       },
     ],
     {
@@ -258,18 +268,25 @@ async function synthesizeWithOllama(
     : top.map((c) => c.sourceLabel);
   const why = Array.isArray(raw.why)
     ? (raw.why as unknown[]).map(String)
-    : ["Respuesta sintetizada con Ollama sobre fragmentos indexados"];
+    : [`Respuesta sintetizada con ${label} sobre fragmentos indexados`];
 
   return {
     answer,
     sources: sources.length ? sources : top.map((c) => c.sourceLabel),
     chunksUsed: top,
-    engine: "ollama",
+    engine: "ai",
+    provider: label,
     why,
   };
 }
 
-/** Pregunta al Knowledge Assistant (RAG-lite + Ollama opcional). */
+/**
+ * Pregunta al Knowledge Assistant.
+ * Flujo fijo:
+ * 1) Heurística / retrieval busca fragmentos (siempre).
+ * 2) Si hay IA activa (Ajustes) → sintetiza con el proveedor; si falla → heurística.
+ * 3) Si no hay IA → solo heurística.
+ */
 export async function askKnowledge(
   question: string,
   input: KnowledgeCorpusInput = {},
@@ -288,20 +305,21 @@ export async function askKnowledge(
   const chunks = buildKnowledgeChunks(input);
   const top = retrieveKnowledgeChunks(q, chunks, 6);
 
-  if (ollamaReady()) {
+  if (aiReady()) {
     try {
-      return await synthesizeWithOllama(q, top);
-    } catch {
-      const fallback = synthesizeWithoutLlm(q, top);
+      return await synthesizeWithAi(q, top);
+    } catch (err) {
+      const fallback = synthesizeHeuristic(q, top);
+      const detail = err instanceof Error ? err.message.slice(0, 120) : "error";
       return {
         ...fallback,
         why: [
           ...fallback.why,
-          "Ollama no disponible — se usó retrieval extractivo",
+          `IA no disponible (${detail}) — se usó heurística / retrieval`,
         ],
       };
     }
   }
 
-  return synthesizeWithoutLlm(q, top);
+  return synthesizeHeuristic(q, top);
 }
