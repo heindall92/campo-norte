@@ -2800,7 +2800,7 @@ function SlidesPanel({ lang }: { lang: Lang }) {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[color-mix(in_oklab,var(--ink)_6%,transparent)] shadow-xl">
+      <div className="flex max-h-[min(62vh,680px)] items-center justify-center overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[color-mix(in_oklab,var(--ink)_8%,transparent)] shadow-xl">
         <img
           src={slides[i]}
           alt={
@@ -2808,7 +2808,7 @@ function SlidesPanel({ lang }: { lang: Lang }) {
               ? `Diapositiva ${i + 1} de ${slides.length}`
               : `Slide ${i + 1} of ${slides.length}`
           }
-          className="block h-auto w-full select-none"
+          className="max-h-[min(62vh,680px)] w-auto max-w-full select-none object-contain"
           draggable={false}
         />
       </div>
