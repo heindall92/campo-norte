@@ -85,7 +85,6 @@ import {
   Cloud,
   Database,
   Download,
-  ExternalLink,
   FileText,
   Gauge,
   HardDrive,
