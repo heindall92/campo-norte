@@ -94,13 +94,6 @@ export function LoginScreen() {
               </span>
             </p>
 
-            {demoAuth && isProdBuild() && (
-              <p className="mb-3 rounded-xl border border-[color-mix(in_oklab,var(--warn-ink)_35%,transparent)] bg-[var(--warn-bg)] px-3 py-2 text-xs leading-snug text-[var(--warn-ink)] sm:mb-4 sm:text-sm">
-                Login demo activo (pitch). Antes de producción real: Supabase Auth o{" "}
-                <code className="font-semibold">VITE_STRICT_AUTH=true</code>.
-              </p>
-            )}
-
             {authBlocked && (
               <p className="mb-3 rounded-xl border border-[color-mix(in_oklab,var(--warn-ink)_35%,transparent)] bg-[var(--warn-bg)] px-3 py-2 text-xs leading-snug text-[var(--warn-ink)] sm:mb-4 sm:text-sm">
                 El login demo está desactivado en este entorno. Configura{" "}
