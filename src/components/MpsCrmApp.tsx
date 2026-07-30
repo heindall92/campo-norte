@@ -2802,7 +2802,7 @@ function SlidesPanel({ lang }: { lang: Lang }) {
 
       {/* Escenario 16:9 acotado al viewport del CRM (sin desbordar la sesión) */}
       <div
-        className="mx-auto flex w-full max-w-[min(100%,880px)] items-center justify-center overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[color-mix(in_oklab,var(--ink)_10%,transparent)] shadow-lg"
+        className="mx-auto flex w-full max-w-[min(100%,880px)] items-center justify-center overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[color-mix(in_oklab,var(--ink)_14%,#8a93a0)] shadow-lg"
         style={{ height: "min(48vh, 460px)", maxHeight: "calc(100dvh - 14rem)" }}
       >
         <img
