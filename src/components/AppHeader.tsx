@@ -173,21 +173,21 @@ export function AppHeader({
               setUserOpen((v) => !v);
               setNotifOpen(false);
             }}
-            className="flex items-center gap-2 rounded-full border border-[var(--glass-border)] bg-[var(--glass-strong)] py-1 pl-1 pr-2 hover:border-[var(--accent)] sm:pr-3"
+            className="flex h-10 items-center gap-2.5 rounded-full border border-[var(--glass-border)] bg-[var(--glass-strong)] py-1 pl-1 pr-2.5 hover:border-[var(--accent)] sm:pr-3.5"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--accent)] text-sm font-bold text-white">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-sm font-bold text-white">
               {user.avatarInitial}
             </span>
-            <span className="hidden min-w-0 text-left sm:block">
-              <span className="block truncate text-sm font-semibold text-[var(--ink)]">
+            <span className="hidden min-w-0 items-center gap-2 sm:inline-flex">
+              <span className="truncate text-sm font-semibold leading-none text-[var(--ink)]">
                 {user.name}
               </span>
-              <span className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--accent)_16%,transparent)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--accent)]">
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--accent)_16%,transparent)] px-2 py-0.5 text-[10px] font-bold leading-none text-[var(--accent)]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
                 {user.roleLabel}
               </span>
             </span>
-            <ChevronDown className="hidden h-4 w-4 text-[var(--ink-muted)] sm:block" />
+            <ChevronDown className="hidden h-4 w-4 shrink-0 text-[var(--ink-muted)] sm:block" />
           </button>
 
           {userOpen && (
