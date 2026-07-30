@@ -81,9 +81,9 @@ export function LoginScreen() {
 
           <form
             onSubmit={onSubmit}
-            className="rounded-[clamp(1.25rem,2vw,1.75rem)] border border-white/30 bg-[color-mix(in_oklab,white_88%,transparent)] px-[clamp(1.15rem,2.2vw,1.65rem)] py-[clamp(1.35rem,2.8vw,1.9rem)] shadow-2xl backdrop-blur-xl"
+            className="rounded-[clamp(1.25rem,2vw,1.75rem)] border border-white/30 bg-[color-mix(in_oklab,white_88%,transparent)] px-[clamp(1.15rem,2.2vw,1.65rem)] py-[clamp(1.55rem,3.2vw,2.15rem)] shadow-2xl backdrop-blur-xl"
           >
-            <p className="mb-4 flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:mb-5 sm:text-xs">
+            <p className="mb-5 flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:mb-6 sm:text-xs">
               <Bike className="h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
               <span className="truncate">
                 {supabaseReady ? "Acceso seguro" : "Acceso equipo 30 MPS"}
@@ -91,13 +91,13 @@ export function LoginScreen() {
             </p>
 
             {authBlocked && (
-              <p className="mb-4 rounded-xl border border-[color-mix(in_oklab,var(--warn-ink)_35%,transparent)] bg-[var(--warn-bg)] px-3 py-2.5 text-xs leading-snug text-[var(--warn-ink)] sm:mb-5 sm:text-sm">
+              <p className="mb-5 rounded-xl border border-[color-mix(in_oklab,var(--warn-ink)_35%,transparent)] bg-[var(--warn-bg)] px-3 py-2.5 text-xs leading-snug text-[var(--warn-ink)] sm:mb-6 sm:text-sm">
                 El acceso no está disponible en este momento. Contacta con el administrador del
                 sistema.
               </p>
             )}
 
-            <label className="mb-4 block text-sm font-semibold text-[var(--ink)]">
+            <label className="mb-5 block text-sm font-semibold text-[var(--ink)]">
               Email
               <div className="relative mt-2">
                 <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--ink-muted)]" />
@@ -108,12 +108,12 @@ export function LoginScreen() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={authBlocked}
-                  className="w-full rounded-xl border border-[var(--glass-border)] bg-white/95 py-3 pl-10 pr-3 text-sm outline-none ring-[var(--accent)] focus:ring-2 disabled:opacity-50"
+                  className="w-full rounded-xl border border-[var(--glass-border)] bg-white/95 py-3.5 pl-10 pr-3 text-sm outline-none ring-[var(--accent)] focus:ring-2 disabled:opacity-50"
                 />
               </div>
             </label>
 
-            <label className="mb-5 block text-sm font-semibold text-[var(--ink)]">
+            <label className="mb-6 block text-sm font-semibold text-[var(--ink)]">
               Contraseña
               <div className="relative mt-2">
                 <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--ink-muted)]" />
@@ -124,7 +124,7 @@ export function LoginScreen() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={authBlocked}
-                  className="w-full rounded-xl border border-[var(--glass-border)] bg-white/95 py-3 pl-10 pr-10 text-sm outline-none ring-[var(--accent)] focus:ring-2 disabled:opacity-50"
+                  className="w-full rounded-xl border border-[var(--glass-border)] bg-white/95 py-3.5 pl-10 pr-10 text-sm outline-none ring-[var(--accent)] focus:ring-2 disabled:opacity-50"
                 />
                 <button
                   type="button"
@@ -138,7 +138,7 @@ export function LoginScreen() {
             </label>
 
             {error && (
-              <p className="mb-4 rounded-xl border border-[color-mix(in_oklab,var(--danger)_35%,transparent)] bg-[color-mix(in_oklab,var(--danger)_10%,transparent)] px-3 py-2.5 text-sm text-[var(--danger)]">
+              <p className="mb-5 rounded-xl border border-[color-mix(in_oklab,var(--danger)_35%,transparent)] bg-[color-mix(in_oklab,var(--danger)_10%,transparent)] px-3 py-2.5 text-sm text-[var(--danger)]">
                 {error}
               </p>
             )}
@@ -146,7 +146,7 @@ export function LoginScreen() {
             <button
               type="submit"
               disabled={loading || authBlocked}
-              className="w-full rounded-xl bg-[var(--accent)] py-3.5 text-sm font-bold text-white transition hover:opacity-95 disabled:opacity-60"
+              className="w-full rounded-xl bg-[var(--accent)] py-4 text-sm font-bold text-white transition hover:opacity-95 disabled:opacity-60"
             >
               {loading ? "Entrando…" : "Entrar al Growth OS"}
             </button>
