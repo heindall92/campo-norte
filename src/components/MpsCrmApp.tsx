@@ -2745,8 +2745,8 @@ function ProposalPanel({ lang }: { lang: Lang }) {
   );
 }
 
-/** Slides exportadas a pixel (carpeta /slides) + PPTX descargable */
-const PITCH_PPTX_URL = "/deck/Propuesta-Empresarial-30MPS-Yoandy-Ramirez-Delgado.pptx";
+/** Slides exportadas a pixel (carpeta /slides) + PDF descargable */
+const PITCH_PDF_URL = "/deck/30MPS_BusinessCase_YoandyRamirez.pdf";
 const PITCH_SLIDE_IMAGES = Array.from(
   { length: 17 },
   (_, i) => `/deck/slides/${String(i + 1).padStart(2, "0")}.jpg`,
@@ -2791,12 +2791,12 @@ function SlidesPanel({ lang }: { lang: Lang }) {
             {i + 1} {t(lang, "slides_of")} {slides.length}
           </p>
           <a
-            href={PITCH_PPTX_URL}
-            download="Propuesta-Empresarial-30MPS-Yoandy-Ramirez-Delgado.pptx"
+            href={PITCH_PDF_URL}
+            download="30MPS_BusinessCase_YoandyRamirez.pdf"
             className="inline-flex items-center gap-2 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-strong)] px-3 py-1.5 text-xs font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
           >
             <Download className="h-3.5 w-3.5" />
-            {lang === "es" ? "Descargar PPTX" : "Download PPTX"}
+            {lang === "es" ? "Descargar PDF" : "Download PDF"}
           </a>
         </div>
       </div>
