@@ -50,10 +50,9 @@ export function LoginScreen() {
 
       {/*
         Móvil: centrado.
-        Desktop/TV: panel en el tercio derecho-centro (donde marcó el usuario),
-        con gutter derecho amplio para no pegarlo al borde.
+        Desktop/TV: panel en la zona derecha marcada (no al borde, no al centro).
       */}
-      <div className="relative z-10 grid min-h-[100dvh] w-full grid-cols-1 items-center justify-items-center px-[clamp(1rem,3.5vw,2.5rem)] py-[clamp(1rem,3vh,2.5rem)] lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,min(26rem,28vw))_minmax(10rem,22vw)] lg:justify-items-stretch xl:grid-cols-[minmax(0,1.45fr)_minmax(22rem,min(28rem,26vw))_minmax(12rem,24vw)] 2xl:grid-cols-[minmax(0,1.55fr)_minmax(22rem,28rem)_minmax(14rem,26vw)]">
+      <div className="relative z-10 grid min-h-[100dvh] w-full grid-cols-1 items-center justify-items-center px-[clamp(1rem,3.5vw,2.5rem)] py-[clamp(1rem,3vh,2.5rem)] lg:grid-cols-[minmax(0,1.15fr)_minmax(20rem,min(26rem,30vw))_minmax(3rem,10vw)] lg:justify-items-stretch xl:grid-cols-[minmax(0,1.2fr)_minmax(22rem,min(28rem,28vw))_minmax(4rem,12vw)] 2xl:grid-cols-[minmax(0,1.25fr)_minmax(22rem,28rem)_minmax(5rem,13vw)]">
         <div className="hidden lg:block" aria-hidden />
 
         <div className="flex w-full max-w-[26rem] flex-col justify-center lg:max-w-none">
