@@ -2746,24 +2746,32 @@ function ProposalPanel({ lang }: { lang: Lang }) {
   );
 }
 
-/** Presentación oficial (PPTX) · Propuesta Empresarial 30 MPS */
+/** Presentación oficial convertida desde el PPTX (PNG por diapositiva) */
 const PITCH_PPTX_URL = "/deck/Propuesta-Empresarial-30MPS-Yoandy-Ramirez-Delgado.pptx";
+const PITCH_SLIDE_IMAGES = Array.from(
+  { length: 17 },
+  (_, i) => `/deck/slides/${String(i + 1).padStart(2, "0")}.png`,
+);
 
 function SlidesPanel({ lang }: { lang: Lang }) {
-  const [embedSrc, setEmbedSrc] = useState<string | null>(null);
+  const slides = PITCH_SLIDE_IMAGES;
+  const [i, setI] = useState(0);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const absolute = `${window.location.origin}${PITCH_PPTX_URL}`;
-    // Office Online solo embebe URLs públicas https (Vercel). En local: descarga.
-    if (window.location.protocol === "https:") {
-      setEmbedSrc(
-        `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(absolute)}`,
-      );
-    } else {
-      setEmbedSrc(null);
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") {
+        e.preventDefault();
+        setI((v) => Math.min(slides.length - 1, v + 1));
+      }
+      if (e.key === "ArrowLeft" || e.key === "PageUp") {
+        setI((v) => Math.max(0, v - 1));
+      }
+      if (e.key === "Home") setI(0);
+      if (e.key === "End") setI(slides.length - 1);
     }
-  }, []);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [slides.length]);
 
   return (
     <div className="space-y-3">
@@ -2778,7 +2786,10 @@ function SlidesPanel({ lang }: { lang: Lang }) {
               : "Business Proposal · Yoandy Ramírez Delgado"}
           </h2>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--ink-muted)]">
+            {i + 1} {t(lang, "slides_of")} {slides.length}
+          </p>
           <a
             href={PITCH_PPTX_URL}
             download="Propuesta-Empresarial-30MPS-Yoandy-Ramirez-Delgado.pptx"
@@ -2787,56 +2798,61 @@ function SlidesPanel({ lang }: { lang: Lang }) {
             <Download className="h-4 w-4" />
             {lang === "es" ? "Descargar PPTX" : "Download PPTX"}
           </a>
-          <a
-            href={PITCH_PPTX_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white hover:opacity-95"
-          >
-            <ExternalLink className="h-4 w-4" />
-            {lang === "es" ? "Abrir presentación" : "Open presentation"}
-          </a>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[var(--glass)] shadow-xl">
-        {embedSrc ? (
-          <iframe
-            src={embedSrc}
-            title={
-              lang === "es"
-                ? "Presentación · Propuesta Empresarial 30 MPS"
-                : "Pitch · 30 MPS Business Proposal"
-            }
-            className="block w-full border-0"
-            style={{ height: "min(78vh, 860px)", minHeight: 520 }}
-            allowFullScreen
-          />
-        ) : (
-          <div className="flex min-h-[420px] flex-col items-center justify-center gap-4 p-8 text-center">
-            <Presentation className="h-10 w-10 text-[var(--accent)]" />
-            <p className="max-w-md text-sm text-[var(--ink-muted)]">
-              {lang === "es"
-                ? "La vista previa embebida funciona en la URL pública (Vercel). Aquí puedes descargar o abrir el PowerPoint oficial."
-                : "Embedded preview works on the public URL (Vercel). Here you can download or open the official PowerPoint."}
-            </p>
-            <a
-              href={PITCH_PPTX_URL}
-              download="Propuesta-Empresarial-30MPS-Yoandy-Ramirez-Delgado.pptx"
-              className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white"
-            >
-              <Download className="h-4 w-4" />
-              {lang === "es" ? "Descargar propuesta PPTX" : "Download proposal PPTX"}
-            </a>
-          </div>
-        )}
+      <div className="overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[color-mix(in_oklab,var(--ink)_6%,transparent)] shadow-xl">
+        <img
+          src={slides[i]}
+          alt={
+            lang === "es"
+              ? `Diapositiva ${i + 1} de ${slides.length}`
+              : `Slide ${i + 1} of ${slides.length}`
+          }
+          className="block h-auto w-full select-none"
+          draggable={false}
+        />
       </div>
 
-      <p className="text-xs text-[var(--ink-muted)]">
-        {lang === "es"
-          ? "Archivo: Propuesta Empresarial 30MPS Yoandy Ramirez Delgado.pptx"
-          : "File: Propuesta Empresarial 30MPS Yoandy Ramirez Delgado.pptx"}
-      </p>
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          disabled={i === 0}
+          onClick={() => setI((v) => Math.max(0, v - 1))}
+          className="inline-flex items-center gap-2 rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] px-4 py-2 text-sm font-semibold text-[var(--ink)] disabled:opacity-40"
+        >
+          <ArrowLeft className="h-4 w-4" /> {t(lang, "slides_prev")}
+        </button>
+        <button
+          type="button"
+          disabled={i === slides.length - 1}
+          onClick={() => setI((v) => Math.min(slides.length - 1, v + 1))}
+          className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
+        >
+          {t(lang, "slides_next")} <ArrowRight className="h-4 w-4" />
+        </button>
+        <span className="text-xs text-[var(--ink-muted)]">
+          {lang === "es"
+            ? "Flechas del teclado · Espacio para avanzar"
+            : "Keyboard arrows · Space to advance"}
+        </span>
+      </div>
+
+      <div className="flex flex-wrap gap-1.5">
+        {slides.map((src, idx) => (
+          <button
+            key={src}
+            type="button"
+            title={`${lang === "es" ? "Diapositiva" : "Slide"} ${idx + 1}`}
+            aria-label={`${lang === "es" ? "Diapositiva" : "Slide"} ${idx + 1}`}
+            onClick={() => setI(idx)}
+            className={cn(
+              "h-2 rounded-full transition-all",
+              idx === i ? "w-8 bg-[var(--accent)]" : "w-2 bg-[color-mix(in_oklab,var(--ink)_25%,transparent)]",
+            )}
+          />
+        ))}
+      </div>
     </div>
   );
 }

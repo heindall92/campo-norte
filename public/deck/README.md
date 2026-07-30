@@ -1,7 +1,6 @@
 # Presentación · 30 MPS
 
-Archivo oficial en esta carpeta:
+- `Propuesta-Empresarial-30MPS-Yoandy-Ramirez-Delgado.pptx` — archivo fuente
+- `slides/01.png` … `slides/17.png` — diapositivas exportadas para el slider del CRM (Anterior / Siguiente)
 
-- `Propuesta-Empresarial-30MPS-Yoandy-Ramirez-Delgado.pptx` — propuesta empresarial (sección **Presentación** del CRM).
-
-En Vercel se embebe con Office Online; también se puede descargar desde el panel.
+El panel **Presentación** muestra las PNG con navegación; el PPTX sigue disponible para descarga.
