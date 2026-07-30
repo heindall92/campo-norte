@@ -26,6 +26,10 @@ import {
   supabaseConfigured,
   useDataHub,
 } from "@/lib/data";
+import { useAuth } from "@/lib/auth";
+import type { AppSection } from "@/lib/notifications";
+import { AppHeader } from "@/components/AppHeader";
+import { EntityActionBar } from "@/components/EntityActionBar";
 import { SLIDES, t, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
@@ -52,15 +56,14 @@ import {
   HardDrive,
   LayoutDashboard,
   Lightbulb,
-  Mail,
   MessageSquareWarning,
   Moon,
   Pencil,
-  Phone,
   Plus,
   Presentation,
   RefreshCw,
   Search,
+  Settings,
   Sparkles,
   Sun,
   Target,
@@ -87,18 +90,7 @@ import {
 } from "recharts";
 
 type Theme = "light" | "dark";
-type Section =
-  | "hub"
-  | "dashboard"
-  | "leads"
-  | "clientes"
-  | "reservas"
-  | "facturas"
-  | "contenido"
-  | "conocimiento"
-  | "automatizaciones"
-  | "propuesta"
-  | "slides";
+type Section = AppSection;
 
 const NAV_IDS: { id: Section; icon: typeof LayoutDashboard; labelKey: string }[] = [
   { id: "hub", icon: Database, labelKey: "nav_hub" },
@@ -112,6 +104,7 @@ const NAV_IDS: { id: Section; icon: typeof LayoutDashboard; labelKey: string }[]
   { id: "automatizaciones", icon: Workflow, labelKey: "nav_automations" },
   { id: "propuesta", icon: ClipboardList, labelKey: "nav_pitch" },
   { id: "slides", icon: Presentation, labelKey: "nav_slides" },
+  { id: "ajustes", icon: Settings, labelKey: "nav_settings" },
 ];
 
 const ORIGIN_COLORS_LIGHT: Record<LeadOrigin, string> = {
@@ -222,6 +215,69 @@ function scoreTone(score: number): "good" | "warn" | "bad" | "neutral" {
   if (score >= 60) return "warn";
   if (score >= 40) return "neutral";
   return "bad";
+}
+
+function SettingsPanel({ lang }: { lang: Lang }) {
+  const { user, signOut, supabaseReady } = useAuth();
+  const hub = useDataHub();
+
+  return (
+    <div className="space-y-5">
+      <Card
+        title={lang === "es" ? "Ajustes · cuenta" : "Settings · account"}
+        subtitle={
+          lang === "es"
+            ? "Usuario que administra el Growth OS. Cerrar sesión vuelve al login."
+            : "User administering the Growth OS. Sign out returns to login."
+        }
+      >
+        {user && (
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent)] text-xl font-bold text-white">
+              {user.avatarInitial}
+            </span>
+            <div>
+              <p className="font-[family-name:var(--mps-display)] text-xl text-[var(--ink)]">
+                {user.name}
+              </p>
+              <p className="text-sm text-[var(--ink-muted)]">{user.email}</p>
+              <p className="mt-1 text-xs font-semibold text-[var(--accent)]">
+                {user.roleLabel} · {user.provider === "supabase" ? "Supabase Auth" : "Demo local"}
+              </p>
+            </div>
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={() => void signOut()}
+          className="mt-5 rounded-xl border border-[color-mix(in_oklab,var(--danger)_35%,transparent)] px-4 py-2 text-sm font-semibold text-[var(--danger)]"
+        >
+          {lang === "es" ? "Cerrar sesión" : "Sign out"}
+        </button>
+      </Card>
+
+      <Card
+        title={lang === "es" ? "Base de datos" : "Database"}
+        subtitle="Supabase / Postgres · Data Hub"
+      >
+        <ul className="space-y-2 text-sm text-[var(--ink-muted)]">
+          <li>
+            Modo Hub:{" "}
+            <strong className="text-[var(--ink)]">{hub.mode}</strong>
+          </li>
+          <li>
+            Credenciales Supabase:{" "}
+            <strong className="text-[var(--ink)]">
+              {supabaseReady || supabaseConfigured() ? "detectadas" : "pendientes (.env.local)"}
+            </strong>
+          </li>
+          <li>
+            Schema: <code className="text-[var(--accent)]">supabase/schema.sql</code>
+          </li>
+        </ul>
+      </Card>
+    </div>
+  );
 }
 
 function HubPanel({ lang }: { lang: Lang }) {
@@ -1025,6 +1081,18 @@ function ClientsPanel({ lang }: { lang: Lang }) {
                     <span className="text-sm font-semibold text-[var(--ink)]">
                       LTV {euro(c.ltv, lang)}
                     </span>
+                    <EntityActionBar
+                      phone={c.phone}
+                      onEdit={() => setModal({ mode: "edit", client: { ...c } })}
+                      onDelete={() => {
+                        const ok = window.confirm(
+                          lang === "es"
+                            ? "¿Eliminar este cliente del Hub?"
+                            : "Delete this client from the Hub?",
+                        );
+                        if (ok) void hub.deleteClient(c.id);
+                      }}
+                    />
                   </div>
                 </button>
 
@@ -1184,7 +1252,7 @@ function ClientsPanel({ lang }: { lang: Lang }) {
                       </div>
                     </div>
 
-                    <div className="mt-4 flex flex-wrap gap-2">
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setModal({ mode: "edit", client: { ...c } })}
@@ -1193,22 +1261,7 @@ function ClientsPanel({ lang }: { lang: Lang }) {
                         <Pencil className="h-4 w-4" />
                         {lang === "es" ? "Editar datos" : "Edit details"}
                       </button>
-                      <a
-                        href={`tel:${c.phone.replace(/\s/g, "")}`}
-                        className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
-                      >
-                        <Phone className="h-4 w-4" />
-                        {lang === "es" ? "Llamar" : "Call"}
-                      </a>
-                      <a
-                        href={`https://wa.me/${c.phone.replace(/\D/g, "")}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-2 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-strong)] px-3 py-2 text-sm font-semibold text-[var(--ink)]"
-                      >
-                        <Mail className="h-4 w-4" />
-                        WhatsApp
-                      </a>
+                      <EntityActionBar phone={c.phone} />
                     </div>
                   </div>
                 )}
@@ -1761,26 +1814,19 @@ export function MpsCrmApp() {
           collapsed ? "ml-[80px]" : "ml-[240px]",
         )}
       >
-        <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--glass-border)] bg-[var(--header)] px-4 py-3 backdrop-blur-xl md:px-6">
-          <div>
-            <p className="text-sm font-semibold text-[var(--ink)]">
-              {t(lang, NAV_IDS.find((n) => n.id === section)?.labelKey ?? "nav_hub")}
-            </p>
-            <p className="text-xs text-[var(--ink-muted)]">{t(lang, "internal_only")}</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="glass-chip rounded-md px-2 py-1 text-xs font-semibold">
-              {hub.mode === "supabase"
-                ? t(lang, "live_badge_supabase")
-                : hub.meta?.seededFromDemo
-                  ? t(lang, "live_badge_local_seed")
-                  : t(lang, "live_badge_local")}
-            </span>
-            <span className="glass-chip rounded-md px-2 py-1 text-xs font-semibold">
-              {t(lang, "no_client_msgs")}
-            </span>
-          </div>
-        </header>
+        <AppHeader
+          title={t(lang, NAV_IDS.find((n) => n.id === section)?.labelKey ?? "nav_hub")}
+          subtitle={t(lang, "internal_only")}
+          hubBadge={
+            hub.mode === "supabase"
+              ? t(lang, "live_badge_supabase")
+              : hub.meta?.seededFromDemo
+                ? t(lang, "live_badge_local_seed")
+                : t(lang, "live_badge_local")
+          }
+          onRefresh={() => void hub.refresh()}
+          onNavigate={(s) => setSection(s)}
+        />
 
         <main className="px-4 py-5 md:px-6 md:py-6">
           {section === "hub" && <HubPanel lang={lang} />}
@@ -1794,6 +1840,7 @@ export function MpsCrmApp() {
           {section === "automatizaciones" && <AutomationsPanel lang={lang} />}
           {section === "propuesta" && <ProposalPanel lang={lang} />}
           {section === "slides" && <SlidesPanel lang={lang} />}
+          {section === "ajustes" && <SettingsPanel lang={lang} />}
 
           <footer className="mt-8 flex flex-wrap items-center gap-2 border-t border-[var(--glass-border)] pt-4 text-xs text-[var(--ink-muted)]">
             <Lightbulb className="h-3.5 w-3.5" />

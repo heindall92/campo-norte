@@ -21,6 +21,7 @@ const es: Dict = {
   nav_pitch: "Propuesta CEO",
   nav_slides: "Presentación",
   nav_hub: "Data Hub",
+  nav_settings: "Ajustes",
   dash_title: "De {from} a {to}",
   dash_sub:
     "Una pantalla para decidir: ocupación, margen, origen y embudo. La tech ordena; las personas cierran.",
@@ -100,6 +101,7 @@ const en: Dict = {
   nav_pitch: "CEO proposal",
   nav_slides: "Pitch deck",
   nav_hub: "Data Hub",
+  nav_settings: "Settings",
   dash_title: "From {from} to {to}",
   dash_sub:
     "One screen to decide: occupancy, margin, origin and funnel. Tech ranks; people close.",

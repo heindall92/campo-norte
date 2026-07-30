@@ -26,6 +26,17 @@ npm run preview    # o: python3 serve.py  → http://0.0.0.0:8080
 
 ---
 
+## Auth · notificaciones · panel usuario
+
+1. **Login** al entrar (Supabase Auth si hay `.env.local`; si no, cuentas demo del equipo).
+2. **Header derecha:** campana de notificaciones + avatar/menú admin (Ajustes / Cerrar sesión).
+3. **Eventos:** crear/editar/borrar leads, clientes, reservas, facturas, import CSV, WhatsApp/llamada → alimentan la bandeja de notificaciones.
+4. **Reservas:** selector de estado + acciones editar / WhatsApp / llamar / borrar.
+
+Demo local: `miguel@30mps.com` / `30mps2026`
+
+---
+
 ## Data Hub (Fase 1 — datos reales)
 
 El CRM ya **persiste** leads, clientes, reservas y facturas.

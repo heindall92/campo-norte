@@ -1,4 +1,5 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { getSupabase, getSupabaseEnv } from "@/lib/supabase/client";
 import { buildSeedSnapshot } from "./seed";
 import {
   HUB_VERSION,
@@ -10,16 +11,8 @@ import type { Invoice, Reservation } from "@/lib/ops-data";
 
 type Row = { id: string; payload: unknown; updated_at?: string };
 
-function envUrl() {
-  return (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim() ?? "";
-}
-
-function envKey() {
-  return (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim() ?? "";
-}
-
 export function supabaseConfigured(): boolean {
-  return Boolean(envUrl() && envKey());
+  return getSupabaseEnv().configured;
 }
 
 export function preferredDataMode(): "local" | "supabase" {
@@ -31,20 +24,17 @@ export function preferredDataMode(): "local" | "supabase" {
 
 export class SupabaseDataStore implements DataStore {
   mode = "supabase" as const;
-  private client: SupabaseClient | null = null;
 
   isConfigured() {
     return supabaseConfigured();
   }
 
   private getClient(): SupabaseClient {
-    if (!this.client) {
-      if (!supabaseConfigured()) {
-        throw new Error("Faltan VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY");
-      }
-      this.client = createClient(envUrl(), envKey());
+    const client = getSupabase();
+    if (!client) {
+      throw new Error("Faltan VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY");
     }
-    return this.client;
+    return client;
   }
 
   async load(): Promise<HubSnapshot> {

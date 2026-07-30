@@ -1,5 +1,6 @@
 import { N8nFlowBuilder } from "@/components/N8nFlowBuilder";
 import { blankReservation, ReservationFormModal } from "@/components/ReservationFormModal";
+import { EntityActionBar } from "@/components/EntityActionBar";
 import {
   EXPERIENCE_LABEL,
   PAYMENT_METHOD_LABEL,
@@ -42,6 +43,16 @@ import {
   Utensils,
 } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+
+function statusSelectClass(status: ReservationStatus) {
+  if (status === "reservado" || status === "prep_viaje" || status === "en_curso") {
+    return "border-[color-mix(in_oklab,var(--ok)_45%,transparent)] bg-[color-mix(in_oklab,var(--ok)_14%,transparent)] text-[var(--ok)]";
+  }
+  if (status === "docs_pendientes") {
+    return "border-[color-mix(in_oklab,var(--warn-ink)_45%,transparent)] bg-[var(--warn-bg)] text-[var(--warn-ink)]";
+  }
+  return "border-[var(--glass-border)] bg-[var(--glass-strong)] text-[var(--ink)]";
+}
 
 function euro(n: number, lang: Lang) {
   return new Intl.NumberFormat(lang === "en" ? "en-GB" : "es-ES", {
@@ -314,23 +325,37 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
                     </button>
 
                     <div className="flex flex-wrap items-center gap-2">
-                      <label className="sr-only" htmlFor={`status-${r.id}`}>
-                        Status
-                      </label>
-                      <select
-                        id={`status-${r.id}`}
-                        value={r.status}
-                        onChange={(e) =>
-                          patchReservation(r.id, { status: e.target.value as ReservationStatus })
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-[var(--ink-muted)]">
+                          {lang === "es" ? "Estado" : "Status"}
+                        </span>
+                        <select
+                          id={`status-${r.id}`}
+                          value={r.status}
+                          onChange={(e) =>
+                            void patchReservation(r.id, {
+                              status: e.target.value as ReservationStatus,
+                            })
+                          }
+                          className={cn(
+                            "rounded-full border px-3 py-1.5 text-xs font-bold outline-none",
+                            statusSelectClass(r.status),
+                          )}
+                        >
+                          {statuses.map((s) => (
+                            <option key={s} value={s}>
+                              {RESERVATION_STATUS_LABEL[s]}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <EntityActionBar
+                        phone={r.clientPhone}
+                        onEdit={() =>
+                          setModal({ mode: "edit", reservation: structuredClone(r) })
                         }
-                        className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass-strong)] px-2 py-1.5 text-xs font-semibold text-[var(--ink)]"
-                      >
-                        {statuses.map((s) => (
-                          <option key={s} value={s}>
-                            {RESERVATION_STATUS_LABEL[s]}
-                          </option>
-                        ))}
-                      </select>
+                        onDelete={() => void deleteReservation(r.id)}
+                      />
                       <Badge tone="neutral">{PAYMENT_LABEL[r.paymentChannel]}</Badge>
                       <span className="text-sm font-semibold text-[var(--ink)]">
                         {euro(r.depositPaid, lang)} / {euro(r.totalAmount, lang)}
@@ -357,7 +382,7 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
                     </button>
                     <button
                       type="button"
-                      onClick={() => deleteReservation(r.id)}
+                      onClick={() => void deleteReservation(r.id)}
                       className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-700 dark:text-rose-300"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
