@@ -962,10 +962,6 @@ function ClientsPanel({ lang }: { lang: Lang }) {
     null,
   );
 
-  useEffect(() => {
-    if (!openId && clients[0]) setOpenId(clients[0].id);
-  }, [clients, openId]);
-
   const list = useMemo(() => {
     const sorted = [...clients].sort((a, b) => b.reactivationPriority - a.reactivationPriority);
     const query = q.trim().toLowerCase();

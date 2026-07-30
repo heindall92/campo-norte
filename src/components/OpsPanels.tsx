@@ -42,7 +42,7 @@ import {
   Trash2,
   Utensils,
 } from "lucide-react";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
 function statusSelectClass(status: ReservationStatus) {
   if (status === "reservado" || status === "prep_viaje" || status === "en_curso") {
@@ -158,10 +158,6 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
   const [modal, setModal] = useState<{ mode: "create" | "edit"; reservation: Reservation } | null>(
     null,
   );
-
-  useEffect(() => {
-    if (!openId && reservations[0]) setOpenId(reservations[0].id);
-  }, [reservations, openId]);
 
   const list = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -572,10 +568,6 @@ export function InvoicesVerifactuPanel({ lang }: { lang: Lang }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [legalOpen, setLegalOpen] = useState(false);
   const [checklistOpen, setChecklistOpen] = useState(false);
-
-  useEffect(() => {
-    if (!openId && invoices[0]) setOpenId(invoices[0].id);
-  }, [invoices, openId]);
 
   return (
     <div className="space-y-5">
