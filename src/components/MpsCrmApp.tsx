@@ -30,7 +30,8 @@ import { useAuth } from "@/lib/auth";
 import type { AppSection } from "@/lib/notifications";
 import { AppHeader } from "@/components/AppHeader";
 import { EntityActionBar } from "@/components/EntityActionBar";
-import { SLIDES, t, type Lang } from "@/lib/i18n";
+import { t, type Lang } from "@/lib/i18n";
+import { PITCH_SLIDES, type PitchBlock } from "@/lib/pitch-slides";
 import { cn } from "@/lib/utils";
 import {
   AutomationsEcosystemPanel,
@@ -1714,34 +1715,206 @@ function ProposalPanel({ lang }: { lang: Lang }) {
   );
 }
 
+function PitchBlockView({ block, lang }: { block: PitchBlock; lang: Lang }) {
+  if (block.type === "quote") {
+    return (
+      <blockquote className="mt-5 border-l-4 border-[var(--accent)] pl-4 font-[family-name:var(--mps-display)] text-lg leading-snug text-[var(--ink)] md:text-2xl">
+        {block.text}
+      </blockquote>
+    );
+  }
+  if (block.type === "text") {
+    return <p className="mt-4 text-sm leading-relaxed text-[var(--ink-muted)] md:text-base">{block.text}</p>;
+  }
+  if (block.type === "bullets") {
+    return (
+      <ul className="mt-5 space-y-2">
+        {block.items.map((b) => (
+          <li key={b} className="flex items-start gap-2 text-sm text-[var(--ink)] md:text-base">
+            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]" />
+            {b}
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  if (block.type === "metrics") {
+    return (
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        {block.items.map((m) => (
+          <div
+            key={m.label}
+            className="rounded-2xl border border-[var(--glass-border)] bg-[var(--glass)] p-4"
+          >
+            <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--ink-muted)]">
+              {m.label}
+            </p>
+            <p className="mt-1 font-[family-name:var(--mps-display)] text-2xl text-[var(--accent)] md:text-3xl">
+              {m.value}
+            </p>
+            {m.hint && <p className="mt-1 text-xs text-[var(--ink-muted)]">{m.hint}</p>}
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (block.type === "table") {
+    return (
+      <div className="mt-5 overflow-x-auto rounded-2xl border border-[var(--glass-border)]">
+        <table className="w-full min-w-[420px] text-left text-sm text-[var(--ink)]">
+          <thead className="bg-[var(--glass)] text-xs uppercase tracking-wide text-[var(--ink-muted)]">
+            <tr>
+              {block.headers.map((h) => (
+                <th key={h} className="px-3 py-2.5">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {block.rows.map((row) => (
+              <tr key={row.join("-")} className="border-t border-[var(--glass-border)]">
+                {row.map((cell, i) => (
+                  <td
+                    key={`${cell}-${i}`}
+                    className={cn("px-3 py-2.5", i === 0 ? "font-medium" : "text-[var(--ink-muted)]")}
+                  >
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+  if (block.type === "cards") {
+    return (
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        {block.items.map((c) => (
+          <div
+            key={c.title}
+            className="rounded-2xl border border-[var(--glass-border)] bg-[var(--glass)] p-4"
+          >
+            <p
+              className={cn(
+                "font-[family-name:var(--mps-display)] text-lg",
+                c.tone === "good"
+                  ? "text-[var(--ok)]"
+                  : c.tone === "warn"
+                    ? "text-[var(--warn-ink)]"
+                    : "text-[var(--accent)]",
+              )}
+            >
+              {c.title}
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-[var(--ink-muted)]">{c.body}</p>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (block.type === "steps") {
+    return (
+      <ol className="mt-5 space-y-2">
+        {block.items.map((s, idx) => (
+          <li key={s} className="flex gap-3 text-sm text-[var(--ink)] md:text-base">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[10px] font-bold text-white">
+              {idx + 1}
+            </span>
+            <span className="pt-0.5">{s}</span>
+          </li>
+        ))}
+      </ol>
+    );
+  }
+  // matrix
+  return (
+    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+      {block.cells.map((cell) => (
+        <div
+          key={cell.title}
+          className={cn(
+            "rounded-2xl border p-4",
+            cell.quadrant === "hi-lo"
+              ? "border-[color-mix(in_oklab,var(--ok)_40%,transparent)] bg-[color-mix(in_oklab,var(--ok)_10%,transparent)]"
+              : cell.quadrant === "hi-hi"
+                ? "border-[color-mix(in_oklab,var(--accent)_40%,transparent)] bg-[color-mix(in_oklab,var(--accent)_10%,transparent)]"
+                : cell.quadrant === "lo-lo"
+                  ? "border-[var(--glass-border)] bg-[var(--glass)]"
+                  : "border-[color-mix(in_oklab,var(--warn-ink)_35%,transparent)] bg-[var(--warn-bg)]",
+          )}
+        >
+          <p className="text-xs font-bold uppercase tracking-wide text-[var(--ink-muted)]">
+            {lang === "es" ? "Cuadrante" : "Quadrant"}
+          </p>
+          <p className="mt-1 font-semibold text-[var(--ink)]">{cell.title}</p>
+          <p className="mt-2 text-sm text-[var(--ink-muted)]">{cell.body}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function SlidesPanel({ lang }: { lang: Lang }) {
-  const slides = SLIDES[lang];
+  const slides = PITCH_SLIDES[lang];
   const [i, setI] = useState(0);
   useEffect(() => setI(0), [lang]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "ArrowRight" || e.key === "PageDown") {
+        setI((v) => Math.min(slides.length - 1, v + 1));
+      }
+      if (e.key === "ArrowLeft" || e.key === "PageUp") {
+        setI((v) => Math.max(0, v - 1));
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [slides.length]);
+
   const slide = slides[i];
 
   return (
-    <div className="glass-panel relative overflow-hidden rounded-3xl p-6 md:min-h-[420px] md:p-10">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--ink-muted)]">
-        {i + 1} {t(lang, "slides_of")} {slides.length}
-      </p>
-      <h2 className="mt-4 font-[family-name:var(--mps-display)] text-3xl text-[var(--ink)] md:text-5xl">
-        {slide.title}
-      </h2>
-      <p className="mt-4 max-w-3xl text-base leading-relaxed text-[var(--ink-muted)] md:text-xl">
-        {slide.body}
-      </p>
-      {slide.bullets && (
-        <ul className="mt-6 space-y-2">
-          {slide.bullets.map((b) => (
-            <li key={b} className="flex items-start gap-2 text-sm text-[var(--ink)] md:text-base">
-              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]" />
-              {b}
-            </li>
+    <div className="space-y-4">
+      <div className="glass-panel relative overflow-hidden rounded-3xl p-6 md:min-h-[520px] md:p-10">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[color-mix(in_oklab,var(--accent)_14%,transparent)] blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 left-10 h-48 w-48 rounded-full bg-[color-mix(in_oklab,var(--accent-2)_12%,transparent)] blur-3xl" />
+
+        <div className="relative">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
+              {slide.kicker ?? "30 MPS · Growth OS"}
+            </p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--ink-muted)]">
+              {i + 1} {t(lang, "slides_of")} {slides.length}
+            </p>
+          </div>
+
+          <h2 className="mt-4 max-w-4xl font-[family-name:var(--mps-display)] text-3xl leading-tight text-[var(--ink)] md:text-5xl">
+            {slide.title}
+          </h2>
+          {slide.subtitle && (
+            <p className="mt-3 max-w-3xl text-base leading-relaxed text-[var(--ink-muted)] md:text-xl">
+              {slide.subtitle}
+            </p>
+          )}
+
+          {slide.blocks.map((block, idx) => (
+            <PitchBlockView key={`${slide.title}-${idx}`} block={block} lang={lang} />
           ))}
-        </ul>
-      )}
-      <div className="mt-8 flex flex-wrap items-center gap-3">
+
+          {slide.footer && (
+            <p className="mt-8 border-t border-[var(--glass-border)] pt-4 text-xs font-semibold text-[var(--accent)] md:text-sm">
+              {slide.footer}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
           disabled={i === 0}
@@ -1758,12 +1931,17 @@ function SlidesPanel({ lang }: { lang: Lang }) {
         >
           {t(lang, "slides_next")} <ArrowRight className="h-4 w-4" />
         </button>
+        <span className="text-xs text-[var(--ink-muted)]">
+          {lang === "es" ? "Flechas del teclado para navegar" : "Use keyboard arrows to navigate"}
+        </span>
       </div>
-      <div className="mt-6 flex flex-wrap gap-1.5">
-        {slides.map((_, idx) => (
+
+      <div className="flex flex-wrap gap-1.5">
+        {slides.map((s, idx) => (
           <button
-            key={idx}
+            key={s.title}
             type="button"
+            title={s.title}
             aria-label={`Slide ${idx + 1}`}
             onClick={() => setI(idx)}
             className={cn(
