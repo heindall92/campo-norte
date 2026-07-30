@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+:root {
+  --mps-display: "Fraunces", Georgia, serif;
+  --mps-body: "Source Sans 3", "Segoe UI", sans-serif;
+}
+
+/* Modo claro */
+html[data-theme="light"] {
+  --bg0: #e8eef2;
+  --bg1: #d5dee8;
+  --ink: #0f172a;
+  --ink-muted: #475569;
+  --glass: rgba(255, 255, 255, 0.62);
+  --glass-strong: rgba(255, 255, 255, 0.82);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --sidebar: rgba(15, 23, 42, 0.88);
+  --sidebar-text: #f8fafc;
+  --sidebar-muted: #cbd5e1;
+  --accent: #0f766e;
+  --accent-2: #0369a1;
+  --chip: rgba(255, 255, 255, 0.9);
+  --chart: #0f766e;
+  --chart-2: #0369a1;
+  --header: rgba(232, 238, 242, 0.72);
+  --danger: #b91c1c;
+  --ok: #047857;
+  --warn-bg: #fff7ed;
+  --warn-ink: #9a3412;
+}
+
+/* Modo oscuro */
+html[data-theme="dark"] {
+  --bg0: #0b1220;
+  --bg1: #111827;
+  --ink: #f1f5f9;
+  --ink-muted: #94a3b8;
+  --glass: rgba(30, 41, 59, 0.55);
+  --glass-strong: rgba(30, 41, 59, 0.78);
+  --glass-border: rgba(148, 163, 184, 0.22);
+  --sidebar: rgba(2, 6, 23, 0.92);
+  --sidebar-text: #f8fafc;
+  --sidebar-muted: #94a3b8;
+  --accent: #2dd4bf;
+  --accent-2: #38bdf8;
+  --chip: rgba(15, 23, 42, 0.85);
+  --chart: #2dd4bf;
+  --chart-2: #38bdf8;
+  --header: rgba(11, 18, 32, 0.72);
+  --danger: #f87171;
+  --ok: #34d399;
+  --warn-bg: rgba(154, 52, 18, 0.25);
+  --warn-ink: #fdba74;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--mps-body);
+  color: var(--ink);
+  background: var(--bg0);
+  -webkit-font-smoothing: antialiased;
+}
+
+.mps-crm {
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+.mps-crm h1,
+.mps-crm h2,
+.mps-crm h3,
+.mps-crm h4 {
+  font-family: var(--mps-display);
+  color: var(--ink);
+}
+
+.glass-panel {
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 12px 40px rgba(2, 6, 23, 0.12);
+}
+
+html[data-theme="dark"] .glass-panel {
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+}
+
+.glass-sidebar {
+  background: var(--sidebar);
+  border-right: 1px solid var(--glass-border);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  color: var(--sidebar-text);
+}
+
+.glass-chip {
+  background: var(--chip);
+  border: 1px solid var(--glass-border);
+  color: var(--ink);
+  backdrop-filter: blur(10px);
+}
+
+.mps-bg {
+  background:
+    radial-gradient(circle at 12% 0%, color-mix(in oklab, var(--accent) 22%, transparent), transparent 42%),
+    radial-gradient(circle at 100% 10%, color-mix(in oklab, var(--accent-2) 18%, transparent), transparent 40%),
+    linear-gradient(160deg, var(--bg0), var(--bg1));
+}

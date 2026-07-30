@@ -1,0 +1,800 @@
+import { N8nFlowBuilder } from "@/components/N8nFlowBuilder";
+import { blankReservation, ReservationFormModal } from "@/components/ReservationFormModal";
+import {
+  EXPERIENCE_LABEL,
+  PAYMENT_METHOD_LABEL,
+  PAYMENT_STATUS_LABEL,
+  ROUTE_LABEL,
+  SEGMENT_LABEL,
+  STATUS_LABEL,
+  type Client,
+} from "@/lib/demo-data";
+import { GESTORIA_EXPORT_FIELDS, LEGAL_CITATIONS, VERIFACTU_CHECKLIST } from "@/lib/legal-verifactu";
+import { downloadInvoicePdf } from "@/lib/invoice-pdf";
+import {
+  INVOICES,
+  INVOICE_STATUS_LABEL,
+  PAYMENT_LABEL,
+  RESERVATIONS,
+  RESERVATION_STATUS_LABEL,
+  TAX_REGIME_LABEL,
+  downloadGestoriaPack,
+  type Invoice,
+  type Reservation,
+  type ReservationStatus,
+} from "@/lib/ops-data";
+import type { Lang } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
+import {
+  Building2,
+  CheckCircle2,
+  ChevronDown,
+  Circle,
+  Copy,
+  Download,
+  FileText,
+  MapPin,
+  Pencil,
+  Phone,
+  Plus,
+  Scale,
+  Search,
+  Trash2,
+  Utensils,
+} from "lucide-react";
+import { useMemo, useState, type ReactNode } from "react";
+
+function euro(n: number, lang: Lang) {
+  return new Intl.NumberFormat(lang === "en" ? "en-GB" : "es-ES", {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 0,
+  }).format(n);
+}
+
+function Badge({
+  children,
+  tone = "neutral",
+}: {
+  children: ReactNode;
+  tone?: "good" | "warn" | "bad" | "brand" | "neutral";
+}) {
+  const tones = {
+    good: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+    warn: "bg-amber-500/15 text-amber-800 dark:text-amber-200 border-amber-500/30",
+    bad: "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30",
+    brand: "bg-[color-mix(in_oklab,var(--accent)_18%,transparent)] text-[var(--accent)] border-[color-mix(in_oklab,var(--accent)_35%,transparent)]",
+    neutral: "bg-[var(--glass)] text-[var(--ink-muted)] border-[var(--glass-border)]",
+  };
+  return (
+    <span className={cn("inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium", tones[tone])}>
+      {children}
+    </span>
+  );
+}
+
+function Card({
+  title,
+  subtitle,
+  children,
+  action,
+}: {
+  title?: string;
+  subtitle?: string;
+  children: ReactNode;
+  action?: ReactNode;
+}) {
+  return (
+    <section className="rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-strong)] p-4 shadow-[var(--shadow)] backdrop-blur-md md:p-5">
+      {(title || action) && (
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            {title && (
+              <h3 className="font-[family-name:var(--mps-display)] text-xl text-[var(--ink)] md:text-2xl">
+                {title}
+              </h3>
+            )}
+            {subtitle && <p className="mt-1 text-sm text-[var(--ink-muted)]">{subtitle}</p>}
+          </div>
+          {action}
+        </div>
+      )}
+      {children}
+    </section>
+  );
+}
+
+function invTone(s: Invoice["status"]): "good" | "warn" | "bad" | "brand" | "neutral" {
+  if (s === "cobrada" || s === "enviada_aeat") return "good";
+  if (s === "emitida") return "brand";
+  if (s === "anulada") return "bad";
+  if (s === "borrador") return "warn";
+  return "neutral";
+}
+
+
+/** Ecosistema CRM: editor visual estilo n8n (drag & drop + submenú) */
+export function AutomationsEcosystemPanel({ lang }: { lang: Lang }) {
+  return (
+    <div className="space-y-5">
+      <Card
+        title={lang === "es" ? "Ecosistema CRM · editor de flujos" : "CRM ecosystem · flow editor"}
+        subtitle={
+          lang === "es"
+            ? "Canvas arrastrar y soltar estilo n8n: crear, editar y exportar automatizaciones. Cada nodo tiene values, formulario y API. La tubería ordena; el equipo cierra con el cliente."
+            : "n8n-style drag-and-drop canvas: create, edit and export automations. Each node has values, form and API. The pipeline ranks; the team closes with the customer."
+        }
+      >
+        <p className="mb-4 text-sm leading-relaxed text-[var(--ink-muted)]">
+          Web/UTM → <strong className="text-[var(--ink)]">Data Hub</strong> → Score → Lead / Customer
+          Intelligence → Reserva + logística → Cobros → Factura REAV / Veri*FACTU → Export gestoría →
+          Dashboard · Content · Knowledge.{" "}
+          <span className="text-[var(--accent)]">
+            {lang === "es" ? "Nunca escribe al cliente." : "Never messages the customer."}
+          </span>
+        </p>
+        <N8nFlowBuilder lang={lang} />
+      </Card>
+    </div>
+  );
+}
+
+export function ReservationsPanel({ lang }: { lang: Lang }) {
+  const [reservations, setReservations] = useState<Reservation[]>(() => [...RESERVATIONS]);
+  const [openId, setOpenId] = useState<string | null>(RESERVATIONS[0]?.id ?? null);
+  const [q, setQ] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | ReservationStatus>("all");
+  const [modal, setModal] = useState<{ mode: "create" | "edit"; reservation: Reservation } | null>(
+    null,
+  );
+
+  const list = useMemo(() => {
+    const query = q.trim().toLowerCase();
+    return reservations.filter((r) => {
+      if (statusFilter !== "all" && r.status !== statusFilter) return false;
+      if (!query) return true;
+      return (
+        r.clientName.toLowerCase().includes(query) ||
+        r.id.toLowerCase().includes(query) ||
+        r.tripName.toLowerCase().includes(query) ||
+        ROUTE_LABEL[r.route].toLowerCase().includes(query) ||
+        r.tourLeader.toLowerCase().includes(query)
+      );
+    });
+  }, [q, reservations, statusFilter]);
+
+  function saveReservation(r: Reservation) {
+    setReservations((prev) => {
+      const idx = prev.findIndex((x) => x.id === r.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = r;
+        return next;
+      }
+      return [r, ...prev];
+    });
+    setOpenId(r.id);
+    setModal(null);
+  }
+
+  function deleteReservation(id: string) {
+    const ok = window.confirm(
+      lang === "es"
+        ? "¿Eliminar esta reserva y toda su logística? Knowledge y Content Factory dejan de tener esta fuente."
+        : "Delete this booking and all its logistics? Knowledge and Content Factory lose this source.",
+    );
+    if (!ok) return;
+    setReservations((prev) => prev.filter((r) => r.id !== id));
+    if (openId === id) setOpenId(null);
+  }
+
+  function duplicateReservation(r: Reservation) {
+    const copy: Reservation = {
+      ...structuredClone(r),
+      id: `R-${4800 + Math.floor(Math.random() * 900)}`,
+      status: "reservado",
+      bookedAt: new Date().toISOString().slice(0, 10),
+      internalNotes:
+        (lang === "es" ? `Duplicada de ${r.id}. ` : `Duplicated from ${r.id}. `) + r.internalNotes,
+    };
+    setModal({ mode: "create", reservation: copy });
+  }
+
+  function patchReservation(id: string, patch: Partial<Reservation>) {
+    setReservations((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+  }
+
+  function togglePrep(id: string, index: number) {
+    setReservations((prev) =>
+      prev.map((r) => {
+        if (r.id !== id) return r;
+        const prep = r.prep.map((p, i) => (i === index ? { ...p, done: !p.done } : p));
+        return { ...r, prep };
+      }),
+    );
+  }
+
+  const statuses = Object.keys(RESERVATION_STATUS_LABEL) as ReservationStatus[];
+
+  return (
+    <div className="space-y-5">
+      <Card
+        title={lang === "es" ? "Reservas · logística · prep viaje" : "Bookings · logistics · trip prep"}
+        subtitle={
+          lang === "es"
+            ? "Fuente de verdad operativa: aquí se crean, editan y eliminan reservas. Lodges, comidas, contactos y prep alimentan Knowledge y el resto del CRM."
+            : "Operational source of truth: create, edit and delete bookings here. Lodges, meals, contacts and prep feed Knowledge and the rest of the CRM."
+        }
+        action={
+          <button
+            type="button"
+            onClick={() => setModal({ mode: "create", reservation: blankReservation() })}
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
+          >
+            <Plus className="h-4 w-4" />
+            {lang === "es" ? "Nueva reserva" : "New booking"}
+          </button>
+        }
+      >
+        <div className="mb-4 rounded-xl border border-[color-mix(in_oklab,var(--accent)_35%,transparent)] bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] px-3 py-2.5 text-sm text-[var(--ink)]">
+          {lang === "es"
+            ? "Gestiona cada ficha con Editar / Duplicar / Eliminar (siempre visibles). El checklist se marca en vivo; el detalle completo se abre en el modal."
+            : "Manage each record with Edit / Duplicate / Delete (always visible). Checklist toggles live; full detail opens in the modal."}
+        </div>
+
+        <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--ink-muted)]" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder={
+                lang === "es"
+                  ? "Buscar por cliente, reserva, destino o TL…"
+                  : "Search by client, booking, destination or TL…"
+              }
+              className="w-full rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] py-2.5 pl-10 pr-3 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] placeholder:text-[var(--ink-muted)] focus:ring-2"
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as "all" | ReservationStatus)}
+              className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm text-[var(--ink)]"
+            >
+              <option value="all">{lang === "es" ? "Todos los estados" : "All statuses"}</option>
+              {statuses.map((s) => (
+                <option key={s} value={s}>
+                  {RESERVATION_STATUS_LABEL[s]}
+                </option>
+              ))}
+            </select>
+            <Badge tone="brand">
+              {list.length}/{reservations.length} {lang === "es" ? "reservas" : "bookings"}
+            </Badge>
+          </div>
+        </div>
+
+        {list.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-[var(--glass-border)] px-4 py-10 text-center">
+            <p className="text-sm text-[var(--ink-muted)]">
+              {lang === "es"
+                ? "No hay reservas con este filtro. Crea una para empezar a alimentar logística y Knowledge."
+                : "No bookings match this filter. Create one to start feeding logistics and Knowledge."}
+            </p>
+            <button
+              type="button"
+              onClick={() => setModal({ mode: "create", reservation: blankReservation() })}
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
+            >
+              <Plus className="h-4 w-4" />
+              {lang === "es" ? "Crear primera reserva" : "Create first booking"}
+            </button>
+          </div>
+        ) : (
+          <ul className="space-y-3">
+            {list.map((r) => {
+              const open = openId === r.id;
+              const prepDone = r.prep.filter((p) => p.done).length;
+              return (
+                <li
+                  key={r.id}
+                  className="overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--glass)]"
+                >
+                  <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
+                    <button
+                      type="button"
+                      onClick={() => setOpenId(open ? null : r.id)}
+                      className="min-w-0 flex-1 text-left"
+                    >
+                      <p className="font-semibold text-[var(--ink)]">
+                        {r.clientName}{" "}
+                        <span className="font-mono text-xs font-normal text-[var(--ink-muted)]">
+                          {r.id}
+                        </span>
+                      </p>
+                      <p className="mt-1 text-sm text-[var(--ink-muted)]">
+                        {r.tripName} · {ROUTE_LABEL[r.route]} · {r.vehicle} · {r.pax} pax
+                      </p>
+                    </button>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="sr-only" htmlFor={`status-${r.id}`}>
+                        Status
+                      </label>
+                      <select
+                        id={`status-${r.id}`}
+                        value={r.status}
+                        onChange={(e) =>
+                          patchReservation(r.id, { status: e.target.value as ReservationStatus })
+                        }
+                        className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass-strong)] px-2 py-1.5 text-xs font-semibold text-[var(--ink)]"
+                      >
+                        {statuses.map((s) => (
+                          <option key={s} value={s}>
+                            {RESERVATION_STATUS_LABEL[s]}
+                          </option>
+                        ))}
+                      </select>
+                      <Badge tone="neutral">{PAYMENT_LABEL[r.paymentChannel]}</Badge>
+                      <span className="text-sm font-semibold text-[var(--ink)]">
+                        {euro(r.depositPaid, lang)} / {euro(r.totalAmount, lang)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 border-t border-[var(--glass-border)] px-4 py-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setModal({ mode: "edit", reservation: structuredClone(r) })}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-white"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                      {lang === "es" ? "Modificar" : "Edit"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => duplicateReservation(r)}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-strong)] px-3 py-1.5 text-xs font-semibold text-[var(--ink)]"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                      {lang === "es" ? "Duplicar" : "Duplicate"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteReservation(r.id)}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-700 dark:text-rose-300"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      {lang === "es" ? "Eliminar" : "Delete"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setOpenId(open ? null : r.id)}
+                      className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-[var(--glass-border)] px-3 py-1.5 text-xs font-semibold text-[var(--ink-muted)]"
+                    >
+                      {open
+                        ? lang === "es"
+                          ? "Ocultar logística"
+                          : "Hide logistics"
+                        : lang === "es"
+                          ? "Ver logística"
+                          : "View logistics"}
+                      <ChevronDown className={cn("h-3.5 w-3.5 transition", open && "rotate-180")} />
+                    </button>
+                  </div>
+
+                  {open && (
+                    <div className="space-y-4 border-t border-[var(--glass-border)] px-4 pb-4 pt-3">
+                      <div className="grid gap-3 sm:grid-cols-3">
+                        <div className="rounded-xl border border-[var(--glass-border)] p-3 text-sm">
+                          <p className="text-[10px] uppercase text-[var(--ink-muted)]">
+                            {lang === "es" ? "Salida" : "Departure"}
+                          </p>
+                          <p className="mt-1 font-semibold text-[var(--ink)]">{r.departureAt || "—"}</p>
+                          <p className="text-[var(--ink-muted)]">TL: {r.tourLeader}</p>
+                        </div>
+                        <div className="rounded-xl border border-[var(--glass-border)] p-3 text-sm">
+                          <p className="text-[10px] uppercase text-[var(--ink-muted)]">Prep</p>
+                          <p className="mt-1 font-semibold text-[var(--ink)]">
+                            {prepDone}/{r.prep.length}
+                          </p>
+                        </div>
+                        <div className="rounded-xl border border-[var(--glass-border)] p-3 text-sm">
+                          <p className="text-[10px] uppercase text-[var(--ink-muted)]">WhatsApp</p>
+                          <a
+                            href={`https://wa.me/${r.clientPhone.replace(/\D/g, "")}`}
+                            className="mt-1 inline-flex items-center gap-1 font-semibold text-[var(--accent)]"
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <Phone className="h-3.5 w-3.5" /> {r.clientPhone}
+                          </a>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="mb-2 flex items-center justify-between gap-2">
+                          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+                            <Building2 className="h-3.5 w-3.5" />
+                            {lang === "es" ? "Contactos logística" : "Logistics contacts"}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => setModal({ mode: "edit", reservation: structuredClone(r) })}
+                            className="text-xs font-semibold text-[var(--accent)]"
+                          >
+                            {lang === "es" ? "Gestionar contactos" : "Manage contacts"}
+                          </button>
+                        </div>
+                        <ul className="grid gap-2 md:grid-cols-2">
+                          {r.logisticsContacts.map((c) => (
+                            <li
+                              key={c.name + c.role}
+                              className="rounded-lg border border-[var(--glass-border)] px-3 py-2 text-sm text-[var(--ink)]"
+                            >
+                              <p className="font-medium">{c.role}</p>
+                              <p>{c.name}</p>
+                              <p className="text-[var(--ink-muted)]">
+                                {c.phone}
+                                {c.email ? ` · ${c.email}` : ""}
+                              </p>
+                              {c.notes && (
+                                <p className="mt-1 text-xs text-[var(--ink-muted)]">{c.notes}</p>
+                              )}
+                            </li>
+                          ))}
+                          {r.logisticsContacts.length === 0 && (
+                            <li className="text-sm text-[var(--ink-muted)]">
+                              {lang === "es" ? "Sin contactos — añádelos al modificar." : "No contacts — add them when editing."}
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+
+                      <div>
+                        <div className="mb-2 flex items-center justify-between gap-2">
+                          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+                            <MapPin className="h-3.5 w-3.5" />
+                            {lang === "es" ? "Alojamiento y comidas" : "Lodging & meals"}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => setModal({ mode: "edit", reservation: structuredClone(r) })}
+                            className="text-xs font-semibold text-[var(--accent)]"
+                          >
+                            {lang === "es" ? "Gestionar itinerario" : "Manage itinerary"}
+                          </button>
+                        </div>
+                        <ul className="space-y-2">
+                          {r.itinerary.map((s) => (
+                            <li
+                              key={s.day + s.place}
+                              className="rounded-lg border border-[var(--glass-border)] px-3 py-2 text-sm text-[var(--ink)]"
+                            >
+                              <p className="font-medium">
+                                {s.day} · {s.place}
+                              </p>
+                              <p className="text-[var(--ink-muted)]">
+                                {lang === "es" ? "Alojamiento:" : "Stay:"} {s.lodging}
+                              </p>
+                              <p className="flex items-center gap-1 text-[var(--ink-muted)]">
+                                <Utensils className="h-3.5 w-3.5" /> {s.meals}
+                              </p>
+                            </li>
+                          ))}
+                          {r.itinerary.length === 0 && (
+                            <li className="text-sm text-[var(--ink-muted)]">
+                              {lang === "es" ? "Sin paradas — añádelas al modificar." : "No stops — add them when editing."}
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+
+                      <div>
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+                          {lang === "es"
+                            ? "Checklist preparación (clic para marcar)"
+                            : "Prep checklist (click to toggle)"}
+                        </p>
+                        <ul className="grid gap-2 sm:grid-cols-2">
+                          {r.prep.map((p, i) => (
+                            <li key={`${p.label}-${i}`}>
+                              <button
+                                type="button"
+                                onClick={() => togglePrep(r.id, i)}
+                                className="flex w-full items-start gap-2 rounded-lg border border-[var(--glass-border)] px-3 py-2 text-left text-sm text-[var(--ink)] hover:bg-[color-mix(in_oklab,var(--accent)_8%,transparent)]"
+                              >
+                                {p.done ? (
+                                  <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500" />
+                                ) : (
+                                  <Circle className="mt-0.5 h-4 w-4 text-[var(--ink-muted)]" />
+                                )}
+                                <span>
+                                  {p.label}
+                                  <span className="block text-xs text-[var(--ink-muted)]">{p.owner}</span>
+                                </span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <p className="rounded-lg border border-dashed border-[var(--glass-border)] p-3 text-sm text-[var(--ink)]">
+                        <strong>{lang === "es" ? "Nota interna:" : "Internal note:"}</strong>{" "}
+                        {r.internalNotes || "—"}
+                      </p>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Card>
+
+      {modal && (
+        <ReservationFormModal
+          lang={lang}
+          mode={modal.mode}
+          initial={modal.reservation}
+          onClose={() => setModal(null)}
+          onSave={saveReservation}
+        />
+      )}
+    </div>
+  );
+}
+
+export function InvoicesVerifactuPanel({ lang }: { lang: Lang }) {
+  const [openId, setOpenId] = useState<string | null>(INVOICES[0]?.id ?? null);
+  const [legalOpen, setLegalOpen] = useState(false);
+  const [checklistOpen, setChecklistOpen] = useState(false);
+
+  return (
+    <div className="space-y-5">
+      <Card
+        title={lang === "es" ? "Facturas · Veri*FACTU · REAV" : "Invoices · Veri*FACTU · REAV"}
+        subtitle={
+          lang === "es"
+            ? "Facturación estilo agencia de viajes española: régimen especial, clave 05, PDF empresarial, medios de cobro y paquete listo para gestoría."
+            : "Spanish travel-agency invoicing: special scheme, key 05, business PDF, payment rails and tax-advisor export pack."
+        }
+        action={
+          <button
+            type="button"
+            onClick={() => downloadGestoriaPack()}
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
+          >
+            <Download className="h-4 w-4" />
+            {lang === "es" ? "Exportar a gestoría" : "Export for tax advisor"}
+          </button>
+        }
+      >
+        <div className="mb-4 flex flex-wrap gap-2">
+          {["Stripe", "Bizum", "SEPA", "PayPal", "Depósito", "Efectivo"].map((p) => (
+            <Badge key={p} tone="brand">
+              {p}
+            </Badge>
+          ))}
+          <Badge tone="good">ClaveRégimen 05</Badge>
+          <Badge tone="warn">Deadline IS 01/01/2027</Badge>
+        </div>
+
+        <ul className="space-y-3">
+          {INVOICES.map((inv) => {
+            const open = openId === inv.id;
+            return (
+              <li
+                key={inv.id}
+                className="overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--glass)]"
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenId(open ? null : inv.id)}
+                  className="flex w-full flex-col gap-2 p-4 text-left sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div>
+                    <p className="font-semibold text-[var(--ink)]">
+                      {inv.number} · {inv.clientName}
+                    </p>
+                    <p className="text-sm text-[var(--ink-muted)]">
+                      {inv.expedition} · NIF {inv.clientNif}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge tone={invTone(inv.status)}>{INVOICE_STATUS_LABEL[inv.status]}</Badge>
+                    <Badge tone="brand">{TAX_REGIME_LABEL[inv.regime]}</Badge>
+                    <span className="text-sm font-semibold text-[var(--ink)]">
+                      {euro(inv.total, lang)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        downloadInvoicePdf(inv);
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-strong)] px-2.5 py-1.5 text-xs font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
+                    >
+                      <FileText className="h-3.5 w-3.5 text-[var(--accent)]" />
+                      PDF
+                    </button>
+                  </div>
+                </button>
+                {open && (
+                  <div className="space-y-3 border-t border-[var(--glass-border)] px-4 pb-4 pt-3">
+                    <div className="grid gap-3 text-sm text-[var(--ink)] md:grid-cols-2">
+                      <p>
+                        <span className="text-[var(--ink-muted)]">Base (margen REAV):</span>{" "}
+                        {inv.taxBase.toFixed(2)} € · IVA {inv.vatRate}% = {inv.vatAmount.toFixed(2)} €
+                      </p>
+                      <p>
+                        <span className="text-[var(--ink-muted)]">Operación:</span>{" "}
+                        {inv.operationClass} · Mención REAV: {inv.reavMention ? "Sí" : "No"}
+                      </p>
+                      <p>
+                        <span className="text-[var(--ink-muted)]">Pago:</span>{" "}
+                        {PAYMENT_LABEL[inv.paymentChannel]} · {inv.paymentRef}
+                      </p>
+                      <p>
+                        <span className="text-[var(--ink-muted)]">Veri*FACTU:</span>{" "}
+                        {inv.verifactuHash} · AEAT: {inv.aeatStatus}
+                      </p>
+                      <p className="md:col-span-2 text-[var(--ink-muted)]">{inv.clientAddress}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => downloadInvoicePdf(inv)}
+                      className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
+                    >
+                      <Download className="h-4 w-4" />
+                      {lang === "es"
+                        ? "Descargar factura PDF (formato empresarial ES)"
+                        : "Download invoice PDF (Spanish business format)"}
+                    </button>
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </Card>
+
+      <section className="overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-strong)] shadow-[var(--shadow)] backdrop-blur-md">
+        <button
+          type="button"
+          onClick={() => setLegalOpen((v) => !v)}
+          className="flex w-full items-start justify-between gap-3 p-4 text-left md:p-5"
+          aria-expanded={legalOpen}
+        >
+          <div className="min-w-0">
+            <h3 className="font-[family-name:var(--mps-display)] text-xl text-[var(--ink)] md:text-2xl">
+              {lang === "es" ? "Respaldo legal (citado)" : "Legal basis (cited)"}
+            </h3>
+            <p className="mt-1 text-sm text-[var(--ink-muted)]">
+              {lang === "es"
+                ? `${LEGAL_CITATIONS.length} normas · disponible al expandir · validar con gestoría`
+                : `${LEGAL_CITATIONS.length} statutes · expand to view · validate with advisor`}
+            </p>
+          </div>
+          <span className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-[var(--glass-border)] px-2.5 py-1.5 text-xs font-semibold text-[var(--ink)]">
+            {legalOpen
+              ? lang === "es"
+                ? "Contraer"
+                : "Collapse"
+              : lang === "es"
+                ? "Expandir"
+                : "Expand"}
+            <ChevronDown
+              className={cn("h-4 w-4 transition-transform", legalOpen && "rotate-180")}
+            />
+          </span>
+        </button>
+        {legalOpen && (
+          <div className="space-y-3 border-t border-[var(--glass-border)] px-4 pb-4 pt-3 md:px-5">
+            <p className="text-sm text-[var(--ink-muted)]">
+              {lang === "es"
+                ? "Todo lo que el módulo cumple o prepara — con norma."
+                : "What this module meets or prepares for — with statute."}
+            </p>
+            <ul className="space-y-3">
+              {LEGAL_CITATIONS.map((c) => (
+                <li
+                  key={c.id}
+                  className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-4"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Scale className="h-4 w-4 text-[var(--accent)]" />
+                    <Badge tone="brand">{c.short}</Badge>
+                    {c.boe && <span className="text-xs text-[var(--ink-muted)]">{c.boe}</span>}
+                  </div>
+                  <p className="mt-2 font-semibold text-[var(--ink)]">{c.title}</p>
+                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-[var(--ink-muted)]">
+                    {c.articles.map((a) => (
+                      <li key={a}>{a}</li>
+                    ))}
+                  </ul>
+                  <p className="mt-2 text-sm text-[var(--ink)]">{c.why}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
+
+      <section className="overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-strong)] shadow-[var(--shadow)] backdrop-blur-md">
+        <button
+          type="button"
+          onClick={() => setChecklistOpen((v) => !v)}
+          className="flex w-full items-start justify-between gap-3 p-4 text-left md:p-5"
+          aria-expanded={checklistOpen}
+        >
+          <div className="min-w-0">
+            <h3 className="font-[family-name:var(--mps-display)] text-xl text-[var(--ink)] md:text-2xl">
+              {lang === "es" ? "Checklist cumplimiento" : "Compliance checklist"}
+            </h3>
+            <p className="mt-1 text-sm text-[var(--ink-muted)]">
+              {lang === "es"
+                ? `${VERIFACTU_CHECKLIST.length} puntos · contraído por defecto`
+                : `${VERIFACTU_CHECKLIST.length} items · collapsed by default`}
+            </p>
+          </div>
+          <span className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-[var(--glass-border)] px-2.5 py-1.5 text-xs font-semibold text-[var(--ink)]">
+            {checklistOpen
+              ? lang === "es"
+                ? "Contraer"
+                : "Collapse"
+              : lang === "es"
+                ? "Expandir"
+                : "Expand"}
+            <ChevronDown
+              className={cn("h-4 w-4 transition-transform", checklistOpen && "rotate-180")}
+            />
+          </span>
+        </button>
+        {checklistOpen && (
+          <div className="border-t border-[var(--glass-border)] px-4 pb-4 pt-3 md:px-5">
+            <ul className="space-y-2">
+              {VERIFACTU_CHECKLIST.map((item) => (
+                <li
+                  key={item.id}
+                  className="flex gap-3 rounded-lg border border-[var(--glass-border)] px-3 py-2 text-sm"
+                >
+                  <FileText className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />
+                  <div>
+                    <p className="text-[var(--ink)]">{item.item}</p>
+                    <p className="text-xs text-[var(--ink-muted)]">{item.legalRef}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-4 text-xs text-[var(--ink-muted)]">
+              {lang === "es" ? "Campos export gestoría:" : "Tax-advisor export fields:"}{" "}
+              {GESTORIA_EXPORT_FIELDS.join(" · ")}
+            </p>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+export function clientPaymentTone(
+  s: Client["paymentStatus"],
+): "good" | "warn" | "bad" | "neutral" {
+  if (s === "al_dia") return "good";
+  if (s === "vence_pronto" || s === "saldo_pendiente") return "warn";
+  if (s === "deposito_pendiente") return "bad";
+  return "neutral";
+}
+
+export {
+  Badge as OpsBadge,
+  Card as OpsCard,
+  euro as opsEuro,
+  EXPERIENCE_LABEL,
+  PAYMENT_METHOD_LABEL,
+  PAYMENT_STATUS_LABEL,
+  SEGMENT_LABEL,
+  STATUS_LABEL,
+};
