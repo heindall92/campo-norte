@@ -5,7 +5,7 @@ import { getSupabaseEnv } from "@/lib/supabase/client";
 import { Bike, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
-const LOGIN_VIDEO_SRC = "/media/login-home.mp4";
+const LOGIN_VIDEO_SRC = "/media/login-home.mp4"; // Hero Login (comprimido)
 
 export function LoginScreen() {
   const { signIn, supabaseReady } = useAuth();

@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Media fuente (pesada); el login usa public/media/login-home.mp4 comprimido
+Hero Login.mp4
+Home-Page-v4.mov
+*.mov
