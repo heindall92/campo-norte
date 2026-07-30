@@ -1,5 +1,5 @@
 /**
- * 30 MPS Adventures — supuestos explícitos del business case (demo interna).
+ * 30 MPS Adventures — supuestos del business case (demo interna).
  * Cifras del anexo: ficticias (brief). SUPUESTO = no viene en el documento.
  * Confidencial · proceso de selección Evolve / Growth Builder.
  */
@@ -32,70 +32,70 @@ export const COMPANY = {
 } as const;
 
 export const TEAM = [
-  { name: "Miguel Checa", role: "Fundador · CEO · relación comercial clave" },
-  { name: "Laura Romera", role: "Booking & Office Manager" },
-  { name: "David Rodríguez", role: "Tour Manager África & Oriente Medio" },
-  { name: "Ramón Faro", role: "Tour Leader moto · guía alta montaña" },
+  { name: "Miguel Checa", role: "Fundador · vende y cuida la relación con el cliente" },
+  { name: "Laura Romera", role: "Office · reservas y día a día" },
+  { name: "David Rodríguez", role: "Tour Manager · África y Oriente Medio" },
+  { name: "Ramón Faro", role: "Guía moto · alta montaña" },
 ] as const;
 
 export const MPS_ASSUMPTIONS = [
   {
     id: "avg_ticket",
-    label: "Ticket medio por viajero",
+    label: "Lo que deja de media un viajero",
     value: "≈ 5.300 €",
-    rationale: "800.000 € / 150 viajeros. Coherente con expediciones premium 8–14 días moto/4x4.",
+    rationale: "800.000 € entre 150 viajeros. Encaja con expediciones premium de 8–14 días.",
   },
   {
     id: "gap_math",
-    label: "Gap a 1M € (2027)",
-    value: "+200.000 € (~+25%)",
+    label: "Lo que falta para llegar a 1M € en 2027",
+    value: "+200.000 € (un +25 %)",
     rationale:
-      "Con +18 viajeros y +4 salidas (anexo): ~95k € por volumen a ticket actual; el resto (~105k) por mejor ocupación, reactivación y ajuste de precio moderado.",
+      "Con ~18 viajeros más y 4 salidas nuevas: unos 95k € por volumen; el resto (~105k) por llenar mejor, reactivar antiguos y subir un poco el precio donde haya demanda.",
   },
   {
     id: "dormant_share",
-    label: "% clientes con 1 solo viaje (activo dormido)",
+    label: "Clientes que solo viajaron una vez",
     value: "55–65 % (~180 de 300)",
     rationale:
-      "Brief: muchos con un solo viaje + núcleo fiel 10+. SUPUESTO de distribución; reactivación es palanca #1.",
+      "Hay un núcleo fiel y muchos de un solo viaje. Recuperarlos es la palanca más clara de ingresos.",
   },
   {
     id: "reactivation_yield",
-    label: "Meta operativa reactivación",
+    label: "Meta: volver a llenar con antiguos",
     value: "10–15 reservas/año desde dormidos",
-    rationale: "≈ 53–80k € a ticket medio. Contacto humano (Miguel/equipo), no secuencias automáticas al cliente.",
+    rationale: "Unos 53–80k €. La llamada la hace Miguel o el equipo — nunca un robot.",
   },
   {
     id: "lead_volume",
-    label: "Leads / mes a triar",
+    label: "Interesados a ordenar cada mes",
     value: "25–40",
-    rationale: "Compatible con ~14 salidas y grupos 8–14 vehículos sin masificar.",
+    rationale: "Compatible con ~14 salidas y grupos pequeños, sin masificar la marca.",
   },
   {
     id: "gap_attribution",
-    label: "Leads/reservas sin origen hoy",
-    value: ">70 %",
-    rationale: "CRM de origen ‘prácticamente inexistente’ (brief). Mayor carencia técnica.",
+    label: "Hoy no sabemos de dónde vienen",
+    value: "Más del 70 % sin origen claro",
+    rationale: "El brief dice que el seguimiento de origen es casi inexistente. Es el primer agujero a tapar.",
   },
   {
     id: "founder_hours",
-    label: "Horas/semana de Miguel en triaje + seguimiento + contenido",
-    value: "12–18 h (SUPUESTO)",
-    rationale: "Cuello #2: todo pasa por el fundador. Objetivo del sistema: devolver 6–10 h/semana a cierre humano de calidad.",
+    label: "Horas de Miguel en ordenar + seguir + contenido",
+    value: "12–18 h/semana (estimado)",
+    rationale: "Todo pasa por el fundador. Objetivo: devolverle 6–10 h/semana para vender y acompañar.",
   },
   {
     id: "freelance_capacity",
-    label: "Formato de construcción",
-    value: "Growth Builder freelance · 8–12 h/semana",
-    rationale: "Rol del proceso: part-time, traspasable, Make/n8n + datos + IA interna.",
+    label: "Cómo se construye esto",
+    value: "Freelance · 8–12 h/semana",
+    rationale: "Part-time, documentado y traspasable. Sin dependencia eterna del consultor.",
   },
   {
     id: "stack",
-    label: "Stack propuesto",
-    value: "Airtable/Postgres ligero + n8n/Make + Brevo (lectura) + panel web interno",
-    rationale: "Herramientas del JD Growth Builder; realismo > brillo; sin bot al cliente.",
+    label: "Herramientas (sin ruido)",
+    value: "Base de datos + automatizaciones + newsletter + panel interno",
+    rationale: "Lo justo para operar. Sin bots al cliente. Lo técnico se explica al equipo, no al viajero.",
   },
 ] as const;
 
 export const GOLDEN_RULE =
-  "Todas las soluciones son internas. Nunca interacción directa con clientes. 30 MPS vende trato humano: la tecnología trabaja detrás, no delante.";
+  "Todo es interno: la tecnología nunca habla con el cliente. 30 MPS vende trato humano; las máquinas trabajan detrás.";

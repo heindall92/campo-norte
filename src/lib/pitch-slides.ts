@@ -19,95 +19,94 @@ export type PitchSlide = {
 };
 
 /**
- * Deck alineado con el CRM real (menú lateral):
- * Data Hub · Dashboard · Leads · Clientes · Reservas · Facturas ·
- * Content · Knowledge · Ecosistema · Propuesta · Presentación · Ajustes
+ * Presentación para entrevista con el CEO.
+ * Lenguaje de negocio, sin jerga técnica. La demo del CRM se enseña aparte.
  */
 const es: PitchSlide[] = [
   {
-    kicker: "Business Case · 30 MPS Adventures",
-    title: "De artesanal a escalable, sin dejar de ser 30 MPS",
+    kicker: "Propuesta · 30 MPS Adventures",
+    title: "Crecer sin perder lo que os hace únicos",
     subtitle:
-      "Propuesta de IA y automatización para el gap a 1M € — y el Growth OS ya desplegado para demostrarlo en vivo.",
+      "Un sistema interno para ordenar el negocio, liberar tiempo de Miguel y llegar al millón — sin que ninguna máquina hable con el viajero.",
     blocks: [
       {
         type: "text",
-        text: "Yoandy Ramírez Delgado · Growth Builder · perfil freelance",
+        text: "Yoandy Ramírez Delgado · Growth Builder · propuesta freelance",
       },
       {
         type: "bullets",
         items: [
-          "CRM en producción: 30mps.vercel.app",
-          "Login · Data Hub · Dashboard · Leads · Clientes · Reservas · Veri*FACTU · Content · Knowledge · n8n",
-          "yoandyramirez.com · linkedin.com/in/yoandyrd92 · github.com/heindall92",
+          "Ya hay un demo vivo para enseñar en la reunión: 30mps.vercel.app",
+          "Login del equipo · leads · clientes · reservas · números · facturas · contenido",
+          "Regla de oro: los sistemas preparan; las personas firman la relación",
         ],
       },
     ],
-    footer: "Ningún sistema habla nunca con un cliente. Los sistemas preparan; las personas firman.",
+    footer: "Ningún sistema habla nunca con un cliente.",
   },
   {
-    kicker: "La tesis",
-    title: "No es un problema de marketing. Es un problema de memoria y de tiempo.",
+    kicker: "La idea central",
+    title: "No os falta marketing. Os falta memoria y tiempo.",
     blocks: [
       {
         type: "quote",
-        text: "Ningún sistema habla nunca con un cliente. Los sistemas preparan; las personas firman.",
+        text: "El producto es 5 estrellas. El cuello de botella es el día a día: datos sueltos y todo pasando por Miguel.",
       },
       {
         type: "bullets",
         items: [
-          "Producto 5★ — el cuello es sistema, no calidad de viaje",
-          "Datos dispersos: Excel, inbox del CEO y Brevo → sin origen ni margen vivo",
-          "Miguel demasiado operativo: triaje, seguimiento y contenido en su cabeza",
+          "Los viajes se venden solos por calidad — el sistema detrás no acompaña",
+          "Excel + correo de Miguel + newsletter = nadie ve el negocio entero",
+          "Miguel tria leads, hace seguimiento y piensa contenido: horas que deberían ir a cerrar y cuidar",
         ],
       },
     ],
   },
   {
-    kicker: "Diagnóstico",
-    title: "La matemática del millón",
-    subtitle: "Las mismas cifras del business case — visibles también en Dashboard del CRM.",
+    kicker: "Los números",
+    title: "De 800.000 € a 1.000.000 €",
+    subtitle: "Las mismas cifras del business case. También están en el Dashboard del demo.",
     blocks: [
       {
         type: "table",
-        headers: ["Dato", "Hoy", "2027"],
+        headers: ["Dato", "Hoy", "Meta 2027"],
         rows: [
           ["Facturación", "800.000 €", "1.000.000 €"],
           ["Viajeros", "150", "168"],
           ["Salidas", "10", "14"],
           ["Ticket medio", "5.300 €", "5.950 €"],
-          ["Margen / expedición", "no medido → medible en CRM", "30 %"],
+          ["Margen por salida", "casi no se mide", "alrededor del 30 %"],
         ],
       },
       {
         type: "metrics",
         items: [
-          { label: "El gap", value: "200.000 €", hint: "+25 % en dos años" },
-          { label: "Dónde mirarlo", value: "Dashboard", hint: "Menú · Dashboard ejecutivo" },
+          { label: "El hueco", value: "200.000 €", hint: "Un +25 % en dos años" },
+          { label: "Dónde verlo", value: "Dashboard", hint: "Una pantalla, cada mañana" },
         ],
       },
     ],
   },
   {
-    kicker: "Las tres palancas",
-    title: "Los 200.000 €, en tres partes — y qué módulo las ataca",
+    kicker: "Tres palancas",
+    title: "Esos 200.000 € salen de tres sitios",
     blocks: [
       {
         type: "cards",
         items: [
           {
-            title: "80–110 k € · ocupaciones",
-            body: "4 salidas nuevas. En el CRM: Dashboard (ocupación/margen) + Reservas & logística (plazas, prep, estado).",
+            title: "80–110 k € · llenar mejor",
+            body: "4 salidas nuevas y más plazas ocupadas. El panel muestra ocupación y margen por ruta.",
             tone: "brand",
           },
           {
-            title: "45–70 k € · dormidos",
-            body: "8–12 reactivaciones. En el CRM: Customer Intelligence (segmento dormido/VIP, LTV) + botones Llamar / WhatsApp.",
+            title: "45–70 k € · antiguos clientes",
+            body: "8–12 personas que ya viajaron y no han vuelto. El sistema lista a quién llamar; la llamada la hace el equipo.",
             tone: "good",
           },
           {
-            title: "40–60 k € · precio",
-            body: "+5–8 % en rutas con demanda. En el CRM: margen por expedición en Dashboard + Knowledge (por qué importa el margen).",
+            title: "40–60 k € · precio con criterio",
+            body: "Subir un poco donde hay demanda. Solo tiene sentido si ves el margen real de cada salida.",
             tone: "warn",
           },
         ],
@@ -115,178 +114,177 @@ const es: PitchSlide[] = [
     ],
   },
   {
-    kicker: "Cuellos de botella → CRM",
-    title: "La raíz — y el botón que la abre",
+    kicker: "Qué duele hoy",
+    title: "Problema → qué cambia con el sistema",
     blocks: [
       {
         type: "table",
-        headers: ["Problema", "Prioridad", "Módulo del CRM", "Qué hace el operador"],
+        headers: ["Problema", "Urgencia", "Qué ve el equipo"],
         rows: [
-          ["Sin origen de leads", "P0", "Data Hub + Leads", "Ver origen/UTM · import CSV · editar estado"],
-          ["Sin margen / BI", "P1", "Dashboard", "Gap 200k · mapa ‘Sin origen’ · margen por ruta"],
-          ["CEO demasiado operativo", "P0", "Notificaciones + Ecosistema", "Cola de eventos · flujos n8n · aviso interno"],
-          ["Clientes dormidos", "P1", "Clientes 360º", "Prioridad reactivación · WhatsApp / llamar"],
-          ["Sin scoring", "P1", "Lead Intelligence", "Score explicado · “La IA solo clasifica”"],
-          ["Facturación / gestoría", "P1", "Facturas Veri*FACTU", "REAV 05 · PDF · export gestoría"],
+          ["No sabemos de dónde vienen los interesados", "Alta", "Origen en cada lead · importar Excel"],
+          ["No vemos margen ni ocupación clara", "Alta", "Dashboard con hueco a 1M y margen por ruta"],
+          ["Miguel demasiado operativo", "Crítica", "Avisos internos + lista corta de trabajo"],
+          ["Clientes que no vuelven", "Alta", "Cola «llamar este mes» · WhatsApp / llamada humana"],
+          ["No sabemos a quién priorizar", "Media", "Ranking con razones en lenguaje claro"],
+          ["Facturas y gestoría a mano", "Media", "Export listo para la gestoría · Veri*FACTU"],
         ],
       },
     ],
-    footer: "Para crecer un 25 % no hace falta un modelo de moda. Hace falta medir — y el CRM ya mide.",
+    footer: "Para crecer un 25 % no hace falta una moda tecnológica. Hace falta medir — y actuar.",
   },
   {
-    kicker: "Growth OS · ya en producción",
-    title: "Una plataforma, no tres proyectos sueltos",
-    subtitle: "Stack real del demo: React + Vite · Data Hub local/Supabase · Vercel · login equipo.",
+    kicker: "Qué proponemos",
+    title: "Una plataforma interna, no tres proyectos sueltos",
+    subtitle: "Se construye por fases. Cada fase deja algo usable la misma semana.",
     blocks: [
       {
         type: "steps",
         items: [
-          "Fase 1 · Data Hub + CRM + UTM → menú Data Hub (import/export, cobertura de origen)",
-          "Fase 2 · Dashboard ejecutivo → gap, procedencia, margen/ocupación",
-          "Fase 3 · Lead scoring explicable → Lead Intelligence (alta, estado, origen)",
-          "Fase 4 · Customer Intelligence → Clientes 360º + Llamar/WhatsApp/Editar/Borrar",
-          "Fase 5 · Knowledge interno → Knowledge Assistant (18 Q&A + fuentes)",
-          "Fase 6 · Content Factory → borradores; humano copia a Brevo/WhatsApp",
+          "Orden: una sola base (leads, clientes, reservas) y origen visible",
+          "Claridad: pantalla diaria con hueco a 1M, procedencia y margen",
+          "Prioridad: ranking de leads — la IA solo ordena, no escribe al cliente",
+          "Recurrencia: VIP, dormidos y «en riesgo» con botones de llamada humana",
+          "Memoria: respuestas internas (Mongolia, Namibia…) con fuentes",
+          "Contenido: borradores para newsletter y redes; una persona publica",
         ],
       },
       {
         type: "quote",
-        text: "Tubería automática de datos → aviso interno → seguimiento humano. Nunca mensaje automático al viajero.",
+        text: "Datos → aviso al equipo → seguimiento humano. Nunca mensaje automático al viajero.",
       },
     ],
   },
   {
-    kicker: "Tour demo · 90 segundos",
-    title: "Qué pulsar en la reunión con Miguel",
+    kicker: "Demo · 90 segundos",
+    title: "Qué enseñar en la reunión con Miguel",
     blocks: [
       {
         type: "steps",
         items: [
-          "1 · Login (miguel@30mps.com) → panel usuario + campana de notificaciones",
-          "2 · Data Hub → cobertura de origen + import CSV (Quick Win vivo)",
-          "3 · Dashboard → gap 200k € y “Sin origen” como cuello #1",
-          "4 · Lead Intelligence → score con razones auditables",
-          "5 · Clientes → Laura Vidal VIP / LTV · botón WhatsApp (humano)",
-          "6 · Reservas → cards recogidas · estado · prep logística",
-          "7 · Facturas → frase 10 s Veri*FACTU + export gestoría",
-          "8 · Content Factory → “Namibia no se cuenta. Se conduce.” · Copiar",
-          "9 · Ecosistema CRM → 12/12 flujos OK · canvas n8n",
-          "10 · Presentación (esta) · Propuesta CEO · /legal si preguntan RGPD",
+          "Entrar con el usuario del equipo y abrir la campana de avisos",
+          "Base de datos: cobertura de origen e importar un Excel",
+          "Dashboard: el hueco de 200k € y «sin origen» como problema nº 1",
+          "Leads: score con razones que se entienden",
+          "Clientes: un VIP con valor · botón WhatsApp (lo pulsa una persona)",
+          "Reservas: estado de salidas y preparación logística",
+          "Facturas: frase de 10 s para gestoría + export",
+          "Contenido: un borrador con voz 30 MPS · Copiar y pegar",
+          "Automatizaciones: el flujo formulario → aviso interno (sin tocar al cliente)",
+          "Esta presentación + propuesta escrita si quiere llevársela",
         ],
       },
     ],
   },
   {
-    kicker: "Solución A · Data Hub (vivo)",
+    kicker: "Primera pieza",
     title: "Un solo sitio donde vive el negocio",
     blocks: [
       {
         type: "text",
-        text: "En el CRM: menú Data Hub. Persistencia local o Postgres/Supabase. Misma fuente que Leads, Clientes, Reservas y Facturas.",
+        text: "Dejáis de preguntaros «¿en qué Excel estaba esto?». Leads, clientes y reservas comparten la misma fuente.",
       },
       {
         type: "metrics",
         items: [
-          { label: "Campos Quick Win", value: "12+", hint: "ID · origen · campaña · destino · estado · score · owner…" },
-          { label: "Acciones", value: "Import / Export", hint: "CSV leads/clientes · backup JSON" },
-          { label: "Meta negocio", value: "≥ 90 %", hint: "leads con origen a 60 días" },
+          { label: "Campos clave", value: "12+", hint: "Quién · origen · destino · estado · responsable…" },
+          { label: "Entrada / salida", value: "Importar Excel", hint: "También backup completo" },
+          { label: "Meta a 60 días", value: "≥ 90 %", hint: "interesados con origen conocido" },
         ],
       },
       {
         type: "bullets",
         items: [
-          "Botones: Importar leads CSV · Importar clientes · Backup JSON · Recargar · Reset semilla",
-          "Cola operativa: leads sin origen · score ≥ 80 · reservas en prep · dormidos/VIP",
+          "Cola del día: sin origen · muy calientes · reservas en preparación · VIP / dormidos",
+          "Laura o Miguel pueden importar y exportar sin pedir a un técnico",
         ],
       },
     ],
   },
   {
-    kicker: "Solución B · Dashboard + Reservas (vivo)",
-    title: "Margen, ocupación y logística — para decidir precio y salidas",
+    kicker: "Números y salidas",
+    title: "Decidir precio y salidas con el margen a la vista",
     blocks: [
       {
         type: "quote",
-        text: "Si subo el precio un 6 % y pierdo una plaza, ¿gano o pierdo? El Dashboard y Reservas dan el contexto; la decisión sigue siendo humana.",
+        text: "Si subo el precio un 6 % y pierdo una plaza, ¿gano o pierdo? El sistema da el contexto; la decisión sigue siendo humana.",
       },
       {
         type: "bullets",
         items: [
-          "Dashboard: YTD · ritmo · gap a 1M · mapa de procedencia · margen % por expedición",
-          "Reservas: crear / editar / duplicar / eliminar · estado · checklist prep · lodges/comidas/contactos",
-          "Cards siempre recogidas al entrar — el operador las despliega",
-          "Cada cambio genera notificación (CONFIRMADA / MODIFICADA / ELIMINADA)",
+          "Pantalla diaria: ritmo del año, hueco a 1M, de dónde vienen y margen % por salida",
+          "Reservas: crear, editar, duplicar · estado · checklist de preparación",
+          "Cada cambio avisa al equipo (confirmada / modificada / cancelada)",
         ],
       },
     ],
   },
   {
-    kicker: "Solución C · Leads + Clientes (vivo)",
-    title: "La lista de los diez de hoy",
+    kicker: "Quién importa hoy",
+    title: "La lista de los diez",
     blocks: [
       {
         type: "text",
-        text: "Lead Intelligence prioriza con score + razones. Customer Intelligence saca VIP, dormidos, embajadores y en riesgo con LTV.",
+        text: "Cada mañana: a quién llamar primero entre interesados nuevos y clientes que hace tiempo no viajan.",
       },
       {
         type: "cards",
         items: [
           {
-            title: "Lead Intelligence",
-            body: "Añadir lead · cambiar estado/origen · ver score explicado. Frase clave: «La IA solo clasifica».",
+            title: "Interesados nuevos",
+            body: "Ordenados con razones claras («referido», «destino premium»…). La IA clasifica; el equipo decide.",
             tone: "brand",
           },
           {
-            title: "Customer Intelligence",
-            body: "Alta/edición popup · Editar · WhatsApp · Llamar · Eliminar. La llamada la hace una persona.",
+            title: "Clientes que ya conocéis",
+            body: "VIP, dormidos, embajadores. Editar · WhatsApp · Llamar. La llamada la hace una persona.",
             tone: "good",
           },
         ],
       },
       {
         type: "quote",
-        text: "El sistema prepara. La persona escribe — desde el correo o WhatsApp de Miguel/Laura. Sin bots al viajero.",
+        text: "El sistema prepara la lista. Miguel o Laura escriben desde su propio correo o WhatsApp.",
       },
     ],
   },
   {
-    kicker: "Dinero · cumplimiento",
-    title: "Facturas · Veri*FACTU · REAV clave 05",
+    kicker: "Dinero y papeles",
+    title: "Facturas listas para la gestoría",
     blocks: [
       {
         type: "text",
-        text: "Frase para Miguel (10 s): este módulo prepara las facturas para la gestoría con el régimen fiscal de agencias de viajes. Cumple Veri*FACTU (2027).",
+        text: "Frase de 10 segundos para Miguel: este módulo prepara las facturas con el régimen de agencias de viajes y deja el camino listo para Veri*FACTU (2027).",
       },
       {
         type: "bullets",
         items: [
-          "Botón Exportar a gestoría (CSV) · PDF empresarial",
-          "Medios: Stripe · Bizum · SEPA · PayPal · depósito · efectivo",
-          "Flujo n8n A-06 en OK: export operativo; remisión AEAT por fases hasta 01/01/2027",
+          "Exportar CSV para la gestoría · PDF limpio",
+          "Medios de pago habituales: tarjeta, Bizum, transferencia, PayPal, depósito…",
+          "La remisión a Hacienda se aborda por fases; no hay que inventar el futuro el mes 1",
         ],
       },
     ],
   },
   {
-    kicker: "Contenido · conocimiento · automatización",
-    title: "Lo que libera tiempo al equipo — sin tocar al cliente",
+    kicker: "Tiempo del equipo",
+    title: "Menos «pregúntale a Miguel» · más borradores listos",
     blocks: [
       {
         type: "cards",
         items: [
           {
-            title: "Content Factory",
-            body: "Editar → Guardar → Copiar → pegar en Brevo/WhatsApp. Voz 30 MPS: «Namibia no se cuenta. Se conduce.»",
+            title: "Fábrica de contenido",
+            body: "Borradores con voz 30 MPS («Namibia no se cuenta. Se conduce.»). Una persona copia a newsletter o redes.",
             tone: "brand",
           },
           {
-            title: "Knowledge Assistant",
-            body: "18 preguntas · respuesta + fuentes + «por qué importa». Si no hay dato: «no está en el sistema».",
+            title: "Memoria de la casa",
+            body: "Preguntas internas con respuesta + fuentes. Si no hay dato: «no está en el sistema».",
             tone: "good",
           },
           {
-            title: "Ecosistema CRM",
-            body: "12 flujos · canvas n8n · plantillas · import/export JSON. WEBHOOK → SET → CRM → IF → aviso interno.",
+            title: "Automatizaciones",
+            body: "Formulario web → entra al sistema → avisa al equipo. Nunca envía nada al viajero solo.",
             tone: "warn",
           },
         ],
@@ -294,31 +292,31 @@ const es: PitchSlide[] = [
     ],
   },
   {
-    kicker: "Priorización",
-    title: "Impacto / esfuerzo — con el CRM ya entregado",
+    kicker: "Orden de ataque",
+    title: "Qué ya está · qué sigue · qué espera",
     blocks: [
       {
         type: "matrix",
         cells: [
           {
             quadrant: "hi-lo",
-            title: "Hecho · Quick Win",
-            body: "Data Hub + origen + Dashboard + CRM operativo (este panel)",
+            title: "Hecho · rápido",
+            body: "Base del negocio + origen + pantalla diaria + CRM operable (este demo)",
           },
           {
             quadrant: "hi-hi",
-            title: "Siguiente · valor",
-            body: "Brevo lectura real · webhooks web · scoring afinado con datos vivos",
+            title: "Siguiente · mucho valor",
+            body: "Conectar newsletter y web de verdad · afinar prioridades con datos vivos",
           },
           {
             quadrant: "lo-lo",
-            title: "Hecho · Knowledge/Content",
-            body: "RAG interno demo + Content Factory editables",
+            title: "Hecho · apoyo interno",
+            body: "Memoria de la casa + borradores de contenido editables",
           },
           {
             quadrant: "lo-hi",
             title: "Más adelante",
-            body: "Motor multimedia / ML ocupación — solo con Hub limpio",
+            body: "Modelos avanzados de ocupación o precio — solo cuando los datos estén limpios",
           },
         ],
       },
@@ -326,29 +324,29 @@ const es: PitchSlide[] = [
   },
   {
     kicker: "Riesgos y traspaso",
-    title: "Qué pasa cuando me voy — y qué ya está en el producto",
+    title: "Qué pasa si yo no estoy · y qué ya está cubierto",
     blocks: [
       {
         type: "cards",
         items: [
           {
-            title: "RGPD",
-            body: "Minimización · /legal · aviso cookies técnicas · nunca ficha íntegra a un modelo.",
+            title: "Privacidad",
+            body: "Solo datos necesarios · página legal · nunca mandar la ficha entera a un modelo de IA.",
             tone: "brand",
           },
           {
-            title: "Dependencia",
-            body: "Export CSV/JSON del Hub. Repo + licencia comercial. Migrar ≠ rescate.",
+            title: "Independencia",
+            body: "Podéis exportar todo. Documentación y formación. Marcharse ≠ dejaros colgados.",
             tone: "good",
           },
           {
-            title: "Sobreingeniería",
-            body: "Operable en minutos: login, menú, notificaciones, cards recogidas.",
+            title: "Sin sobrecomplicar",
+            body: "Se usa en minutos: login, menú, avisos. Si no lo usa el equipo, no sirve.",
             tone: "warn",
           },
           {
-            title: "Deriva de marca",
-            body: "Sin envío automático al cliente. Badge permanente: «Sin mensajes al cliente».",
+            title: "Marca 30 MPS",
+            body: "Cero mensajes automáticos al cliente. Badge visible: «Sin mensajes al cliente».",
             tone: "brand",
           },
         ],
@@ -356,127 +354,130 @@ const es: PitchSlide[] = [
     ],
   },
   {
-    kicker: "Primeros 90 días · siguientes",
-    title: "Roadmap part-time — sobre lo que ya corre",
+    kicker: "Próximos 90 días",
+    title: "Plan part-time sobre lo que ya corre",
     blocks: [
       {
         type: "steps",
         items: [
-          "Hecho · Growth OS demo en Vercel (login, Hub, CRM, Veri*FACTU, n8n, legal)",
-          "Sem. 1 · Sesión Miguel + Laura · Brevo/Excel reales → import al Hub",
-          "2–4 · UTM web + webhook formulario → leads vivos",
-          "4–8 · Afinar scoring y cola dormidos con datos reales",
-          "8–12 · DPA Supabase/Vercel · formación · traspaso grabado",
+          "Hecho · demo en internet (login, base, CRM, facturas, legal)",
+          "Semana 1 · sesión con Miguel y Laura · importar Excel / Brevo reales",
+          "Semanas 2–4 · formulario web entra solo · origen en cada lead",
+          "Semanas 4–8 · afinar la lista de dormidos y leads calientes con datos reales",
+          "Semanas 8–12 · contratos de datos · formación · grabación de traspaso",
         ],
       },
       {
         type: "bullets",
         items: [
-          "¿Quién será el dueño interno del Hub?",
-          "¿Qué rutas se llenan solas?",
-          "¿Cuánto entra por recomendación?",
-          "¿Qué parte del booking consume más a Laura?",
+          "¿Quién será el dueño interno de esta base?",
+          "¿Qué rutas se llenan casi solas?",
+          "¿Cuánto entra por recomendación hoy?",
+          "¿Qué parte del booking come más tiempo a Laura?",
         ],
       },
     ],
   },
   {
     kicker: "Cierre",
-    title: "Este CRM es el mapa… y también el terreno.",
-    subtitle: "El objetivo no es que me necesitéis. Es que el sistema os sobreviva a todos.",
+    title: "El mapa… y el terreno.",
+    subtitle: "El objetivo no es que me necesitéis. Es que el sistema os sobreviva.",
     blocks: [
       {
         type: "quote",
-        text: "No propongo sustituir el trato humano. Propongo automatizar lo que ocurre detrás del escenario — y aquí está funcionando.",
+        text: "No propongo sustituir el trato humano. Propongo quitar lo repetitivo de detrás del escenario — y aquí ya se puede tocar.",
       },
       {
         type: "text",
-        text: "Yoandy Ramírez Delgado · Growth Builder · 30 MPS Growth OS · 30mps.vercel.app",
+        text: "Yoandy Ramírez Delgado · Growth Builder · 30mps.vercel.app",
       },
     ],
-    footer: "yoandyramirez.com · linkedin.com/in/yoandyrd92 · github.com/heindall92",
+    footer: "yoandyramirez.com · linkedin.com/in/yoandyrd92",
   },
 ];
 
 const en: PitchSlide[] = [
   {
-    kicker: "Business Case · 30 MPS Adventures",
-    title: "From craft to scalable — without stopping being 30 MPS",
-    subtitle: "AI & automation for the €1M gap — with the Growth OS already live to prove it.",
+    kicker: "Proposal · 30 MPS Adventures",
+    title: "Grow without losing what makes you unique",
+    subtitle:
+      "An internal system to organise the business, free Miguel’s time and reach €1M — without any machine messaging the traveller.",
     blocks: [
-      { type: "text", text: "Yoandy Ramírez Delgado · Growth Builder · freelance" },
+      { type: "text", text: "Yoandy Ramírez Delgado · Growth Builder · freelance proposal" },
       {
         type: "bullets",
         items: [
-          "Live CRM: 30mps.vercel.app",
-          "Login · Hub · Dashboard · Leads · Clients · Bookings · Veri*FACTU · Content · Knowledge · n8n",
+          "Live demo for the meeting: 30mps.vercel.app",
+          "Team login · leads · clients · bookings · numbers · invoices · content",
+          "Golden rule: systems prepare; people own the relationship",
         ],
       },
     ],
-    footer: "No system ever speaks to a customer. Systems prepare; people close.",
+    footer: "No system ever speaks to a customer.",
   },
   {
-    kicker: "Thesis",
-    title: "Not a marketing problem. A memory and time problem.",
+    kicker: "Core idea",
+    title: "You don’t lack marketing. You lack memory and time.",
     blocks: [
       {
         type: "quote",
-        text: "No system ever speaks to a customer. Systems prepare; people close.",
+        text: "The product is 5 stars. The bottleneck is daily ops: scattered data and everything through Miguel.",
       },
       {
         type: "bullets",
         items: [
-          "5★ product — bottleneck is system, not trip quality",
-          "Scattered data: sheets, CEO inbox, Brevo",
-          "Founder too operational",
+          "Trips sell on quality — the system behind doesn’t keep up",
+          "Sheets + Miguel’s inbox + newsletter = nobody sees the whole business",
+          "Miguel sorts leads, follows up and drafts content — hours that should close and care",
         ],
       },
     ],
   },
   {
-    kicker: "Diagnosis",
-    title: "The math of the million",
+    kicker: "The numbers",
+    title: "From €800k to €1M",
+    subtitle: "Same business-case figures. Also on the demo Dashboard.",
     blocks: [
       {
         type: "table",
-        headers: ["Metric", "Today", "2027"],
+        headers: ["Metric", "Today", "2027 goal"],
         rows: [
           ["Revenue", "€800,000", "€1,000,000"],
           ["Travelers", "150", "168"],
           ["Departures", "10", "14"],
           ["Avg. ticket", "€5,300", "€5,950"],
-          ["Margin / trip", "unmeasured → measurable in CRM", "30%"],
+          ["Margin / trip", "barely measured", "around 30%"],
         ],
       },
       {
         type: "metrics",
         items: [
-          { label: "Gap", value: "€200,000", hint: "+25% in two years" },
-          { label: "Where", value: "Dashboard", hint: "Menu · Executive dashboard" },
+          { label: "The gap", value: "€200,000", hint: "+25% in two years" },
+          { label: "Where to see it", value: "Dashboard", hint: "One screen, every morning" },
         ],
       },
     ],
   },
   {
     kicker: "Three levers",
-    title: "€200k in three parts — and which CRM module attacks each",
+    title: "That €200k comes from three places",
     blocks: [
       {
         type: "cards",
         items: [
           {
-            title: "€80–110k · occupancy",
-            body: "Dashboard (margin/occupancy) + Bookings & logistics.",
+            title: "€80–110k · fill better",
+            body: "4 new departures and higher occupancy. The panel shows occupancy and margin per route.",
             tone: "brand",
           },
           {
-            title: "€45–70k · dormant",
-            body: "Customer Intelligence + Call / WhatsApp buttons.",
+            title: "€45–70k · past clients",
+            body: "8–12 people who travelled once and didn’t return. The system lists who to call; humans dial.",
             tone: "good",
           },
           {
-            title: "€40–60k · price",
-            body: "Margin by expedition on Dashboard + Knowledge why it matters.",
+            title: "€40–60k · smarter price",
+            body: "Modest lifts where demand is strong — only if you see real margin per departure.",
             tone: "warn",
           },
         ],
@@ -484,104 +485,104 @@ const en: PitchSlide[] = [
     ],
   },
   {
-    kicker: "Bottlenecks → CRM",
-    title: "The root — and the button that opens it",
+    kicker: "What hurts today",
+    title: "Problem → what the system changes",
     blocks: [
       {
         type: "table",
-        headers: ["Problem", "Pri", "CRM module", "Operator action"],
+        headers: ["Problem", "Urgency", "What the team sees"],
         rows: [
-          ["No lead origin", "P0", "Data Hub + Leads", "See UTM · CSV import · edit status"],
-          ["No margin / BI", "P1", "Dashboard", "€200k gap · Unknown origin · margin %"],
-          ["CEO overload", "P0", "Notifications + n8n", "Event queue · internal alerts"],
-          ["Dormant clients", "P1", "Clients 360°", "Priority · WhatsApp / call"],
-          ["No scoring", "P1", "Lead Intelligence", "Explainable score"],
-          ["Invoicing pack", "P1", "Veri*FACTU", "REAV 05 · PDF · tax export"],
+          ["Don’t know where prospects come from", "High", "Origin on every lead · import sheets"],
+          ["No clear margin / occupancy", "High", "Dashboard: €1M gap + margin by route"],
+          ["Miguel too operational", "Critical", "Internal alerts + short work list"],
+          ["Clients who don’t return", "High", "“Call this month” queue · human WhatsApp/call"],
+          ["Don’t know who to prioritise", "Medium", "Ranking with plain-language reasons"],
+          ["Invoices / tax pack by hand", "Medium", "Export for the accountant · Veri*FACTU"],
         ],
       },
     ],
   },
   {
-    kicker: "Growth OS · live",
-    title: "One platform — not three loose projects",
+    kicker: "What we propose",
+    title: "One internal platform — not three loose projects",
     blocks: [
       {
         type: "steps",
         items: [
-          "Phase 1 · Data Hub + CRM + UTM",
-          "Phase 2 · Executive dashboard",
-          "Phase 3 · Explainable lead scoring",
-          "Phase 4 · Customer Intelligence",
-          "Phase 5 · Knowledge assistant",
-          "Phase 6 · Content Factory (human publish)",
+          "Order: one base (leads, clients, bookings) with visible origin",
+          "Clarity: daily screen with €1M gap, provenance and margin",
+          "Priority: lead ranking — AI only sorts, never writes to clients",
+          "Recurrence: VIP / dormant / at-risk with human call buttons",
+          "Memory: internal answers with sources",
+          "Content: drafts for newsletter and social; a person publishes",
         ],
       },
     ],
   },
   {
-    kicker: "Demo tour · 90 seconds",
-    title: "What to click in the meeting with Miguel",
+    kicker: "Demo · 90 seconds",
+    title: "What to show Miguel in the meeting",
     blocks: [
       {
         type: "steps",
         items: [
-          "1 · Login → user menu + notification bell",
-          "2 · Data Hub → origin coverage + CSV import",
-          "3 · Dashboard → €200k gap + Unknown origin",
-          "4 · Lead Intelligence → explained score",
-          "5 · Clients → VIP LTV · WhatsApp (human)",
-          "6 · Bookings → collapsed cards · status · prep",
-          "7 · Invoices → 10s Veri*FACTU line + tax export",
-          "8 · Content Factory → copy to Brevo",
-          "9 · CRM ecosystem → 12/12 OK flows",
-          "10 · This Presentación · CEO proposal · /legal",
+          "Log in · open the notification bell",
+          "Data base: origin coverage + import a sheet",
+          "Dashboard: €200k gap + “unknown origin” as #1 pain",
+          "Leads: score with reasons you can explain",
+          "Clients: a VIP · WhatsApp button (a person presses it)",
+          "Bookings: departure status + prep checklist",
+          "Invoices: 10s line for the accountant + export",
+          "Content: a 30 MPS voice draft · Copy",
+          "Automations: form → internal alert (never to the traveller)",
+          "This deck + written proposal if he wants it",
         ],
       },
     ],
   },
   {
-    kicker: "Solution A · live",
+    kicker: "First piece",
     title: "One place where the business lives",
     blocks: [
       {
         type: "metrics",
         items: [
-          { label: "Quick Win fields", value: "12+" },
-          { label: "Actions", value: "Import / Export" },
-          { label: "Target", value: "≥ 90%", hint: "leads with origin in 60 days" },
+          { label: "Key fields", value: "12+" },
+          { label: "In / out", value: "Import sheets" },
+          { label: "60-day goal", value: "≥ 90%", hint: "prospects with known origin" },
         ],
       },
     ],
   },
   {
-    kicker: "Solution B · live",
-    title: "Margin, occupancy and logistics",
+    kicker: "Numbers & departures",
+    title: "Decide price and departures with margin in view",
     blocks: [
       {
         type: "bullets",
         items: [
-          "Dashboard: gap, origin map, margin %",
-          "Bookings: CRUD · status · prep checklist",
-          "Cards start collapsed · every change notifies",
+          "Daily screen: year pace, €1M gap, origin, margin %",
+          "Bookings: create / edit / status / prep checklist",
+          "Every change notifies the team",
         ],
       },
     ],
   },
   {
-    kicker: "Solution C · live",
+    kicker: "Who matters today",
     title: "Today’s list of ten",
     blocks: [
       {
         type: "cards",
         items: [
           {
-            title: "Lead Intelligence",
-            body: "Add lead · status/origin · explained score. AI only ranks.",
+            title: "New prospects",
+            body: "Ranked with clear reasons. AI classifies; the team decides.",
             tone: "brand",
           },
           {
-            title: "Customer Intelligence",
-            body: "Edit · WhatsApp · Call · Delete. Humans dial.",
+            title: "Clients you already know",
+            body: "VIP, dormant, ambassadors. Edit · WhatsApp · Call. Humans dial.",
             tone: "good",
           },
         ],
@@ -589,35 +590,35 @@ const en: PitchSlide[] = [
     ],
   },
   {
-    kicker: "Money · compliance",
-    title: "Invoices · Veri*FACTU · REAV key 05",
+    kicker: "Money & paperwork",
+    title: "Invoices ready for the accountant",
     blocks: [
       {
         type: "text",
-        text: "10s pitch: prepares invoices for the tax advisor under the travel-agency scheme. Ready for Veri*FACTU (2027).",
+        text: "10s line for Miguel: prepares invoices under the travel-agency scheme and the path to Veri*FACTU (2027).",
       },
     ],
   },
   {
-    kicker: "Content · knowledge · automation",
-    title: "What frees team time — without touching the customer",
+    kicker: "Team time",
+    title: "Fewer “ask Miguel” moments · more ready drafts",
     blocks: [
       {
         type: "cards",
         items: [
           {
-            title: "Content Factory",
-            body: "Edit → Save → Copy → paste into Brevo/WhatsApp.",
+            title: "Content factory",
+            body: "Drafts in 30 MPS voice. A person pastes to newsletter or social.",
             tone: "brand",
           },
           {
-            title: "Knowledge",
-            body: "18 Q&As · sources · “not in the system”.",
+            title: "House memory",
+            body: "Internal Q&A with sources. If unknown: “not in the system”.",
             tone: "good",
           },
           {
-            title: "n8n ecosystem",
-            body: "12 flows · canvas · never auto-message the traveler.",
+            title: "Automations",
+            body: "Web form → system → alert the team. Never messages the traveller alone.",
             tone: "warn",
           },
         ],
@@ -625,31 +626,31 @@ const en: PitchSlide[] = [
     ],
   },
   {
-    kicker: "Prioritization",
-    title: "Impact / effort — with the CRM already shipped",
+    kicker: "Order of attack",
+    title: "Done · next · later",
     blocks: [
       {
         type: "matrix",
         cells: [
           {
             quadrant: "hi-lo",
-            title: "Done · Quick Win",
-            body: "Hub + origin + Dashboard + live CRM",
+            title: "Done · quick",
+            body: "Business base + origin + daily screen + operable CRM",
           },
           {
             quadrant: "hi-hi",
-            title: "Next · value",
-            body: "Live Brevo read · web form webhooks · scoring on real data",
+            title: "Next · high value",
+            body: "Real newsletter + website feed · refine priorities with live data",
           },
           {
             quadrant: "lo-lo",
-            title: "Done · Knowledge/Content",
-            body: "Internal Q&A + editable drafts",
+            title: "Done · internal support",
+            body: "House memory + editable content drafts",
           },
           {
             quadrant: "lo-hi",
             title: "Later",
-            body: "ML occupancy — only with a clean Hub",
+            body: "Advanced occupancy/price models — only once data is clean",
           },
         ],
       },
@@ -657,29 +658,29 @@ const en: PitchSlide[] = [
   },
   {
     kicker: "Risks & handover",
-    title: "What happens when I leave",
+    title: "What if I’m gone — and what’s already covered",
     blocks: [
       {
         type: "cards",
         items: [
           {
-            title: "GDPR",
-            body: "/legal · technical cookie notice · never full record to a model.",
+            title: "Privacy",
+            body: "Minimum data · legal page · never send a full client file to an AI model.",
             tone: "brand",
           },
           {
-            title: "Lock-in",
-            body: "CSV/JSON export · commercial license · migration ≠ rescue.",
+            title: "Independence",
+            body: "Full export. Docs and training. Leaving ≠ stranding you.",
             tone: "good",
           },
           {
-            title: "Over-engineering",
-            body: "Operable in minutes: login, menu, notifications.",
+            title: "No overbuild",
+            body: "Usable in minutes. If the team won’t use it, it doesn’t count.",
             tone: "warn",
           },
           {
-            title: "Brand drift",
-            body: "No auto customer messages — permanent badge.",
+            title: "30 MPS brand",
+            body: "Zero auto messages to clients. Visible badge: “No client messages”.",
             tone: "brand",
           },
         ],
@@ -688,34 +689,35 @@ const en: PitchSlide[] = [
   },
   {
     kicker: "Next 90 days",
-    title: "Part-time roadmap on top of what already runs",
+    title: "Part-time plan on what already runs",
     blocks: [
       {
         type: "steps",
         items: [
-          "Done · Growth OS on Vercel",
-          "Wk 1 · Miguel + Laura · real Brevo/Excel → Hub",
-          "2–4 · Web UTM + form webhook",
-          "4–8 · Score + dormant queue on live data",
-          "8–12 · DPAs · training · recorded handover",
+          "Done · live demo (login, base, CRM, invoices, legal)",
+          "Week 1 · session with Miguel & Laura · import real sheets / Brevo",
+          "Weeks 2–4 · web form feeds in · origin on every lead",
+          "Weeks 4–8 · refine dormant + hot lists with real data",
+          "Weeks 8–12 · data agreements · training · recorded handover",
         ],
       },
     ],
   },
   {
     kicker: "Close",
-    title: "This CRM is the map… and the terrain.",
-    subtitle: "The goal is not that you need me. It is that the system outlives all of us.",
+    title: "The map… and the terrain.",
+    subtitle: "The goal isn’t that you need me. It’s that the system outlives all of us.",
     blocks: [
       {
         type: "quote",
-        text: "I don’t propose replacing human care. I propose automating what happens backstage — and it’s running here.",
+        text: "I don’t propose replacing human care. I propose removing repetitive backstage work — and you can already touch it here.",
       },
       {
         type: "text",
         text: "Yoandy Ramírez Delgado · Growth Builder · 30mps.vercel.app",
       },
     ],
+    footer: "yoandyramirez.com · linkedin.com/in/yoandyrd92",
   },
 ];
 

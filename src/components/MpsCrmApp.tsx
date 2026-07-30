@@ -17,6 +17,7 @@ import {
   saveAiSettings,
   saveKnowledgeDocs,
   scoreLead,
+  testAiConnection,
   upsertKnowledgeDoc,
   type AiProvider,
   type AiSettings,
@@ -256,10 +257,16 @@ function SettingsPanel({ lang }: { lang: Lang }) {
   const hub = useDataHub();
   const [ai, setAi] = useState<AiSettings>(() => loadAiSettings());
   const [aiFlash, setAiFlash] = useState<string | null>(null);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{
+    ok: boolean;
+    message: string;
+  } | null>(null);
 
   function persistAi(next: AiSettings) {
     setAi(next);
     saveAiSettings(next);
+    setTestResult(null);
     setAiFlash(
       lang === "es"
         ? next.enabled
@@ -269,6 +276,33 @@ function SettingsPanel({ lang }: { lang: Lang }) {
           ? `AI saved · provider ${AI_PROVIDER_LABEL[next.provider]}`
           : "AI off · local heuristics / retrieval will be used",
     );
+  }
+
+  async function runConnectionTest() {
+    setTesting(true);
+    setTestResult(null);
+    setAiFlash(null);
+    saveAiSettings(ai);
+    try {
+      const res = await testAiConnection(ai);
+      setTestResult({
+        ok: true,
+        message:
+          lang === "es"
+            ? `API OK · ${AI_PROVIDER_LABEL[res.provider]} · modelo ${res.model} · respuesta: «${res.reply}»`
+            : `API OK · ${AI_PROVIDER_LABEL[res.provider]} · model ${res.model} · reply: “${res.reply}”`,
+      });
+    } catch (err) {
+      setTestResult({
+        ok: false,
+        message:
+          lang === "es"
+            ? `Fallo de conexión: ${err instanceof Error ? err.message : String(err)}`
+            : `Connection failed: ${err instanceof Error ? err.message : String(err)}`,
+      });
+    } finally {
+      setTesting(false);
+    }
   }
 
   const providers = Object.keys(AI_PROVIDER_LABEL) as AiProvider[];
@@ -321,17 +355,34 @@ function SettingsPanel({ lang }: { lang: Lang }) {
             {lang === "es" ? "Regla de oro" : "Golden rule"}: {GOLDEN_RULE}
           </p>
           <p className="mt-1 text-[var(--ink-muted)]">
-            {lang === "es" ? "Estado:" : "Status:"}{" "}
+            {lang === "es" ? "Configuración:" : "Config:"}{" "}
             <strong className="text-[var(--ink)]">
               {aiReady(ai)
                 ? lang === "es"
-                  ? `conectado · ${providerLabel(ai)}`
-                  : `connected · ${providerLabel(ai)}`
+                  ? `lista · ${providerLabel(ai)} (falta probar API)`
+                  : `ready · ${providerLabel(ai)} (API not tested yet)`
                 : lang === "es"
                   ? "heurística local (sin API)"
                   : "local heuristics (no API)"}
             </strong>
           </p>
+          {testResult && (
+            <p
+              className={cn(
+                "mt-2 text-sm font-semibold",
+                testResult.ok ? "text-[var(--ok)]" : "text-[var(--danger)]",
+              )}
+            >
+              {testResult.ok
+                ? lang === "es"
+                  ? "Conexión API verificada"
+                  : "API connection verified"
+                : lang === "es"
+                  ? "Conexión API fallida"
+                  : "API connection failed"}
+              : {testResult.message}
+            </p>
+          )}
         </div>
 
         <label className="mb-4 flex items-center gap-3 text-sm font-semibold text-[var(--ink)]">
@@ -476,6 +527,19 @@ function SettingsPanel({ lang }: { lang: Lang }) {
             <Bot className="h-4 w-4" />
             {lang === "es" ? "Guardar IA" : "Save AI"}
           </button>
+          <button
+            type="button"
+            disabled={testing || !ai.enabled}
+            onClick={() => void runConnectionTest()}
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-strong)] px-3 py-2 text-sm font-semibold text-[var(--ink)] disabled:opacity-50"
+          >
+            {testing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Zap className="h-4 w-4 text-[var(--accent)]" />
+            )}
+            {lang === "es" ? "Probar conexión API" : "Test API connection"}
+          </button>
           <a
             href={AI_PROVIDER_DOCS[ai.provider]}
             target="_blank"
@@ -488,8 +552,8 @@ function SettingsPanel({ lang }: { lang: Lang }) {
         {aiFlash && <p className="mt-3 text-sm text-[var(--accent)]">{aiFlash}</p>}
         <p className="mt-3 text-xs text-[var(--ink-muted)]">
           {lang === "es"
-            ? "Puedes guardar keys de varios proveedores y cambiar el activo cuando quieras. Las keys viven en localStorage del navegador (demo); en producción usa variables de entorno Vercel."
-            : "You can store keys for several providers and switch the active one anytime. Keys live in browser localStorage (demo); in production use Vercel env vars."}
+            ? "«Configuración lista» ≠ API verificada. Pulsa «Probar conexión API» para llamar de verdad al proveedor. También puedes probar en Lead Intelligence → Clasificar con IA."
+            : "“Config ready” ≠ verified API. Hit “Test API connection” for a live call. Or try Lead Intelligence → Classify with AI."}
         </p>
       </Card>
 
@@ -2461,117 +2525,194 @@ function AutomationsPanel({ lang }: { lang: Lang }) {
 }
 
 function ProposalPanel({ lang }: { lang: Lang }) {
+  const es = lang === "es";
+
   return (
     <div className="space-y-5">
       <Card>
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--ink-muted)]">
-          Growth OS · {COMPANY.name}
+          {es ? "Propuesta para el fundador" : "Proposal for the founder"} · {COMPANY.name}
         </p>
         <h2 className="mt-2 font-[family-name:var(--mps-display)] text-3xl text-[var(--ink)]">
-          {lang === "es"
-            ? "No tres proyectos sueltos — una infraestructura de crecimiento"
-            : "Not three loose projects — one growth infrastructure"}
+          {es
+            ? "Menos caos en el día a día. Más tiempo para vender y acompañar."
+            : "Less daily chaos. More time to sell and care for travellers."}
         </h2>
         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-[var(--ink-muted)] md:text-base">
-          {lang === "es" ? (
+          {es ? (
             <>
-              Para <strong className="text-[var(--ink)]">{COMPANY.ceo}</strong>: el CEO no busca
-              herramientas aisladas. Busca un sistema que reduzca su dependencia operativa sin
-              perder el trato humano. {GOLDEN_RULE}
+              <strong className="text-[var(--ink)]">{COMPANY.ceo}</strong>, esto no es «más software».
+              Es un sistema interno para que 30 MPS sepa de dónde vienen los clientes, a quién llamar
+              hoy, y cuánto deja cada salida — sin que ninguna máquina hable con el viajero.{" "}
+              <strong className="text-[var(--ink)]">{GOLDEN_RULE}</strong>
             </>
           ) : (
             <>
-              For <strong className="text-[var(--ink)]">{COMPANY.ceo}</strong>: the CEO doesn’t want
-              isolated tools. He wants a system that cuts founder dependency without losing human
-              care. {GOLDEN_RULE}
+              <strong className="text-[var(--ink)]">{COMPANY.ceo}</strong>, this is not “more software”.
+              It’s an internal system so 30 MPS knows where clients come from, who to call today, and
+              what each departure earns — without any machine messaging the traveller.{" "}
+              <strong className="text-[var(--ink)]">{GOLDEN_RULE}</strong>
             </>
           )}
         </p>
         <p className="mt-3 text-sm italic text-[var(--accent)]">«{COMPANY.tagline}»</p>
       </Card>
 
+      <Card title={es ? "El problema, en cristiano" : "The problem, plainly"}>
+        <ul className="space-y-3 text-sm leading-relaxed text-[var(--ink)] md:text-base">
+          {(es
+            ? [
+                "Los datos viven en Excel, el correo de Miguel y la newsletter. Nadie ve el negocio entero en una sola pantalla.",
+                "No sabemos de verdad de dónde llega cada interesado (web, recomendación, email…). Sin eso, no se puede mejorar lo que funciona.",
+                "Miguel pierde muchas horas ordenando leads, haciendo seguimiento y pensando contenido — tiempo que debería ir a cerrar viajes y cuidar clientes.",
+              ]
+            : [
+                "Data lives in sheets, Miguel’s inbox and the newsletter. Nobody sees the whole business on one screen.",
+                "We don’t really know where each lead comes from (web, referral, email…). Without that, you can’t double down on what works.",
+                "Miguel burns hours sorting leads, chasing follow-ups and drafting content — time that should go to closing trips and caring for clients.",
+              ]
+          ).map((item) => (
+            <li key={item} className="flex gap-3">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </Card>
+
       <div className="grid gap-4 md:grid-cols-3">
-        {(lang === "es"
+        {(es
           ? [
-              ["F1", "Data Hub + CRM", "Origen del 95% de leads (meta 6 meses)"],
-              ["F2–4", "Dashboard + Scoring + CI", "Decidir y priorizar tiempo humano"],
-              ["F5–6", "Knowledge + Content", "Menos dependencia + borradores a Brevo/RRSS"],
+              [
+                "1 · Orden",
+                "Una sola base del negocio",
+                "Leads, clientes y reservas en el mismo sitio. Sabemos el origen de casi todos los interesados.",
+              ],
+              [
+                "2 · Prioridad",
+                "A quién llamar hoy",
+                "El sistema ordena leads y clientes dormidos. Miguel o Laura llaman; la máquina solo prepara la lista.",
+              ],
+              [
+                "3 · Claridad",
+                "Números para decidir",
+                "Cuánto falta para el millón, ocupación por salida y margen por ruta — actualizado cada día.",
+              ],
             ]
           : [
-              ["P1", "Data Hub + CRM", "Origin for 95% of leads (6-month goal)"],
-              ["P2–4", "Dashboard + Scoring + CI", "Decide and prioritize human time"],
-              ["P5–6", "Knowledge + Content", "Less dependency + drafts to Brevo/social"],
+              [
+                "1 · Order",
+                "One place for the business",
+                "Leads, clients and bookings together. We know where almost every prospect came from.",
+              ],
+              [
+                "2 · Priority",
+                "Who to call today",
+                "The system ranks leads and dormant clients. Miguel or Laura call; the machine only prepares the list.",
+              ],
+              [
+                "3 · Clarity",
+                "Numbers to decide",
+                "Gap to €1M, occupancy per departure and margin per route — updated every day.",
+              ],
             ]
-        ).map(([p, title, body]) => (
+        ).map(([phase, title, body]) => (
           <Card key={title}>
-            <Badge tone="brand">{p}</Badge>
+            <Badge tone="brand">{phase}</Badge>
             <p className="mt-3 font-semibold text-[var(--ink)]">{title}</p>
             <p className="mt-1 text-sm text-[var(--ink-muted)]">{body}</p>
           </Card>
         ))}
       </div>
 
-      <Card title={lang === "es" ? "KPIs de negocio (6 meses)" : "Business KPIs (6 months)"}>
+      <Card
+        title={es ? "Cómo sabremos que funciona (6 meses)" : "How we’ll know it works (6 months)"}
+      >
+        <p className="mb-3 text-sm text-[var(--ink-muted)]">
+          {es
+            ? "No son metas de «IA». Son metas de negocio que Miguel puede revisar en una reunión."
+            : "These aren’t “AI” goals. They’re business goals Miguel can review in a meeting."}
+        </p>
         <ul className="grid gap-2 sm:grid-cols-2 text-sm text-[var(--ink)]">
-          {(lang === "es"
+          {(es
             ? [
-                "Saber el origen del 95 % de los leads",
-                "Reducir un 60 % el tiempo administrativo del CEO",
-                "Reactivar un 15 % de clientes inactivos",
-                "Incrementar la ocupación media por expedición",
-                "Mejorar el margen por ruta",
-                "Disponer de un dashboard actualizado diariamente",
+                ["Origen claro", "Saber de dónde viene el 95 % de los interesados"],
+                ["Tiempo de Miguel", "Bajar ~60 % el trabajo administrativo repetitivo"],
+                ["Clientes dormidos", "Reactivar un 15 % de quienes viajaron y no volvieron"],
+                ["Ocupación", "Llenar mejor cada salida"],
+                ["Margen", "Ver y mejorar lo que deja cada ruta"],
+                ["Visión diaria", "Una pantalla con el pulso del negocio cada mañana"],
               ]
             : [
-                "Know the origin of 95% of leads",
-                "Cut CEO admin time by 60%",
-                "Reactivate 15% of inactive clients",
-                "Raise average occupancy per expedition",
-                "Improve margin per route",
-                "Have a dashboard updated daily",
+                ["Clear origin", "Know where 95% of prospects come from"],
+                ["Miguel’s time", "Cut ~60% of repetitive admin work"],
+                ["Dormant clients", "Reactivate 15% of past travellers who didn’t return"],
+                ["Occupancy", "Fill each departure better"],
+                ["Margin", "See and improve what each route earns"],
+                ["Daily view", "One screen with the business pulse every morning"],
               ]
-          ).map((k) => (
+          ).map(([label, k]) => (
             <li
-              key={k}
-              className="flex gap-2 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2"
+              key={label}
+              className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2"
             >
-              <span className="text-[var(--ok)]" aria-hidden>
-                ✓
-              </span>
-              <span>{k}</span>
+              <span className="font-semibold text-[var(--accent)]">{label}</span>
+              <span className="mt-0.5 block text-[var(--ink-muted)]">{k}</span>
             </li>
           ))}
         </ul>
       </Card>
 
-      <Card title={lang === "es" ? "Quick win 2–4 semanas" : "Quick win 2–4 weeks"}>
+      <Card title={es ? "Las primeras 2–4 semanas" : "The first 2–4 weeks"}>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-4">
             <p className="flex items-center gap-2 font-semibold text-[var(--ink)]">
               <Zap className="h-4 w-4 text-[var(--accent)]" />{" "}
-              {lang === "es" ? "Qué se entrega" : "What we ship"}
+              {es ? "Qué recibe el equipo" : "What the team gets"}
             </p>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-[var(--ink-muted)]">
-              <li>Data Hub mínimo + UTM</li>
-              <li>Score v0 + owner</li>
-              <li>Export top 15 + dormidos</li>
+              {(es
+                ? [
+                    "Todos los leads y clientes en un solo sitio (importados del Excel / Brevo)",
+                    "Campo «de dónde vino» en cada interesado",
+                    "Lista semanal: los 15 más calientes + clientes que hace tiempo no viajan",
+                  ]
+                : [
+                    "All leads and clients in one place (imported from sheets / Brevo)",
+                    "A “where they came from” field on every prospect",
+                    "Weekly list: top 15 hot leads + clients who haven’t travelled in a while",
+                  ]
+              ).map((li) => (
+                <li key={li}>{li}</li>
+              ))}
             </ul>
           </div>
           <div className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-4">
             <p className="flex items-center gap-2 font-semibold text-[var(--ink)]">
               <Target className="h-4 w-4 text-[var(--accent)]" />{" "}
-              {lang === "es" ? "Cómo se mide" : "How we measure"}
+              {es ? "Cómo se nota el cambio" : "How you’ll feel the change"}
             </p>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-[var(--ink-muted)]">
-              <li>% origen ↑ fuerte vs baseline</li>
-              <li>Horas de triaje del CEO ↓</li>
-              <li>Contactos humanos sobre la lista</li>
+              {(es
+                ? [
+                    "Menos «¿de dónde salió este?» en cada reunión",
+                    "Miguel deja de peinar el buzón a ciegas: trabaja una lista corta",
+                    "Laura o Miguel hacen llamadas reales sobre esa lista (humano, no bot)",
+                  ]
+                : [
+                    "Fewer “where did this come from?” moments in every meeting",
+                    "Miguel stops scanning the inbox blind: he works a short list",
+                    "Laura or Miguel make real calls from that list (human, not a bot)",
+                  ]
+              ).map((li) => (
+                <li key={li}>{li}</li>
+              ))}
             </ul>
           </div>
         </div>
       </Card>
 
-      <Card title={lang === "es" ? "Equipo / interlocutores" : "Team / stakeholders"}>
+      <Card title={es ? "Quién está en la mesa" : "Who’s at the table"}>
         <ul className="grid gap-2 sm:grid-cols-2">
           {TEAM.map((person) => (
             <li
@@ -2585,28 +2726,52 @@ function ProposalPanel({ lang }: { lang: Lang }) {
         </ul>
       </Card>
 
-      <Card title={lang === "es" ? "Mensaje de cierre" : "Closing message"}>
+      <Card title={es ? "Lo que no negociamos" : "What we don’t negotiate"}>
         <p className="text-sm leading-relaxed text-[var(--ink)] md:text-base">
-          {lang === "es" ? (
+          {es ? (
             <>
-              No propongo sustituir el trato humano. Propongo automatizar todo lo que ocurre{" "}
-              <strong>detrás del escenario</strong> para que Miguel Checa y su equipo dediquen más
-              tiempo a lo que diferencia a 30 MPS: la confianza, el trato personal y una experiencia
-              premium. La IA aporta información y eficiencia;{" "}
-              <strong>las personas siguen construyendo la confianza</strong>.
+              Ningún sistema escribe al viajero. Ni WhatsApp automático, ni email robot, ni chat.
+              La tecnología ordena, avisa al equipo y prepara borradores.{" "}
+              <strong>Quien firma la relación con el cliente es siempre una persona de 30 MPS.</strong>
             </>
           ) : (
             <>
-              I don’t propose replacing human care. I propose automating everything that happens{" "}
-              <strong>backstage</strong> so Miguel Checa and his team spend more time on what makes
-              30 MPS different: trust, personal care and a premium experience. AI brings insight and
-              efficiency; <strong>people still build the trust</strong>.
+              No system writes to the traveller. No auto-WhatsApp, no robot email, no chatbot. Tech
+              sorts, alerts the team and drafts copy.{" "}
+              <strong>A 30 MPS person always owns the client relationship.</strong>
             </>
           )}
         </p>
       </Card>
 
-      <Card title={lang === "es" ? "Supuestos explícitos" : "Explicit assumptions"}>
+      <Card title={es ? "Mensaje de cierre (entrevista)" : "Closing line (interview)"}>
+        <p className="text-sm leading-relaxed text-[var(--ink)] md:text-base">
+          {es ? (
+            <>
+              No vengo a sustituir el trato humano que hace única a 30 MPS. Vengo a quitaros de encima
+              el trabajo repetitivo de detrás: ordenar leads, recordar a quién llamar, ver el margen
+              y preparar textos. Así Miguel y el equipo pueden dedicar más horas a lo que de verdad
+              vende: <strong>confianza, camino y experiencia premium</strong>.
+            </>
+          ) : (
+            <>
+              I’m not here to replace the human care that makes 30 MPS unique. I’m here to take the
+              repetitive backstage work off your plate: sorting leads, remembering who to call,
+              seeing margin and drafting copy. So Miguel and the team spend more hours on what
+              actually sells: <strong>trust, the road and a premium experience</strong>.
+            </>
+          )}
+        </p>
+      </Card>
+
+      <Card
+        title={es ? "Números del caso (transparentes)" : "Case numbers (transparent)"}
+        subtitle={
+          es
+            ? "Cifras del business case / demo. Si alguna no cuadra con la realidad, se ajusta en la primera semana."
+            : "Figures from the business case / demo. If any don’t match reality, we adjust in week one."
+        }
+      >
         <ul className="space-y-2">
           {MPS_ASSUMPTIONS.map((a) => (
             <li

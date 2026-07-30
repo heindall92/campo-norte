@@ -18,7 +18,7 @@ const es: Dict = {
   nav_content: "Content Factory",
   nav_knowledge: "Knowledge Assistant",
   nav_automations: "Ecosistema CRM",
-  nav_pitch: "Propuesta CEO",
+  nav_pitch: "Propuesta Miguel",
   nav_slides: "Presentación",
   nav_hub: "Data Hub",
   nav_settings: "Ajustes",
@@ -98,7 +98,7 @@ const en: Dict = {
   nav_content: "Content Factory",
   nav_knowledge: "Knowledge Assistant",
   nav_automations: "CRM ecosystem",
-  nav_pitch: "CEO proposal",
+  nav_pitch: "Miguel proposal",
   nav_slides: "Pitch deck",
   nav_hub: "Data Hub",
   nav_settings: "Settings",
@@ -178,12 +178,12 @@ export type Slide = { title: string; body: string; bullets?: string[] };
 export const SLIDES: Record<Lang, Slide[]> = {
   es: [
     {
-      title: "Qué quiere realmente Miguel",
-      body: "No otra herramienta suelta. Una infraestructura de crecimiento que reduzca su dependencia operativa sin masificar ni perder el trato humano que diferencia a 30 MPS.",
+      title: "Qué quiere Miguel de verdad",
+      body: "No otra herramienta más. Un sistema interno que le quite trabajo repetitivo sin masificar ni perder el trato humano de 30 MPS.",
       bullets: [
-        "CEO demasiado operativo hoy (triaje, seguimiento, contenido)",
-        "Producto 5★ — el cuello es sistema, no calidad de viaje",
-        "Sencillo, medible, mantenible part-time (Growth Builder)",
+        "Hoy pierde horas ordenando leads, siguiendo y pensando contenido",
+        "El viaje es 5★ — el cuello es el día a día, no la calidad",
+        "Sencillo, medible y mantenible a media jornada",
       ],
     },
     {
@@ -196,12 +196,12 @@ export const SLIDES: Record<Lang, Slide[]> = {
       ],
     },
     {
-      title: "30 MPS Growth OS",
-      body: "Una plataforma por fases — no tres proyectos sueltos. Convierte Excel + correo + Brevo en decisiones y acción comercial priorizada.",
+      title: "Una sola plataforma",
+      body: "Por fases — no tres proyectos sueltos. Convierte Excel + correo + newsletter en una lista clara de a quién llamar y qué decidir.",
       bullets: [
-        "Data Hub · Dashboard · Lead + Customer Intelligence",
-        "Reservas/logística · Facturas Veri*FACTU · Ecosistema n8n",
-        "Knowledge + Content Factory editables",
+        "Base del negocio · pantalla diaria · leads y clientes priorizados",
+        "Reservas · facturas para gestoría · avisos internos",
+        "Memoria de la casa + borradores de contenido",
       ],
     },
     {
@@ -215,21 +215,21 @@ export const SLIDES: Record<Lang, Slide[]> = {
       ],
     },
     {
-      title: "Arquitectura en una imagen",
-      body: "Web + Brevo + hojas → n8n/Make → Data Hub → CRM / Score / CI / Reservas / Facturas → aviso interno → seguimiento humano.",
+      title: "Cómo fluye (en una frase)",
+      body: "Web + newsletter + Excel → entra al sistema → se ordena → avisa al equipo → una persona hace el seguimiento.",
       bullets: [
-        "Tubería automática de datos",
-        "Conversación siempre humana",
-        "Editor de flujos estilo n8n vinculado a módulos CRM",
+        "Los datos se mueven solos",
+        "La conversación con el cliente siempre es humana",
+        "Las automatizaciones avisan dentro; nunca fuera",
       ],
     },
     {
-      title: "Fase 1 · Data Hub (quick win)",
-      body: "Cada lead/cliente con origen, campaña, destino, estado, score y owner. En 2–4 semanas el cuello #1 (origen) ya es visible.",
+      title: "Fase 1 · Orden (2–4 semanas)",
+      body: "Cada interesado con origen, destino, estado y responsable. En pocas semanas ya se ve el agujero nº 1.",
       bullets: [
-        "Airtable/Postgres + n8n + lectura Brevo",
-        "UTM obligatorios en captación",
-        "Meta 6 meses: 95 % leads con origen",
+        "Importar Excel / newsletter al mismo sitio",
+        "Saber de dónde vino cada lead",
+        "Meta a 6 meses: 95 % con origen conocido",
       ],
     },
     {
@@ -251,21 +251,21 @@ export const SLIDES: Record<Lang, Slide[]> = {
       ],
     },
     {
-      title: "Lead scoring + Content + Knowledge",
-      body: "Priorizar tiempo comercial con score explicable. Content Factory con plantillas editables (email, WhatsApp, internos). Knowledge con preguntas argumentadas y fuentes.",
+      title: "Prioridad · contenido · memoria",
+      body: "Lista de a quién llamar, con razones claras. Borradores editables. Preguntas internas con fuentes.",
       bullets: [
-        "Top-N a llamar — la IA no escribe al cliente",
-        "Copiar plantilla → pegar en Brevo/WhatsApp",
-        "RAG interno: ops, margen, legal, clientes, stack",
+        "Top a llamar — la IA no escribe al cliente",
+        "Copiar borrador → pegar en newsletter / WhatsApp",
+        "Si no hay dato: «no está en el sistema»",
       ],
     },
     {
-      title: "Ecosistema CRM (n8n-like)",
-      body: "Editor visual libre: plantillas, nodos CRM, conectar a mano, import/export JSON. Automatizaciones que se vinculan a Hub, leads, clientes, reservas, facturas y contenido.",
+      title: "Automatizaciones internas",
+      body: "Flujos que el equipo puede ver: formulario → sistema → aviso. Nunca un envío automático al viajero.",
       bullets: [
-        "Crear / editar / duplicar / activar / exportar",
-        "Values · form · API · vínculo a módulo CRM",
-        "Nunca nodo de envío automático al viajero",
+        "Crear / editar / activar / exportar",
+        "Vinculados a leads, clientes, reservas y contenido",
+        "Cero nodos de mensaje al cliente",
       ],
     },
     {
@@ -291,12 +291,12 @@ export const SLIDES: Record<Lang, Slide[]> = {
       ],
     },
     {
-      title: "Mensaje de cierre",
-      body: "No propongo sustituir el trato humano. Propongo ordenar lo que ocurre detrás del escenario para que Miguel y el equipo dediquen más tiempo a la confianza y la experiencia premium.",
+      title: "Cierre (entrevista)",
+      body: "No vengo a sustituir el trato humano. Vengo a quitar lo repetitivo de detrás para que Miguel y el equipo dediquen más tiempo a la confianza y la experiencia premium.",
       bullets: [
         "El sistema informa y prioriza",
         "Las personas construyen la confianza 30 MPS",
-        "Growth Builder construye los pilares — y se puede traspasar",
+        "Se construye para quedaroslo — y poder traspasarlo",
       ],
     },
   ],

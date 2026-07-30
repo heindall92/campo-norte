@@ -167,6 +167,34 @@ export async function ollamaChat(
   return aiChat(messages, options);
 }
 
+/** Ping real al proveedor activo. Devuelve ok + detalle o lanza error. */
+export async function testAiConnection(
+  settings: AiSettings = loadAiSettings(),
+): Promise<{ ok: true; provider: AiProvider; model: string; reply: string }> {
+  if (!settings.enabled) {
+    throw new Error("Activa la IA (checkbox) antes de probar");
+  }
+  const key = activeApiKey(settings);
+  if (settings.provider !== "ollama" || settings.ollamaMode === "cloud") {
+    if (!key) throw new Error(`Falta API key de ${settings.provider}`);
+  }
+  const result = await aiChat(
+    [
+      {
+        role: "user",
+        content: 'Responde exactamente con la palabra OK (sin más texto).',
+      },
+    ],
+    { settings },
+  );
+  return {
+    ok: true,
+    provider: result.provider,
+    model: result.model,
+    reply: result.content.trim().slice(0, 120),
+  };
+}
+
 export function parseJsonFromModel(content: string): unknown {
   const trimmed = content.trim();
   try {

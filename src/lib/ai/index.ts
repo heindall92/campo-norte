@@ -24,6 +24,7 @@ export {
   aiChat,
   ollamaChat,
   parseJsonFromModel,
+  testAiConnection,
   type AiChatFormat,
   type AiChatMessage,
   type AiChatResult,
