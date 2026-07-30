@@ -378,6 +378,33 @@ export function AutomationsEcosystemPanel({ lang }: { lang: Lang }) {
           </span>
         </p>
         <N8nFlowBuilder lang={lang} />
+        <aside className="mt-5 rounded-2xl border border-[var(--glass-border)] bg-[color-mix(in_oklab,var(--accent)_6%,var(--glass))] p-4 sm:p-5">
+          <p className="text-xs font-bold uppercase tracking-wide text-[var(--accent)]">
+            {lang === "es" ? "Qué decir si te preguntan" : "What to say if they ask"}
+          </p>
+          <blockquote className="mt-2 border-l-4 border-[var(--accent)] pl-4 text-sm leading-relaxed text-[var(--ink)]">
+            {lang === "es" ? (
+              <>
+                Yo lo plantearía así: «La automatización de captura de leads (A-01) ya tiene toda la
+                lógica de negocio construida y probada dentro del CRM — dedupe, scoring, asignación,
+                aviso. Lo que falta para que corra sola es conectar el formulario real de la web a ese
+                pipeline, que es trabajo de fontanería (un webhook), no de diseño. El resto de
+                automatizaciones del roadmap están especificadas y dibujadas como flujo, listas para
+                implementarse fase a fase — así evitamos construir 12 integraciones antes de validar
+                que la primera funciona.»
+              </>
+            ) : (
+              <>
+                I’d put it like this: “Lead capture automation (A-01) already has the full business
+                logic built and tested inside the CRM — dedupe, scoring, assignment, alert. What’s left
+                for it to run on its own is wiring the real website form into that pipeline — plumbing
+                (a webhook), not design. The rest of the roadmap automations are specified and drawn as
+                flows, ready to implement phase by phase — so we don’t build 12 integrations before
+                proving the first one works.”
+              </>
+            )}
+          </blockquote>
+        </aside>
       </Card>
     </div>
   );
