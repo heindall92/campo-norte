@@ -589,6 +589,16 @@ export function InvoicesVerifactuPanel({ lang }: { lang: Lang }) {
           </button>
         }
       >
+        <div className="mb-4 rounded-xl border border-[color-mix(in_oklab,var(--accent)_35%,transparent)] bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] px-3 py-2.5 text-sm text-[var(--ink)]">
+          <p className="font-semibold text-[var(--accent)]">
+            {lang === "es" ? "Frase para Miguel (10 s)" : "Pitch line for Miguel (10 s)"}
+          </p>
+          <p className="mt-1 text-[var(--ink-muted)]">
+            {lang === "es"
+              ? "Este módulo prepara las facturas para la gestoría con el régimen fiscal específico de agencias de viajes. Cumple Veri*FACTU, que entra en vigor en 2027."
+              : "This module prepares invoices for the tax advisor under the travel-agency special VAT scheme. It is ready for Veri*FACTU, which becomes mandatory in 2027."}
+          </p>
+        </div>
         <div className="mb-4 flex flex-wrap gap-2">
           {["Stripe", "Bizum", "SEPA", "PayPal", "Depósito", "Efectivo"].map((p) => (
             <Badge key={p} tone="brand">

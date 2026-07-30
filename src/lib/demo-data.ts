@@ -1165,9 +1165,9 @@ export const AUTOMATIONS: AutomationJob[] = [
     name: "Factura REAV → registro Veri*FACTU",
     from: "Módulo Facturas",
     to: "SIF / AEAT (cuando activo) + gestoría",
-    status: "aviso",
-    lastRun: "hace 2 h",
-    note: "ClaveRégimen 05, mención REAV, hash. Remisión AEAT en modo prueba hasta plazo legal.",
+    status: "ok",
+    lastRun: "hace 12 min",
+    note: "Export gestoría + hash REAV 05 operativo. Remisión AEAT en modo preparado (plazo IS 01/01/2027) — no es un fallo, es cumplimiento por fases.",
     trigger: "Emitir / cobrar factura",
     cadence: "Por factura · export semanal gestoría",
     arguments: [

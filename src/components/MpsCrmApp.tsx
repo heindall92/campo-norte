@@ -559,24 +559,27 @@ function HubPanel({ lang }: { lang: Lang }) {
       </Card>
 
       <Card
-        title={lang === "es" ? "Fichas del Hub" : "Hub records"}
+        title={lang === "es" ? "Fichas del Hub · Quick Win" : "Hub records · Quick Win"}
         subtitle={
           lang === "es"
-            ? "Memoria única viva — misma fuente que Lead Intelligence"
-            : "Live single memory — same source as Lead Intelligence"
+            ? "Los 12 campos mínimos en una memoria viva — misma fuente que Lead Intelligence y Reservas"
+            : "The 12 minimum fields in one live memory — same source as Lead Intelligence and Bookings"
         }
       >
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] text-left text-sm text-[var(--ink)]">
+          <table className="w-full min-w-[1100px] text-left text-sm text-[var(--ink)]">
             <thead className="text-xs uppercase tracking-wide text-[var(--ink-muted)]">
               <tr>
                 <th className="py-2">ID</th>
                 <th>{lang === "es" ? "Nombre" : "Name"}</th>
                 <th>{lang === "es" ? "Origen" : "Origin"}</th>
+                <th>{lang === "es" ? "Campaña" : "Campaign"}</th>
                 <th>{lang === "es" ? "Destino" : "Destination"}</th>
                 <th>{t(lang, "vehicle")}</th>
+                <th>{lang === "es" ? "Estado" : "Status"}</th>
                 <th>Score</th>
                 <th>Owner</th>
+                <th>{lang === "es" ? "Último toque" : "Last touch"}</th>
               </tr>
             </thead>
             <tbody>
@@ -585,20 +588,135 @@ function HubPanel({ lang }: { lang: Lang }) {
                   <td className="py-2.5 font-mono text-xs">{l.id}</td>
                   <td className="font-medium">{l.name}</td>
                   <td>{ORIGIN_LABEL[l.origin]}</td>
+                  <td className="text-[var(--ink-muted)]">{l.campaign ?? "—"}</td>
                   <td>{l.interestRoute ? ROUTE_LABEL[l.interestRoute] : "—"}</td>
                   <td>
                     <VehicleBadge vehicle={l.vehicle} />
                   </td>
                   <td>
+                    <Badge tone={l.status === "cualificado" || l.status === "reservado" ? "good" : "neutral"}>
+                      {l.status}
+                    </Badge>
+                  </td>
+                  <td>
                     <Badge tone={scoreTone(l.score)}>{l.score}</Badge>
                   </td>
                   <td>{l.owner}</td>
+                  <td className="text-xs text-[var(--ink-muted)]">{l.lastTouchAt}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </Card>
+
+      <div className="grid gap-5 lg:grid-cols-3">
+        <Card
+          title={lang === "es" ? "Cobertura de origen" : "Origin coverage"}
+          subtitle={lang === "es" ? "Meta Quick Win ≥80% en 60 días" : "Quick Win target ≥80% in 60 days"}
+        >
+          {(() => {
+            const known = hub.leads.filter((l) => l.origin !== "unknown").length;
+            const pct = hub.leads.length ? Math.round((known / hub.leads.length) * 100) : 0;
+            return (
+              <>
+                <p className="font-[family-name:var(--mps-display)] text-4xl text-[var(--ink)]">
+                  {pct}%
+                </p>
+                <p className="mt-1 text-sm text-[var(--ink-muted)]">
+                  {known}/{hub.leads.length}{" "}
+                  {lang === "es" ? "leads con origen conocido" : "leads with known origin"}
+                </p>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--glass)]">
+                  <div
+                    className="h-full rounded-full bg-[var(--accent)]"
+                    style={{ width: `${Math.min(100, pct)}%` }}
+                  />
+                </div>
+                <p className="mt-3 text-xs text-[var(--ink-muted)]">
+                  {lang === "es"
+                    ? "Sin origen = cuello de botella #1. Cada import CSV / UTM web cierra el gap."
+                    : "Unknown origin = bottleneck #1. Every CSV import / web UTM closes the gap."}
+                </p>
+              </>
+            );
+          })()}
+        </Card>
+
+        <Card
+          title={lang === "es" ? "Cola operativa hoy" : "Ops queue today"}
+          subtitle={lang === "es" ? "Qué debe tocar el equipo" : "What the team should touch"}
+        >
+          <ul className="space-y-2 text-sm text-[var(--ink)]">
+            <li className="flex justify-between gap-2 border-b border-[var(--glass-border)] pb-2">
+              <span className="text-[var(--ink-muted)]">
+                {lang === "es" ? "Leads sin origen" : "Leads w/o origin"}
+              </span>
+              <Badge tone="warn">
+                {hub.leads.filter((l) => l.origin === "unknown").length}
+              </Badge>
+            </li>
+            <li className="flex justify-between gap-2 border-b border-[var(--glass-border)] pb-2">
+              <span className="text-[var(--ink-muted)]">
+                {lang === "es" ? "Score ≥ 80 (llamar hoy)" : "Score ≥ 80 (call today)"}
+              </span>
+              <Badge tone="good">{hub.leads.filter((l) => l.score >= 80).length}</Badge>
+            </li>
+            <li className="flex justify-between gap-2 border-b border-[var(--glass-border)] pb-2">
+              <span className="text-[var(--ink-muted)]">
+                {lang === "es" ? "Reservas en prep" : "Bookings in prep"}
+              </span>
+              <Badge>
+                {hub.reservations.filter((r) => r.status === "prep_viaje" || r.status === "docs_pendientes").length}
+              </Badge>
+            </li>
+            <li className="flex justify-between gap-2">
+              <span className="text-[var(--ink-muted)]">
+                {lang === "es" ? "Clientes dormidos / VIP" : "Dormant / VIP clients"}
+              </span>
+              <Badge tone="brand">
+                {hub.clients.filter((c) => c.segment === "dormido" || c.segment === "vip").length}
+              </Badge>
+            </li>
+          </ul>
+        </Card>
+
+        <Card
+          title={lang === "es" ? "Encadenado Growth OS" : "Growth OS chain"}
+          subtitle={lang === "es" ? "De captura a seguimiento humano" : "From capture to human follow-up"}
+        >
+          <ol className="space-y-2 text-sm text-[var(--ink)]">
+            {(lang === "es"
+              ? [
+                  "Web / Brevo / Excel → Data Hub",
+                  "Score explicable → Lead Intelligence",
+                  "Reserva + logística → ops",
+                  "Factura REAV 05 → gestoría",
+                  "Aviso interno → Miguel / Laura llaman",
+                ]
+              : [
+                  "Web / Brevo / Excel → Data Hub",
+                  "Explainable score → Lead Intelligence",
+                  "Booking + logistics → ops",
+                  "REAV 05 invoice → tax advisor",
+                  "Internal ping → Miguel / Laura call",
+                ]
+            ).map((step, i) => (
+              <li key={step} className="flex gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[10px] font-bold text-white">
+                  {i + 1}
+                </span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-3 text-xs font-semibold text-[var(--accent)]">
+            {lang === "es"
+              ? "Nada escribe al viajero. La confianza la cierran personas."
+              : "Nothing messages the traveler. People close the trust loop."}
+          </p>
+        </Card>
+      </div>
     </div>
   );
 }
