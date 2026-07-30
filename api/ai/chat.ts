@@ -245,18 +245,30 @@ export default async function handler(
   const model = req.body?.model || "";
   const messages = Array.isArray(req.body?.messages) ? req.body.messages : [];
   const format = req.body?.format ?? null;
-  const apiKey = (req.body?.apiKey || envKey(provider) || "").trim();
+
+  // Producción Vercel: solo keys en env del servidor (no confiar en body.apiKey del navegador).
+  // Demo/local: ALLOW_CLIENT_AI_KEYS=true (o no-production) permite body.apiKey.
+  const isVercelProd = process.env.VERCEL_ENV === "production";
+  const allowClientKeys =
+    process.env.ALLOW_CLIENT_AI_KEYS === "true" ||
+    (!isVercelProd && process.env.ALLOW_CLIENT_AI_KEYS !== "false");
+  const clientKey = allowClientKeys ? String(req.body?.apiKey || "").trim() : "";
+  const apiKey = (envKey(provider) || clientKey).trim();
 
   if (!model || !messages.length) {
     res.status(400).json({ error: "Faltan model o messages" });
     return;
   }
   if (!apiKey && provider !== "ollama") {
-    res.status(401).json({ error: `Falta API key para ${provider}` });
+    res.status(401).json({
+      error: `Falta API key para ${provider}. En producción configura ${provider === "claude" ? "ANTHROPIC_API_KEY" : provider === "openai" ? "OPENAI_API_KEY" : provider === "gemini" ? "GEMINI_API_KEY" : "OLLAMA_API_KEY"} en Vercel.`,
+    });
     return;
   }
   if (provider === "ollama" && !apiKey) {
-    res.status(401).json({ error: "Falta API key de Ollama Cloud" });
+    res.status(401).json({
+      error: "Falta OLLAMA_API_KEY en el servidor (o key en Ajustes solo en demo local)",
+    });
     return;
   }
 

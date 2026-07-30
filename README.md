@@ -44,7 +44,9 @@ Ruta pública: [`/legal`](https://30mps.vercel.app/legal) (Aviso legal · Privac
 3. **Eventos:** crear/editar/borrar leads, clientes, reservas, facturas, import CSV, WhatsApp/llamada → alimentan la bandeja de notificaciones.
 4. **Reservas:** selector de estado + acciones editar / WhatsApp / llamar / borrar.
 
-Demo local: `miguel@30mps.com` / `30mps2026`
+Demo local (`npm run dev`): `miguel@30mps.com` / `30mps2026`
+
+**Antes de producción real:** pon `VITE_STRICT_AUTH=true` (bloquea login demo) y usa Supabase Auth (`VITE_SUPABASE_*`). Mientras el pitch viva en Vercel sin Supabase, el login demo sigue activo a propósito.
 
 ---
 
@@ -82,15 +84,30 @@ Sin credenciales válidas, el Hub cae a modo local con aviso.
 
 ### Ollama / OpenAI / Claude / Gemini (Fase 3 + 4 + 5)
 
-1. En el CRM → **Ajustes → IA · proveedores API**
-2. Elige **Ollama**, **OpenAI**, **Claude** o **Gemini**, pega la API key, modelo y **Guardar**
-3. Links de keys: [Ollama](https://ollama.com/settings) · [OpenAI](https://platform.openai.com/api-keys) · [Claude](https://console.anthropic.com/settings/keys) · [Gemini](https://aistudio.google.com/apikey)
-4. **Lead Intelligence** → «Clasificar con IA»
-5. **Customer Intelligence** → «Analizar cartera con IA»
-6. **Knowledge Assistant** → consulta RAG
-7. **Automatizaciones** → flujo A-01 orquestado
+**Producción (recomendado):** pon las keys solo en Vercel (server-side), no en el navegador:
+
+```
+OPENAI_API_KEY=...
+ANTHROPIC_API_KEY=...
+GEMINI_API_KEY=...
+OLLAMA_API_KEY=...
+```
+
+El proxy `/api/ai/chat` las usa; el body del cliente **no** envía keys en build de producción.
+
+**Demo local (`npm run dev`):**
+
+1. CRM → **Ajustes → IA · proveedores API**
+2. Elige proveedor, pega API key (solo demo), modelo y **Guardar**
+3. Opcional en Vercel demo: `VITE_ALLOW_CLIENT_AI_KEYS=true` (quítalo en producción real)
+4. **Lead Intelligence** → «Clasificar con IA» · o **Probar conexión API** en Ajustes
 
 Sin API key, el CRM usa **heurística / retrieval local**. La IA **nunca** escribe al viajero.
+
+```bash
+npm test           # scoring heurístico + matemáticas REAV / export gestoría
+```
+
 
 ### CSV de importación
 
@@ -109,7 +126,12 @@ vercel           # preview
 vercel --prod    # producción
 ```
 
-Añade las variables `VITE_*` en el proyecto Vercel si usas Supabase.
+Añade en Vercel:
+
+- `VITE_SUPABASE_*` si usas Auth + Hub Postgres
+- Keys IA **server-side**: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `OLLAMA_API_KEY`
+- Solo demo sin Supabase: el login local sigue activo en el pitch; cierra con `VITE_STRICT_AUTH=true`
+- Solo demo con keys en UI: `VITE_ALLOW_CLIENT_AI_KEYS=true` (temporal; preferible no)
 
 - **Framework:** Vite  
 - **Build:** `npm run build`  

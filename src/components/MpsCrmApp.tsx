@@ -58,8 +58,10 @@ import {
   useDataHub,
 } from "@/lib/data";
 import { useAuth } from "@/lib/auth";
+import { allowClientAiKeys } from "@/lib/runtime";
 import type { AppSection } from "@/lib/notifications";
 import { AppHeader } from "@/components/AppHeader";
+import { Badge, Card } from "@/components/CrmChrome";
 import { EntityActionBar } from "@/components/EntityActionBar";
 import { t, type Lang } from "@/lib/i18n";
 import { PITCH_SLIDES, type PitchBlock } from "@/lib/pitch-slides";
@@ -108,7 +110,7 @@ import {
   CalendarDays,
   Zap,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -166,61 +168,6 @@ function euro(n: number, lang: Lang) {
     currency: "EUR",
     maximumFractionDigits: 0,
   }).format(n);
-}
-
-function Badge({
-  children,
-  tone = "neutral",
-}: {
-  children: ReactNode;
-  tone?: "neutral" | "good" | "warn" | "bad" | "brand";
-}) {
-  const tones = {
-    neutral: "bg-[var(--glass)] text-[var(--ink)] border-[var(--glass-border)]",
-    good: "bg-[color-mix(in_oklab,var(--ok)_18%,transparent)] text-[var(--ok)] border-[color-mix(in_oklab,var(--ok)_35%,transparent)]",
-    warn: "bg-[var(--warn-bg)] text-[var(--warn-ink)] border-[color-mix(in_oklab,var(--warn-ink)_30%,transparent)]",
-    bad: "bg-[color-mix(in_oklab,var(--danger)_18%,transparent)] text-[var(--danger)] border-[color-mix(in_oklab,var(--danger)_35%,transparent)]",
-    brand:
-      "bg-[color-mix(in_oklab,var(--accent)_18%,transparent)] text-[var(--accent)] border-[color-mix(in_oklab,var(--accent)_40%,transparent)]",
-  };
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-semibold",
-        tones[tone],
-      )}
-    >
-      {children}
-    </span>
-  );
-}
-
-function Card({
-  title,
-  subtitle,
-  children,
-  className,
-}: {
-  title?: string;
-  subtitle?: string;
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <section className={cn("glass-panel rounded-2xl p-5", className)}>
-      {(title || subtitle) && (
-        <header className="mb-4">
-          {title && (
-            <h3 className="font-[family-name:var(--mps-display)] text-lg text-[var(--ink)]">
-              {title}
-            </h3>
-          )}
-          {subtitle && <p className="mt-1 text-sm text-[var(--ink-muted)]">{subtitle}</p>}
-        </header>
-      )}
-      {children}
-    </section>
-  );
 }
 
 function Kpi({ label, value, hint }: { label: string; value: string; hint?: string }) {
@@ -456,9 +403,12 @@ function SettingsPanel({ lang }: { lang: Lang }) {
             />
           </label>
 
-          {(ai.provider !== "ollama" || ai.ollamaMode === "cloud") && (
+          {allowClientAiKeys() && (ai.provider !== "ollama" || ai.ollamaMode === "cloud") && (
             <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:col-span-2">
               API Key · {AI_PROVIDER_LABEL[ai.provider]}
+              <span className="ml-2 font-normal normal-case text-[var(--warn-ink)]">
+                {lang === "es" ? "(solo demo local)" : "(local demo only)"}
+              </span>
               <input
                 type="password"
                 autoComplete="off"
@@ -481,6 +431,14 @@ function SettingsPanel({ lang }: { lang: Lang }) {
                 }
               />
             </label>
+          )}
+
+          {!allowClientAiKeys() && (ai.provider !== "ollama" || ai.ollamaMode === "cloud") && (
+            <p className="sm:col-span-2 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm text-[var(--ink-muted)]">
+              {lang === "es"
+                ? "Producción: las API keys viven en variables de entorno de Vercel (OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, OLLAMA_API_KEY). No se pegan en el navegador."
+                : "Production: API keys live in Vercel env vars (OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, OLLAMA_API_KEY). They are not pasted in the browser."}
+            </p>
           )}
 
           {ai.provider === "ollama" && (

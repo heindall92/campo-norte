@@ -1,5 +1,7 @@
 /** Configuración multi-proveedor (solo uso interno — la IA no habla con clientes). */
 
+import { allowClientAiKeys } from "@/lib/runtime";
+
 export type AiProvider = "ollama" | "openai" | "claude" | "gemini";
 export type OllamaMode = "cloud" | "local";
 
@@ -214,6 +216,8 @@ export function aiReady(settings: AiSettings = loadAiSettings()): boolean {
   const model = activeModel(settings);
   if (!model) return false;
   if (settings.provider === "ollama" && settings.ollamaMode === "local") return true;
+  // Producción: keys en Vercel env → listo sin pegar key en el navegador.
+  if (!allowClientAiKeys()) return true;
   return Boolean(activeApiKey(settings));
 }
 

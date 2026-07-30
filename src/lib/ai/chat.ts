@@ -5,6 +5,7 @@ import {
   type AiProvider,
   type AiSettings,
 } from "./settings";
+import { allowClientAiKeys } from "@/lib/runtime";
 
 export interface AiChatMessage {
   role: "system" | "user" | "assistant";
@@ -101,8 +102,9 @@ async function chatViaProxy(
   format?: AiChatFormat,
 ): Promise<AiChatResult> {
   const model = activeModel(settings);
-  const apiKey = activeApiKey(settings);
-  if (!apiKey && !(provider === "ollama" && settings.ollamaMode === "local")) {
+  const sendClientKey = allowClientAiKeys();
+  const apiKey = sendClientKey ? activeApiKey(settings) : "";
+  if (sendClientKey && !apiKey && !(provider === "ollama" && settings.ollamaMode === "local")) {
     throw new Error(`Falta API key de ${provider} (Ajustes → IA)`);
   }
 
@@ -114,7 +116,7 @@ async function chatViaProxy(
       model,
       messages: withFormat(messages, provider === "ollama" ? undefined : format),
       format: format ?? null,
-      apiKey,
+      ...(sendClientKey && apiKey ? { apiKey } : {}),
       ollamaMode: settings.ollamaMode,
       ollamaBaseUrl: settings.ollamaBaseUrl,
     }),
@@ -175,8 +177,10 @@ export async function testAiConnection(
     throw new Error("Activa la IA (checkbox) antes de probar");
   }
   const key = activeApiKey(settings);
-  if (settings.provider !== "ollama" || settings.ollamaMode === "cloud") {
-    if (!key) throw new Error(`Falta API key de ${settings.provider}`);
+  if (allowClientAiKeys()) {
+    if (settings.provider !== "ollama" || settings.ollamaMode === "cloud") {
+      if (!key) throw new Error(`Falta API key de ${settings.provider}`);
+    }
   }
   const result = await aiChat(
     [

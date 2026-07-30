@@ -25,18 +25,44 @@ function splitSystem(messages: Msg[]) {
   return { system, rest };
 }
 
+function envKey(provider: string): string {
+  switch (provider) {
+    case "ollama":
+      return (process.env.OLLAMA_API_KEY || process.env.VITE_OLLAMA_API_KEY || "").trim();
+    case "openai":
+      return (process.env.OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY || "").trim();
+    case "claude":
+      return (process.env.ANTHROPIC_API_KEY || process.env.VITE_ANTHROPIC_API_KEY || "").trim();
+    case "gemini":
+      return (
+        process.env.GEMINI_API_KEY ||
+        process.env.GOOGLE_API_KEY ||
+        process.env.VITE_GEMINI_API_KEY ||
+        ""
+      ).trim();
+    default:
+      return "";
+  }
+}
+
 async function dispatch(body: Record<string, unknown>) {
   const provider = String(body.provider || "ollama");
   const model = String(body.model || "");
   const messages = (Array.isArray(body.messages) ? body.messages : []) as Msg[];
   const format = body.format ?? null;
-  const apiKey = String(body.apiKey || "").trim();
+  // Dev proxy: env primero, luego body (demo local).
+  const apiKey = (envKey(provider) || String(body.apiKey || "")).trim();
 
   if (!model || !messages.length) {
     return { status: 400, json: { error: "Faltan model o messages" } };
   }
   if (!apiKey) {
-    return { status: 401, json: { error: `Falta API key para ${provider}` } };
+    return {
+      status: 401,
+      json: {
+        error: `Falta API key para ${provider} (env del server o Ajustes en demo local)`,
+      },
+    };
   }
 
   if (provider === "openai") {

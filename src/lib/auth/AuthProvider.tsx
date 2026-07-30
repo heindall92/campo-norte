@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { getSupabase, getSupabaseEnv } from "@/lib/supabase/client";
+import { allowLocalDemoAuth } from "@/lib/runtime";
 import {
   LOCAL_AUTH_KEY,
   LOCAL_TEAM_USERS,
@@ -103,9 +104,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => sub.subscription.unsubscribe();
       }
 
-      // Sin Supabase: sesión local del equipo
+      // Sin Supabase: sesión local del equipo (solo demo / no-producción)
       if (!cancelled) {
-        setUser(userFromLocalStorage());
+        if (!allowLocalDemoAuth()) {
+          setUser(null);
+        } else {
+          setUser(userFromLocalStorage());
+        }
         setReady(true);
       }
     }
@@ -129,11 +134,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    if (!allowLocalDemoAuth()) {
+      throw new Error(
+        "Login demo desactivado en producción. Configura Supabase Auth (VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY).",
+      );
+    }
+
     const match = LOCAL_TEAM_USERS.find(
       (u) => u.email === normalized && u.password === password,
     );
     if (!match) {
-      throw new Error("Email o contraseña incorrectos (demo: miguel@30mps.com / 30mps2026)");
+      throw new Error("Email o contraseña incorrectos");
     }
     const { password: _pw, ...safe } = match;
     localStorage.setItem(LOCAL_AUTH_KEY, JSON.stringify(safe));
