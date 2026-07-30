@@ -11,9 +11,7 @@ export function LoginScreen() {
   const { signIn, supabaseReady } = useAuth();
   const demoAuth = allowLocalDemoAuth() && !supabaseReady;
   const [email, setEmail] = useState(LOCAL_TEAM_USERS[0]?.email ?? "");
-  const [password, setPassword] = useState(
-    demoAuth && !isProdBuild() ? "30mps2026" : "",
-  );
+  const [password, setPassword] = useState(demoAuth ? "30mps2026" : "");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
