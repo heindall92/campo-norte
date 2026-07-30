@@ -6,7 +6,9 @@ Plataforma para **Miguel Checa** (Fundador / Managing Director de [30 MPS Advent
 
 **Regla de oro:** nada habla automáticamente con el viajero. La tecnología trabaja detrás; la confianza la cierran personas.
 
-Repo: [`heindall92/30mps`](https://github.com/heindall92/30mps) (privado).
+Repo: [`heindall92/30mps`](https://github.com/heindall92/30mps) (**privado** · licencia comercial de pago).
+
+**Licencia:** ver [`LICENSE`](./LICENSE) y [`NOTICE`](./NOTICE). Uso sin contrato/pago = no autorizado.
 
 ---
 

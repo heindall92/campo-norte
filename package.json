@@ -2,7 +2,8 @@
   "name": "30mps",
   "private": true,
   "version": "1.0.0",
-  "description": "30 MPS Adventures — Growth OS / CRM interno (demo propuesta Growth Builder)",
+  "license": "UNLICENSED",
+  "description": "30 MPS Adventures — Growth OS / CRM interno (licencia comercial de pago)",
   "type": "module",
   "scripts": {
     "dev": "vite",
