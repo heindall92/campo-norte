@@ -45,15 +45,15 @@ export function LoginScreen() {
           <source src={LOGIN_VIDEO_SRC} type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-black/25 to-black/50" />
-        <div className="absolute inset-y-0 right-0 w-full bg-gradient-to-l from-[color-mix(in_oklab,#0f1412_68%,transparent)] via-[color-mix(in_oklab,#0f1412_28%,transparent)] to-transparent md:w-[min(62%,48rem)]" />
+        <div className="absolute inset-y-0 right-0 w-full bg-gradient-to-l from-[color-mix(in_oklab,#0f1412_68%,transparent)] via-[color-mix(in_oklab,#0f1412_28%,transparent)] to-transparent md:w-[min(78%,56rem)]" />
       </div>
 
       {/*
         Móvil: centrado.
-        Desktop/TV: columna derecha con margen derecho generoso (no pegado al borde)
-        y panel un poco más a la izquierda.
+        Desktop/TV: panel en el tercio derecho-centro (donde marcó el usuario),
+        con gutter derecho amplio para no pegarlo al borde.
       */}
-      <div className="relative z-10 grid min-h-[100dvh] w-full grid-cols-1 items-center justify-items-center px-[clamp(1rem,3.5vw,2.5rem)] py-[clamp(1rem,3vh,2.5rem)] lg:grid-cols-[minmax(0,1fr)_minmax(18rem,min(26rem,34vw))_minmax(3.5rem,12vw)] lg:justify-items-stretch xl:grid-cols-[minmax(0,1fr)_minmax(20rem,min(28rem,30vw))_minmax(5rem,14vw)]">
+      <div className="relative z-10 grid min-h-[100dvh] w-full grid-cols-1 items-center justify-items-center px-[clamp(1rem,3.5vw,2.5rem)] py-[clamp(1rem,3vh,2.5rem)] lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,min(26rem,28vw))_minmax(10rem,22vw)] lg:justify-items-stretch xl:grid-cols-[minmax(0,1.45fr)_minmax(22rem,min(28rem,26vw))_minmax(12rem,24vw)] 2xl:grid-cols-[minmax(0,1.55fr)_minmax(22rem,28rem)_minmax(14rem,26vw)]">
         <div className="hidden lg:block" aria-hidden />
 
         <div className="flex w-full max-w-[26rem] flex-col justify-center lg:max-w-none">
