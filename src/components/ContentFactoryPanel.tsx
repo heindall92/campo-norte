@@ -144,7 +144,7 @@ export function ContentFactoryPanel({ lang }: { lang: Lang }) {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h3 className="font-[family-name:var(--mps-display)] text-xl text-[var(--ink)] md:text-2xl">
-              Content Factory
+              {lang === "es" ? "Fábrica de contenido" : "Content Factory"}
             </h3>
             <p className="mt-1 max-w-2xl text-sm text-[var(--ink-muted)]">
               {lang === "es"

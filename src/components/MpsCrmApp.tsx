@@ -293,7 +293,7 @@ function SettingsPanel({ lang }: { lang: Lang }) {
         title={lang === "es" ? "IA · proveedores API" : "AI · API providers"}
         subtitle={
           lang === "es"
-            ? "Ollama · OpenAI · Claude · Gemini. Misma tubería (Lead Score, Customer Intelligence, Knowledge, Automatizaciones). La IA solo clasifica; nunca habla con el viajero."
+            ? "Ollama · OpenAI · Claude · Gemini. Misma tubería (puntuación de leads, clientes, conocimiento, automatizaciones). La IA solo clasifica; nunca habla con el viajero."
             : "Ollama · OpenAI · Claude · Gemini. Same pipeline (Lead Score, Customer Intelligence, Knowledge, Automations). AI only ranks; never messages the traveller."
         }
       >
@@ -510,14 +510,14 @@ function SettingsPanel({ lang }: { lang: Lang }) {
         {aiFlash && <p className="mt-3 text-sm text-[var(--accent)]">{aiFlash}</p>}
         <p className="mt-3 text-xs text-[var(--ink-muted)]">
           {lang === "es"
-            ? "«Configuración lista» ≠ API verificada. Pulsa «Probar conexión API» para llamar de verdad al proveedor. También puedes probar en Lead Intelligence → Clasificar con IA."
+            ? "«Configuración lista» ≠ API verificada. Pulsa «Probar conexión API» para llamar de verdad al proveedor. También puedes probar en Inteligencia de leads → Clasificar con IA."
             : "“Config ready” ≠ verified API. Hit “Test API connection” for a live call. Or try Lead Intelligence → Classify with AI."}
         </p>
       </Card>
 
       <Card
         title={lang === "es" ? "Base de datos" : "Database"}
-        subtitle="Supabase / Postgres · Data Hub"
+        subtitle={lang === "es" ? "Supabase / Postgres · base de datos" : "Supabase / Postgres · Data Hub"}
       >
         <ul className="space-y-2 text-sm text-[var(--ink-muted)]">
           <li>
@@ -676,7 +676,7 @@ function HubPanel({ lang }: { lang: Lang }) {
 
         <p className="text-sm text-[var(--ink-muted)]">
           {lang === "es"
-            ? "Fase 1 activa: CRM conectado al Data Hub. Los cambios en leads, clientes, reservas y facturas se guardan. Importa Excel/CSV o conecta Supabase (Postgres) con .env.local."
+            ? "Fase 1 activa: CRM conectado a la base de datos. Los cambios en leads, clientes, reservas y facturas se guardan. Importa Excel/CSV o conecta Supabase (Postgres) con .env.local."
             : "Phase 1 live: CRM wired to the Data Hub. Lead, client, booking and invoice edits persist. Import Excel/CSV or connect Supabase (Postgres) via .env.local."}
         </p>
 
@@ -856,7 +856,7 @@ function HubPanel({ lang }: { lang: Lang }) {
         title={lang === "es" ? "Fichas del Hub · Quick Win" : "Hub records · Quick Win"}
         subtitle={
           lang === "es"
-            ? "Los 12 campos mínimos en una memoria viva — misma fuente que Lead Intelligence y Reservas"
+            ? "Los 12 campos mínimos en una memoria viva — misma fuente que Inteligencia de leads y Reservas"
             : "The 12 minimum fields in one live memory — same source as Lead Intelligence and Bookings"
         }
       >
@@ -982,9 +982,9 @@ function HubPanel({ lang }: { lang: Lang }) {
           <ol className="space-y-2 text-sm text-[var(--ink)]">
             {(lang === "es"
               ? [
-                  "Web / Brevo / Excel → Data Hub",
-                  "Score explicable → Lead Intelligence",
-                  "Reserva + logística → ops",
+                  "Web / newsletter / Excel → base de datos",
+                  "Puntuación clara → Inteligencia de leads",
+                  "Reserva + logística → operaciones",
                   "Factura REAV 05 → gestoría",
                   "Aviso interno → Miguel / Laura llaman",
                 ]
@@ -2075,7 +2075,7 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
   return (
     <div className="space-y-4">
       <Card
-        title={lang === "es" ? "Knowledge Assistant · solo equipo" : "Knowledge Assistant · team only"}
+        title={lang === "es" ? "Asistente de conocimiento · solo equipo" : "Knowledge Assistant · team only"}
         subtitle={
           lang === "es"
             ? "Siempre busca primero en docs + Hub (heurística). Si la IA está activa en Ajustes, resume esos fragmentos. Si no hay IA o falla → solo heurística. Nunca habla con el viajero."
@@ -3004,7 +3004,9 @@ export function MpsCrmApp() {
   if (!hub.ready) {
     return (
       <div className="mps-crm mps-bg flex min-h-screen items-center justify-center text-[var(--ink)]">
-        <p className="text-sm text-[var(--ink-muted)]">Cargando Data Hub…</p>
+        <p className="text-sm text-[var(--ink-muted)]">
+          {lang === "es" ? "Cargando base de datos…" : "Loading Data Hub…"}
+        </p>
       </div>
     );
   }
