@@ -2746,52 +2746,96 @@ function ProposalPanel({ lang }: { lang: Lang }) {
   );
 }
 
-/** Deck definitivo del business case (15 slides) embebido desde public/deck */
-const PITCH_DECK_URL = "/deck/30MPS_BusinessCase_YoandyRamirez.html";
+/** Presentación oficial (PPTX) · Propuesta Empresarial 30 MPS */
+const PITCH_PPTX_URL = "/deck/Propuesta-Empresarial-30MPS-Yoandy-Ramirez-Delgado.pptx";
 
 function SlidesPanel({ lang }: { lang: Lang }) {
+  const [embedSrc, setEmbedSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const absolute = `${window.location.origin}${PITCH_PPTX_URL}`;
+    // Office Online solo embebe URLs públicas https (Vercel). En local: descarga.
+    if (window.location.protocol === "https:") {
+      setEmbedSrc(
+        `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(absolute)}`,
+      );
+    } else {
+      setEmbedSrc(null);
+    }
+  }, []);
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
-            Business Case · 30 MPS
+            Propuesta empresarial · 30 MPS
           </p>
           <h2 className="mt-1 font-[family-name:var(--mps-display)] text-xl text-[var(--ink)] md:text-2xl">
             {lang === "es"
-              ? "De artesanal a escalable, sin dejar de ser 30 MPS"
-              : "From artisan to scalable — still 30 MPS"}
+              ? "Propuesta Empresarial · Yoandy Ramírez Delgado"
+              : "Business Proposal · Yoandy Ramírez Delgado"}
           </h2>
         </div>
-        <a
-          href={PITCH_DECK_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-2 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-strong)] px-3 py-2 text-sm font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
-        >
-          <ExternalLink className="h-4 w-4" />
-          {lang === "es" ? "Abrir a pantalla completa" : "Open fullscreen"}
-        </a>
+        <div className="flex flex-wrap gap-2">
+          <a
+            href={PITCH_PPTX_URL}
+            download="Propuesta-Empresarial-30MPS-Yoandy-Ramirez-Delgado.pptx"
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-strong)] px-3 py-2 text-sm font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
+          >
+            <Download className="h-4 w-4" />
+            {lang === "es" ? "Descargar PPTX" : "Download PPTX"}
+          </a>
+          <a
+            href={PITCH_PPTX_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white hover:opacity-95"
+          >
+            <ExternalLink className="h-4 w-4" />
+            {lang === "es" ? "Abrir presentación" : "Open presentation"}
+          </a>
+        </div>
       </div>
 
-      <div className="overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[#E7E4D3] shadow-xl">
-        <iframe
-          src={PITCH_DECK_URL}
-          title={
-            lang === "es"
-              ? "Presentación · De artesanal a escalable"
-              : "Pitch deck · From artisan to scalable"
-          }
-          className="block w-full border-0"
-          style={{ height: "min(78vh, 860px)", minHeight: 520 }}
-          allowFullScreen
-        />
+      <div className="overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[var(--glass)] shadow-xl">
+        {embedSrc ? (
+          <iframe
+            src={embedSrc}
+            title={
+              lang === "es"
+                ? "Presentación · Propuesta Empresarial 30 MPS"
+                : "Pitch · 30 MPS Business Proposal"
+            }
+            className="block w-full border-0"
+            style={{ height: "min(78vh, 860px)", minHeight: 520 }}
+            allowFullScreen
+          />
+        ) : (
+          <div className="flex min-h-[420px] flex-col items-center justify-center gap-4 p-8 text-center">
+            <Presentation className="h-10 w-10 text-[var(--accent)]" />
+            <p className="max-w-md text-sm text-[var(--ink-muted)]">
+              {lang === "es"
+                ? "La vista previa embebida funciona en la URL pública (Vercel). Aquí puedes descargar o abrir el PowerPoint oficial."
+                : "Embedded preview works on the public URL (Vercel). Here you can download or open the official PowerPoint."}
+            </p>
+            <a
+              href={PITCH_PPTX_URL}
+              download="Propuesta-Empresarial-30MPS-Yoandy-Ramirez-Delgado.pptx"
+              className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white"
+            >
+              <Download className="h-4 w-4" />
+              {lang === "es" ? "Descargar propuesta PPTX" : "Download proposal PPTX"}
+            </a>
+          </div>
+        )}
       </div>
 
       <p className="text-xs text-[var(--ink-muted)]">
         {lang === "es"
-          ? "15 slides · flechas / miniaturas dentro del deck · notas del orador incluidas"
-          : "15 slides · arrows / thumbnails inside the deck · speaker notes included"}
+          ? "Archivo: Propuesta Empresarial 30MPS Yoandy Ramirez Delgado.pptx"
+          : "File: Propuesta Empresarial 30MPS Yoandy Ramirez Delgado.pptx"}
       </p>
     </div>
   );
