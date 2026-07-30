@@ -11,7 +11,9 @@ export function LoginScreen() {
   const { signIn, supabaseReady } = useAuth();
   const demoAuth = allowLocalDemoAuth() && !supabaseReady;
   const [email, setEmail] = useState(LOCAL_TEAM_USERS[0]?.email ?? "");
-  const [password, setPassword] = useState(demoAuth ? "30mps2026" : "");
+  const [password, setPassword] = useState(
+    demoAuth && !isProdBuild() ? "30mps2026" : "",
+  );
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -165,7 +167,7 @@ export function LoginScreen() {
               {loading ? "Entrando…" : "Entrar al Growth OS"}
             </button>
 
-            {demoAuth && (
+            {demoAuth && !isProdBuild() && (
               <div className="mt-3 max-h-[min(28vh,11rem)] overflow-y-auto rounded-xl border border-[var(--glass-border)] bg-white/65 p-3 text-xs text-[var(--ink-muted)] sm:mt-4">
                 <p className="font-semibold text-[var(--ink)]">Cuentas demo (solo local)</p>
                 <ul className="mt-1 space-y-0.5">
