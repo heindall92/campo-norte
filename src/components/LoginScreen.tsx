@@ -86,7 +86,7 @@ export function LoginScreen() {
             <p className="mb-5 flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:mb-6 sm:text-xs">
               <Bike className="h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
               <span className="truncate">
-                {supabaseReady ? "Acceso seguro" : "Acceso equipo 30 MPS"}
+                {supabaseReady ? "Acceso seguro" : "Demo · equipo 30 MPS"}
               </span>
             </p>
 
