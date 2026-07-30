@@ -2773,13 +2773,13 @@ function SlidesPanel({ lang }: { lang: Lang }) {
   }, [slides.length]);
 
   return (
-    <div className="space-y-3">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-2.5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
             Propuesta empresarial · 30 MPS
           </p>
-          <h2 className="mt-1 font-[family-name:var(--mps-display)] text-xl text-[var(--ink)] md:text-2xl">
+          <h2 className="mt-0.5 truncate font-[family-name:var(--mps-display)] text-lg text-[var(--ink)] md:text-xl">
             {lang === "es"
               ? "Propuesta Empresarial · Yoandy Ramírez Delgado"
               : "Business Proposal · Yoandy Ramírez Delgado"}
@@ -2792,15 +2792,19 @@ function SlidesPanel({ lang }: { lang: Lang }) {
           <a
             href={PITCH_PPTX_URL}
             download="Propuesta-Empresarial-30MPS-Yoandy-Ramirez-Delgado.pptx"
-            className="inline-flex items-center gap-2 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-strong)] px-3 py-2 text-sm font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-strong)] px-3 py-1.5 text-xs font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
           >
-            <Download className="h-4 w-4" />
+            <Download className="h-3.5 w-3.5" />
             {lang === "es" ? "Descargar PPTX" : "Download PPTX"}
           </a>
         </div>
       </div>
 
-      <div className="flex max-h-[min(62vh,680px)] items-center justify-center overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[color-mix(in_oklab,var(--ink)_8%,transparent)] shadow-xl">
+      {/* Escenario 16:9 acotado al viewport del CRM (sin desbordar la sesión) */}
+      <div
+        className="mx-auto flex w-full max-w-[min(100%,880px)] items-center justify-center overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[color-mix(in_oklab,var(--ink)_10%,transparent)] shadow-lg"
+        style={{ height: "min(48vh, 460px)", maxHeight: "calc(100dvh - 14rem)" }}
+      >
         <img
           src={slides[i]}
           alt={
@@ -2808,17 +2812,17 @@ function SlidesPanel({ lang }: { lang: Lang }) {
               ? `Diapositiva ${i + 1} de ${slides.length}`
               : `Slide ${i + 1} of ${slides.length}`
           }
-          className="max-h-[min(62vh,680px)] w-auto max-w-full select-none object-contain"
+          className="h-full w-full select-none object-contain"
           draggable={false}
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
           disabled={i === 0}
           onClick={() => setI((v) => Math.max(0, v - 1))}
-          className="inline-flex items-center gap-2 rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] px-4 py-2 text-sm font-semibold text-[var(--ink)] disabled:opacity-40"
+          className="inline-flex items-center gap-2 rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-1.5 text-sm font-semibold text-[var(--ink)] disabled:opacity-40"
         >
           <ArrowLeft className="h-4 w-4" /> {t(lang, "slides_prev")}
         </button>
@@ -2826,7 +2830,7 @@ function SlidesPanel({ lang }: { lang: Lang }) {
           type="button"
           disabled={i === slides.length - 1}
           onClick={() => setI((v) => Math.min(slides.length - 1, v + 1))}
-          className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
+          className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-40"
         >
           {t(lang, "slides_next")} <ArrowRight className="h-4 w-4" />
         </button>
