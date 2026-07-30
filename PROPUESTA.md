@@ -87,9 +87,20 @@ Airtable→Postgres · n8n/Make · Claude/OpenAI/Gemini API · panel React/Inter
 
 ---
 
-## 8. KPIs (negocio)
+## 8. KPIs (negocio · 6 meses)
 
-Origen **95%** · tiempo admin. CEO **−60%** (baseline sem. 1) · ~**15%** dormidos reactivados · ↑ ocupación · margen →~30% · ↑ conversión prioritarios · ↑ LTV · ROI por canal medible · dashboard **diario** · mantener “respondemos en el día”.
+No son KPIs de “IA”. Son de negocio:
+
+| Meta | Qué buscaríamos |
+|---|---|
+| **Origen** | Saber el origen del **95 %** de los leads |
+| **Tiempo CEO** | Reducir un **60 %** el tiempo administrativo del fundador (baseline sem. 1) |
+| **Recurrencia** | Reactivar un **15 %** de clientes inactivos |
+| **Ocupación** | Incrementar la ocupación media por expedición |
+| **Margen** | Mejorar el margen por ruta (objetivo casa ~30 %) |
+| **Visibilidad** | Disponer de un **dashboard actualizado diariamente** |
+
+También: ↑ conversión de prioritarios · ↑ LTV · ROI por canal medible · mantener “respondemos en el día”.
 
 ---
 

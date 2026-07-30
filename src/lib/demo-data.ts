@@ -123,6 +123,14 @@ export interface Client {
   history: ClientTrip[];
   reactivationPriority: number;
   reactivationWhy: string;
+  /** Última llamada/WhatsApp saliente del equipo (null/undefined = nunca contactado) */
+  lastOutboundAt?: string | null;
+  /** Probabilidad estimada de recompra 0–100 (Customer Intelligence) */
+  returnProbability?: number;
+  /** Cola operativa: contactar este mes (aviso interno, no mensaje al cliente) */
+  contactThisMonth?: boolean;
+  intelligenceSource?: "seed" | "heuristic" | "ollama";
+  intelligenceAt?: string | null;
 }
 
 export interface Expedition {
@@ -386,6 +394,10 @@ export const CLIENTS: Client[] = [
     ],
     reactivationPriority: 96,
     reactivationWhy: "2 expediciones, NPS 10, 34 meses sin viaje — llamada de Miguel",
+    lastOutboundAt: null,
+    returnProbability: 88,
+    contactThisMonth: true,
+    intelligenceSource: "seed",
   },
   {
     id: "C-003",
@@ -425,6 +437,10 @@ export const CLIENTS: Client[] = [
     ],
     reactivationPriority: 35,
     reactivationWhy: "VIP activo — no ‘despertar’; pedir referidos",
+    lastOutboundAt: "2026-06-12",
+    returnProbability: 40,
+    contactThisMonth: false,
+    intelligenceSource: "seed",
   },
   {
     id: "C-041",
@@ -461,6 +477,10 @@ export const CLIENTS: Client[] = [
     history: [{ route: "NAMIBIA", date: "2024-03-02", vehicle: "4x4", amount: 5_600 }],
     reactivationPriority: 84,
     reactivationWhy: "NPS 9 · 18 meses · engagement Brevo alto",
+    lastOutboundAt: null,
+    returnProbability: 82,
+    contactThisMonth: true,
+    intelligenceSource: "seed",
   },
   {
     id: "C-088",
@@ -533,6 +553,10 @@ export const CLIENTS: Client[] = [
     history: [{ route: "ARGENTINA_PUNA", date: "2022-07-01", vehicle: "4x4", amount: 4_900 }],
     reactivationPriority: 72,
     reactivationWhy: "4 años · abre NL · riesgo de pérdida definitiva",
+    lastOutboundAt: null,
+    returnProbability: 70,
+    contactThisMonth: true,
+    intelligenceSource: "seed",
   },
   {
     id: "C-055",
@@ -1077,13 +1101,14 @@ export const AUTOMATIONS: AutomationJob[] = [
     to: "Data Hub · CRM",
     status: "ok",
     lastRun: "hace 3 min",
-    note: "Cada lead entra con origen, campaña, destino y vehículo. Sin ficha no hay Growth OS.",
+    note: "Cada lead entra con origen, campaña, destino y vehículo. Pipeline orquestado: dedupe → score Ollama → aviso owner → seguimiento. Sin ficha no hay Growth OS.",
     trigger: "Submit formulario o landing de expedición",
     cadence: "Tiempo real · ~30–40 leads/mes",
     arguments: [
       "Hoy >70 % de reservas sin origen medible — este flujo cierra esa fuga",
       "UTM + campaña + destino permiten atribución en el dashboard",
       "Deduplica por email/teléfono antes de crear ficha (evita doble seguimiento)",
+      "Clasifica con Ollama API (o heurística) — la IA no habla con el viajero",
     ],
     neverDoes: "No envía email ni WhatsApp al lead",
     runs30d: 38,

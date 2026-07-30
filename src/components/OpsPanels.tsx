@@ -2,6 +2,13 @@ import { N8nFlowBuilder } from "@/components/N8nFlowBuilder";
 import { blankReservation, ReservationFormModal } from "@/components/ReservationFormModal";
 import { EntityActionBar } from "@/components/EntityActionBar";
 import {
+  aiReady,
+  providerLabel,
+  runLeadCapturePipeline,
+  type LeadPipelineResult,
+  type WebFormLeadPayload,
+} from "@/lib/ai";
+import {
   EXPERIENCE_LABEL,
   PAYMENT_METHOD_LABEL,
   PAYMENT_STATUS_LABEL,
@@ -9,8 +16,11 @@ import {
   SEGMENT_LABEL,
   STATUS_LABEL,
   type Client,
+  type RouteCode,
+  type VehicleMode,
 } from "@/lib/demo-data";
 import { useDataHub } from "@/lib/data";
+import { useNotifications } from "@/lib/notifications";
 import { GESTORIA_EXPORT_FIELDS, LEGAL_CITATIONS, VERIFACTU_CHECKLIST } from "@/lib/legal-verifactu";
 import { downloadInvoicePdf } from "@/lib/invoice-pdf";
 import {
@@ -33,14 +43,17 @@ import {
   Copy,
   Download,
   FileText,
+  Loader2,
   MapPin,
   Pencil,
   Phone,
   Plus,
   Scale,
   Search,
+  Sparkles,
   Trash2,
   Utensils,
+  Zap,
 } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 
@@ -123,22 +136,243 @@ function invTone(s: Invoice["status"]): "good" | "warn" | "bad" | "brand" | "neu
 }
 
 
-/** Ecosistema CRM: editor visual estilo n8n (drag & drop + submenú) */
+/** Ecosistema CRM: orquestación real A-01 + editor visual estilo n8n */
 export function AutomationsEcosystemPanel({ lang }: { lang: Lang }) {
+  const hub = useDataHub();
+  const { push } = useNotifications();
+  const [running, setRunning] = useState(false);
+  const [result, setResult] = useState<LeadPipelineResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [form, setForm] = useState<WebFormLeadPayload>({
+    name: "Pedro Ruiz",
+    email: "pedro.ruiz.demo@example.com",
+    phone: "+34 600 99 88 77",
+    utmSource: "instagram",
+    utmCampaign: "namibia-2026",
+    utmMedium: "paid_social",
+    interestRoute: "NAMIBIA",
+    vehicle: "4x4",
+    message: "Interés Namibia · presupuesto alto",
+  });
+
+  async function runPipeline() {
+    setRunning(true);
+    setError(null);
+    setResult(null);
+    try {
+      const pipeline = await runLeadCapturePipeline(form, hub.leads);
+      await hub.saveLead(pipeline.lead);
+      push({
+        kind: "lead",
+        tone: pipeline.lead.score >= 80 ? "ok" : "info",
+        actor: pipeline.notification.actor,
+        statusLabel: pipeline.notification.statusLabel,
+        body: pipeline.notification.body,
+        detail: pipeline.notification.detail,
+        section: "leads",
+        entityId: pipeline.lead.id,
+      });
+      setResult(pipeline);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  const routes = Object.keys(ROUTE_LABEL) as RouteCode[];
+
   return (
     <div className="space-y-5">
+      <Card
+        title={
+          lang === "es"
+            ? "Orquestación A-01 · formulario → Ollama → seguimiento"
+            : "A-01 orchestration · form → Ollama → follow-up"
+        }
+        subtitle={
+          lang === "es"
+            ? "Ejecución real en el Hub (backstage). Sin intervención humana en la tubería. El equipo solo recibe el aviso. Nunca escribe al viajero."
+            : "Live Hub execution (backstage). No human in the pipeline. Team only gets the alert. Never messages the traveller."
+        }
+      >
+        <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
+          <span className="rounded-full border border-[var(--glass-border)] px-2.5 py-1 font-semibold text-[var(--ink)]">
+            Formulario → Lead → Dedupe → IA → Origen → Dashboard → Aviso → Seguimiento
+          </span>
+          <span
+            className={cn(
+              "rounded-full px-2.5 py-1 font-semibold",
+              aiReady()
+                ? "bg-[color-mix(in_oklab,var(--ok)_18%,transparent)] text-[var(--ok)]"
+                : "bg-[var(--glass)] text-[var(--ink-muted)]",
+            )}
+          >
+            {aiReady()
+              ? `${providerLabel()} API`
+              : lang === "es"
+                ? "Heurística (activa IA en Ajustes)"
+                : "Heuristic (enable AI in Settings)"}
+          </span>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="space-y-3">
+            <label className="block text-xs font-semibold uppercase text-[var(--ink-muted)]">
+              {lang === "es" ? "Nombre" : "Name"}
+              <input
+                className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
+            </label>
+            <label className="block text-xs font-semibold uppercase text-[var(--ink-muted)]">
+              Email
+              <input
+                className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
+            </label>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <label className="block text-xs font-semibold uppercase text-[var(--ink-muted)]">
+                utm_source
+                <input
+                  className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+                  value={form.utmSource ?? ""}
+                  onChange={(e) => setForm({ ...form, utmSource: e.target.value })}
+                />
+              </label>
+              <label className="block text-xs font-semibold uppercase text-[var(--ink-muted)]">
+                utm_campaign
+                <input
+                  className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+                  value={form.utmCampaign ?? ""}
+                  onChange={(e) => setForm({ ...form, utmCampaign: e.target.value })}
+                />
+              </label>
+              <label className="block text-xs font-semibold uppercase text-[var(--ink-muted)]">
+                Destino
+                <select
+                  className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+                  value={form.interestRoute ?? ""}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      interestRoute: (e.target.value || null) as RouteCode | null,
+                    })
+                  }
+                >
+                  <option value="">—</option>
+                  {routes.map((r) => (
+                    <option key={r} value={r}>
+                      {ROUTE_LABEL[r]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <label className="block text-xs font-semibold uppercase text-[var(--ink-muted)]">
+              {lang === "es" ? "Vehículo" : "Vehicle"}
+              <select
+                className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+                value={form.vehicle ?? ""}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    vehicle: (e.target.value || null) as VehicleMode | null,
+                  })
+                }
+              >
+                <option value="">—</option>
+                <option value="moto">moto</option>
+                <option value="4x4">4x4</option>
+              </select>
+            </label>
+            <button
+              type="button"
+              disabled={running}
+              onClick={() => void runPipeline()}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+            >
+              {running ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Zap className="h-4 w-4" />
+              )}
+              {lang === "es"
+                ? "Ejecutar flujo (sin intervención humana)"
+                : "Run flow (no human intervention)"}
+            </button>
+            <p className="text-xs text-[var(--ink-muted)]">
+              {lang === "es"
+                ? "Equivalente a webhook Make/n8n → este pipeline. Exporta el canvas JSON para el mismo flujo en n8n real."
+                : "Same as a Make/n8n webhook → this pipeline. Export canvas JSON for the real n8n flow."}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-4">
+            {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
+            {!result && !error && (
+              <p className="text-sm text-[var(--ink-muted)]">
+                {lang === "es"
+                  ? "Pulsa ejecutar. Verás cada paso del log y el lead quedará en Lead Intelligence + notificación al owner."
+                  : "Hit run. You’ll see each log step; the lead lands in Lead Intelligence + owner notification."}
+              </p>
+            )}
+            {result && (
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone="brand">{result.lead.id}</Badge>
+                  <Badge tone={result.lead.score >= 80 ? "good" : "warn"}>
+                    score {result.lead.score}
+                  </Badge>
+                  <Badge>{result.engine}</Badge>
+                  {result.wasDuplicate && (
+                    <Badge tone="warn">{lang === "es" ? "merge" : "merge"}</Badge>
+                  )}
+                  <span className="text-xs text-[var(--ink-muted)]">
+                    → {result.owner} · follow-up {result.followUpAt.slice(0, 16).replace("T", " ")}
+                  </span>
+                </div>
+                <ol className="space-y-2">
+                  {result.steps.map((s) => (
+                    <li
+                      key={`${s.id}-${s.at}`}
+                      className="rounded-lg border border-[var(--glass-border)] bg-[color-mix(in_oklab,var(--bg0)_40%,transparent)] px-3 py-2 text-sm"
+                    >
+                      <div className="flex items-center gap-2 font-semibold text-[var(--ink)]">
+                        {s.status === "ok" ? (
+                          <CheckCircle2 className="h-4 w-4 text-[var(--ok)]" />
+                        ) : s.status === "warn" ? (
+                          <Sparkles className="h-4 w-4 text-[var(--warn-ink)]" />
+                        ) : (
+                          <Circle className="h-4 w-4 text-[var(--ink-muted)]" />
+                        )}
+                        {s.label}
+                      </div>
+                      <p className="mt-1 text-xs text-[var(--ink-muted)]">{s.detail}</p>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
+
       <Card
         title={lang === "es" ? "Ecosistema CRM · editor de flujos" : "CRM ecosystem · flow editor"}
         subtitle={
           lang === "es"
-            ? "Canvas arrastrar y soltar estilo n8n: crear, editar y exportar automatizaciones. Cada nodo tiene values, formulario y API. La tubería ordena; el equipo cierra con el cliente."
-            : "n8n-style drag-and-drop canvas: create, edit and export automations. Each node has values, form and API. The pipeline ranks; the team closes with the customer."
+            ? "Canvas arrastrar y soltar estilo n8n/Make: crear, editar y exportar JSON. A-01 ya incluye el nodo «Clasificar con IA (Ollama)»."
+            : "n8n/Make-style canvas: create, edit and export JSON. A-01 already includes the «Classify with AI (Ollama)» node."
         }
       >
         <p className="mb-4 text-sm leading-relaxed text-[var(--ink-muted)]">
-          Web/UTM → <strong className="text-[var(--ink)]">Data Hub</strong> → Score → Lead / Customer
-          Intelligence → Reserva + logística → Cobros → Factura REAV / Veri*FACTU → Export gestoría →
-          Dashboard · Content · Knowledge.{" "}
+          Web/UTM → <strong className="text-[var(--ink)]">Data Hub</strong> → Score Ollama → Lead /
+          Customer Intelligence → Reserva + logística → Cobros → Factura REAV / Veri*FACTU → Export
+          gestoría → Dashboard · Content · Knowledge.{" "}
           <span className="text-[var(--accent)]">
             {lang === "es" ? "Nunca escribe al cliente." : "Never messages the customer."}
           </span>
@@ -303,48 +537,82 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
                   key={r.id}
                   className="overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--glass)]"
                 >
-                  <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
-                    <button
-                      type="button"
-                      onClick={() => setOpenId(open ? null : r.id)}
-                      className="min-w-0 flex-1 text-left"
-                    >
-                      <p className="font-semibold text-[var(--ink)]">
-                        {r.clientName}{" "}
-                        <span className="font-mono text-xs font-normal text-[var(--ink-muted)]">
-                          {r.id}
-                        </span>
-                      </p>
-                      <p className="mt-1 text-sm text-[var(--ink-muted)]">
-                        {r.tripName} · {ROUTE_LABEL[r.route]} · {r.vehicle} · {r.pax} pax
-                      </p>
-                    </button>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wide text-[var(--ink-muted)]">
-                          {lang === "es" ? "Estado" : "Status"}
-                        </span>
-                        <select
-                          id={`status-${r.id}`}
-                          value={r.status}
-                          onChange={(e) =>
-                            void patchReservation(r.id, {
-                              status: e.target.value as ReservationStatus,
-                            })
+                  <div className="grid gap-3 p-4 lg:grid-cols-[minmax(0,1fr)_9.5rem_8.5rem_7.5rem_9.5rem] lg:items-center lg:gap-x-4">
+                    {/* Col 1 · cliente + viaje + acciones principales */}
+                    <div className="min-w-0">
+                      <button
+                        type="button"
+                        onClick={() => setOpenId(open ? null : r.id)}
+                        className="w-full text-left"
+                      >
+                        <p className="truncate font-semibold text-[var(--ink)]">
+                          {r.clientName}{" "}
+                          <span className="font-mono text-xs font-normal text-[var(--ink-muted)]">
+                            {r.id}
+                          </span>
+                        </p>
+                        <p className="mt-1 truncate text-sm text-[var(--ink-muted)]">
+                          {r.tripName} · {r.vehicle} · {r.pax} pax
+                        </p>
+                      </button>
+                      <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setModal({ mode: "edit", reservation: structuredClone(r) })
                           }
-                          className={cn(
-                            "rounded-full border px-3 py-1.5 text-xs font-bold outline-none",
-                            statusSelectClass(r.status),
-                          )}
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-white"
                         >
-                          {statuses.map((s) => (
-                            <option key={s} value={s}>
-                              {RESERVATION_STATUS_LABEL[s]}
-                            </option>
-                          ))}
-                        </select>
+                          <Pencil className="h-3.5 w-3.5" />
+                          {lang === "es" ? "Modificar" : "Edit"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => duplicateReservation(r)}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-strong)] px-3 py-1.5 text-xs font-semibold text-[var(--ink)]"
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                          {lang === "es" ? "Duplicar" : "Duplicate"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void deleteReservation(r.id)}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-700 dark:text-rose-300"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          {lang === "es" ? "Eliminar" : "Delete"}
+                        </button>
                       </div>
+                    </div>
+
+                    {/* Col 2 · estado (ancho fijo → alineado entre filas) */}
+                    <div className="flex w-full flex-col gap-1 lg:w-[9.5rem]">
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-[var(--ink-muted)]">
+                        {lang === "es" ? "Estado" : "Status"}
+                      </span>
+                      <select
+                        id={`status-${r.id}`}
+                        value={r.status}
+                        onChange={(e) =>
+                          void patchReservation(r.id, {
+                            status: e.target.value as ReservationStatus,
+                          })
+                        }
+                        className={cn(
+                          "w-full rounded-full border px-3 py-1.5 text-xs font-bold outline-none",
+                          statusSelectClass(r.status),
+                        )}
+                      >
+                        {statuses.map((s) => (
+                          <option key={s} value={s}>
+                            {RESERVATION_STATUS_LABEL[s]}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Col 3 · acciones rápidas */}
+                    <div className="flex lg:justify-center">
                       <EntityActionBar
                         phone={r.clientPhone}
                         onEdit={() =>
@@ -352,52 +620,35 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
                         }
                         onDelete={() => void deleteReservation(r.id)}
                       />
+                    </div>
+
+                    {/* Col 4 · medio de pago */}
+                    <div className="flex lg:justify-center">
                       <Badge tone="neutral">{PAYMENT_LABEL[r.paymentChannel]}</Badge>
-                      <span className="text-sm font-semibold text-[var(--ink)]">
+                    </div>
+
+                    {/* Col 5 · importes + logística */}
+                    <div className="flex flex-col items-start gap-1.5 lg:items-end">
+                      <span className="whitespace-nowrap text-sm font-semibold tabular-nums text-[var(--ink)]">
                         {euro(r.depositPaid, lang)} / {euro(r.totalAmount, lang)}
                       </span>
+                      <button
+                        type="button"
+                        onClick={() => setOpenId(open ? null : r.id)}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--ink-muted)] hover:text-[var(--accent)]"
+                      >
+                        {open
+                          ? lang === "es"
+                            ? "Ocultar logística"
+                            : "Hide logistics"
+                          : lang === "es"
+                            ? "Ver logística"
+                            : "View logistics"}
+                        <ChevronDown
+                          className={cn("h-3.5 w-3.5 transition", open && "rotate-180")}
+                        />
+                      </button>
                     </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2 border-t border-[var(--glass-border)] px-4 py-2.5">
-                    <button
-                      type="button"
-                      onClick={() => setModal({ mode: "edit", reservation: structuredClone(r) })}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-white"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                      {lang === "es" ? "Modificar" : "Edit"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => duplicateReservation(r)}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-strong)] px-3 py-1.5 text-xs font-semibold text-[var(--ink)]"
-                    >
-                      <Copy className="h-3.5 w-3.5" />
-                      {lang === "es" ? "Duplicar" : "Duplicate"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void deleteReservation(r.id)}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-700 dark:text-rose-300"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      {lang === "es" ? "Eliminar" : "Delete"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setOpenId(open ? null : r.id)}
-                      className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-[var(--glass-border)] px-3 py-1.5 text-xs font-semibold text-[var(--ink-muted)]"
-                    >
-                      {open
-                        ? lang === "es"
-                          ? "Ocultar logística"
-                          : "Hide logistics"
-                        : lang === "es"
-                          ? "Ver logística"
-                          : "View logistics"}
-                      <ChevronDown className={cn("h-3.5 w-3.5 transition", open && "rotate-180")} />
-                    </button>
                   </div>
 
                   {open && (

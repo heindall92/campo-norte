@@ -65,6 +65,11 @@ export function blankClient(): Client {
     history: [],
     reactivationPriority: 40,
     reactivationWhy: "Alta manual desde CRM",
+    lastOutboundAt: null,
+    returnProbability: 40,
+    contactThisMonth: false,
+    intelligenceSource: "seed",
+    intelligenceAt: null,
   };
 }
 

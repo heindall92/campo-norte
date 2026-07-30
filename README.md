@@ -80,6 +80,18 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 
 Sin credenciales válidas, el Hub cae a modo local con aviso.
 
+### Ollama / OpenAI / Claude / Gemini (Fase 3 + 4 + 5)
+
+1. En el CRM → **Ajustes → IA · proveedores API**
+2. Elige **Ollama**, **OpenAI**, **Claude** o **Gemini**, pega la API key, modelo y **Guardar**
+3. Links de keys: [Ollama](https://ollama.com/settings) · [OpenAI](https://platform.openai.com/api-keys) · [Claude](https://console.anthropic.com/settings/keys) · [Gemini](https://aistudio.google.com/apikey)
+4. **Lead Intelligence** → «Clasificar con IA»
+5. **Customer Intelligence** → «Analizar cartera con IA»
+6. **Knowledge Assistant** → consulta RAG
+7. **Automatizaciones** → flujo A-01 orquestado
+
+Sin API key, el CRM usa **heurística / retrieval local**. La IA **nunca** escribe al viajero.
+
 ### CSV de importación
 
 - Leads: `id;name;email;origin;campaign;status;score;interest_route;vehicle;owner;created_at`
@@ -111,13 +123,14 @@ Añade las variables `VITE_*` en el proyecto Vercel si usas Supabase.
 |---|---|
 | **Data Hub** | Memoria única, import/export, sync local o Postgres |
 | Cuadro de mando | Origen de leads (desde Hub), margen/ocupación |
-| Leads + scoring | Cola priorizada; alta/edición/estado persistente |
-| Clientes 360º | Alta/edición, LTV, dormidos, VIP |
+| Leads + scoring | Cola priorizada; **Clasificar con IA** (Ollama o heurística); nunca habla al cliente |
+| Clientes 360º | VIP / dormidos / embajadores / en riesgo / alto valor · **cola «contactar este mes»** · avisos internos |
+| Ajustes · IA | **Ollama · OpenAI · Claude · Gemini** vía API · scoring / CI / Knowledge / flujos |
 | Reservas · logística | CRUD persistente + prep viaje |
 | Facturas · Veri*FACTU | REAV 05, PDF, export gestoría desde Hub |
-| Ecosistema CRM | Flujos n8n-like (editor local) |
+| Ecosistema CRM | **A-01 orquestado** (form→Ollama→aviso) + canvas n8n/Make + export JSON |
 | Content Factory | Plantillas (aún seed local) |
-| Knowledge / Pitch | Argumentario reunión |
+| Knowledge / Pitch | **RAG**: preguntar + base documental + Hub vivo · Ollama opcional |
 
 ---
 

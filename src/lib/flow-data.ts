@@ -365,6 +365,14 @@ export const FLOW_TEMPLATES: {
     build: () => templateChain("Lead web", "leads", "crm_lead"),
   },
   {
+    id: "tpl-lead-ollama",
+    name: "Formulario → Ollama → seguimiento",
+    description:
+      "Pipeline completo A-01: dedupe · score API Ollama · origen · dashboard · aviso · follow-up",
+    modules: ["leads", "data_hub", "dashboard"],
+    build: () => buildLeadCaptureOllamaFlow(),
+  },
+  {
     id: "tpl-dormido",
     name: "Cola dormidos → aviso Miguel",
     description: "Cron diario + score reactivación + notify (sin WA auto)",
@@ -466,8 +474,124 @@ function templateChain(
   };
 }
 
+export function buildLeadCaptureOllamaFlow(): FlowGraph {
+  const id = "A-01";
+  const mk = (
+    kind: NodeKind,
+    label: string,
+    x: number,
+    y: number,
+    notes: string,
+    values: Record<string, string> = {},
+  ): FlowNode => {
+    const n = newNode(kind, x, y);
+    n.label = label;
+    n.config.notes = notes;
+    n.config.values = values;
+    n.config.crmLink = {
+      module: kind === "score" || kind === "crm_lead" ? "leads" : kind === "notify" ? "leads" : "data_hub",
+      entityField: "email",
+      action: kind === "score" ? "ollama_classify" : kind === "crm_lead" ? "upsert" : "pipeline",
+    };
+    return n;
+  };
+
+  const n1 = mk(
+    "webhook",
+    "Formulario web",
+    40,
+    80,
+    "Trigger Make/n8n · POST payload nombre/email/UTM/destino",
+    { path: "/hooks/web-form", method: "POST" },
+  );
+  const n2 = mk(
+    "crm_lead",
+    "Crear Lead",
+    240,
+    80,
+    "Alta en Data Hub · Lead Intelligence",
+    { action: "create" },
+  );
+  const n3 = mk(
+    "if",
+    "Buscar duplicados",
+    440,
+    80,
+    "Deduplica por email/teléfono · merge si existe",
+    { field: "email", op: "exists_in_hub" },
+  );
+  const n4 = mk(
+    "score",
+    "Clasificar con IA (Ollama)",
+    640,
+    40,
+    "API Ollama · score explicable · NUNCA escribe al viajero",
+    { provider: "ollama", endpoint: "/api/ollama/chat" },
+  );
+  const n5 = mk(
+    "set",
+    "Añadir origen / UTM",
+    640,
+    160,
+    "utm_source → origin CRM · campaña · medium",
+    { map: "utm→origin" },
+  );
+  const n6 = mk(
+    "http",
+    "Actualizar Dashboard",
+    840,
+    80,
+    "Persistir Hub → KPIs origen/score se refrescan solos",
+    { target: "data_hub" },
+  );
+  const n7 = mk(
+    "notify",
+    "Avisar responsable",
+    1040,
+    40,
+    "Notificación interna Miguel/Laura · sin canal al cliente",
+    { never_client: "true" },
+  );
+  const n8 = mk(
+    "delay",
+    "Programar seguimiento",
+    1040,
+    160,
+    "Cola seguimiento 4h (score≥80) o 24h · humano llama",
+    { hours_high: "4", hours_std: "24" },
+  );
+
+  return {
+    id: `FLOW-${id}`,
+    automationId: id,
+    name: "Captura web → Lead + Ollama + seguimiento",
+    status: "ok",
+    description:
+      "Orquestación real en el CRM: formulario → lead → dedupe → score Ollama → origen → dashboard → aviso → seguimiento. Exportable a Make/n8n.",
+    nodes: [n1, n2, n3, n4, n5, n6, n7, n8],
+    edges: [
+      { id: `${id}-e0`, from: n1.id, to: n2.id },
+      { id: `${id}-e1`, from: n2.id, to: n3.id },
+      { id: `${id}-e2`, from: n3.id, to: n4.id, label: "ok" },
+      { id: `${id}-e3`, from: n3.id, to: n5.id, label: "merge" },
+      { id: `${id}-e4`, from: n4.id, to: n5.id },
+      { id: `${id}-e5`, from: n5.id, to: n6.id },
+      { id: `${id}-e6`, from: n6.id, to: n7.id },
+      { id: `${id}-e7`, from: n6.id, to: n8.id },
+    ],
+    updatedAt: new Date().toISOString().slice(0, 10),
+    enabled: true,
+    tags: ["leads", "ollama", "a-01", "webhook"],
+    priority: "alta",
+    schedule: "tiempo real · webhook",
+    crmModules: ["leads", "data_hub", "dashboard"],
+  };
+}
+
 export function buildInitialFlows(): FlowGraph[] {
-  return AUTOMATIONS.map((a, i) => buildGraphFor(a, i));
+  return AUTOMATIONS.map((a, i) =>
+    a.id === "A-01" ? buildLeadCaptureOllamaFlow() : buildGraphFor(a, i),
+  );
 }
 
 export function emptyFlow(name = "Nuevo flujo CRM"): FlowGraph {

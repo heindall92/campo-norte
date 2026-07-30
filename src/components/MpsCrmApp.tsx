@@ -1,5 +1,34 @@
-import { COMPANY, GOLDEN_RULE, MPS_ANNEX, MPS_ASSUMPTIONS, TEAM } from "@/lib/assumptions";
 import {
+  AI_PROVIDER_DOCS,
+  AI_PROVIDER_LABEL,
+  applyIntelligenceToClient,
+  applyScoreToLead,
+  askKnowledge,
+  aiReady,
+  clientsToContactThisMonth,
+  classifyCustomer,
+  deleteKnowledgeDoc,
+  KNOWLEDGE_KIND_LABEL,
+  loadAiSettings,
+  loadKnowledgeDocs,
+  monthsSinceTrip,
+  priorityLabel,
+  providerLabel,
+  saveAiSettings,
+  saveKnowledgeDocs,
+  scoreLead,
+  upsertKnowledgeDoc,
+  type AiProvider,
+  type AiSettings,
+  type KnowledgeAskResult,
+  type KnowledgeDoc,
+  type KnowledgeDocKind,
+} from "@/lib/ai";
+import { useNotifications } from "@/lib/notifications";
+import { COMPANY, GOLDEN_RULE, MPS_ANNEX, MPS_ASSUMPTIONS, TEAM } from "@/lib/assumptions";
+import { computeBusinessKpis } from "@/lib/business-kpis";
+import {
+  EXPEDITIONS,
   EXPERIENCE_LABEL,
   KNOWLEDGE_ANSWERS,
   type KnowledgeItem,
@@ -13,6 +42,7 @@ import {
   progressToMillion,
   routeMargins,
   type Client,
+  type ClientSegment,
   type Lead,
   type LeadOrigin,
   type LeadStatus,
@@ -47,6 +77,7 @@ import {
   ArrowRight,
   Bike,
   BookOpen,
+  Bot,
   Car,
   ClipboardList,
   Cloud,
@@ -57,9 +88,11 @@ import {
   HardDrive,
   LayoutDashboard,
   Lightbulb,
+  Loader2,
   MessageSquareWarning,
   Moon,
   Pencil,
+  Phone,
   Plus,
   Presentation,
   RefreshCw,
@@ -221,6 +254,24 @@ function scoreTone(score: number): "good" | "warn" | "bad" | "neutral" {
 function SettingsPanel({ lang }: { lang: Lang }) {
   const { user, signOut, supabaseReady } = useAuth();
   const hub = useDataHub();
+  const [ai, setAi] = useState<AiSettings>(() => loadAiSettings());
+  const [aiFlash, setAiFlash] = useState<string | null>(null);
+
+  function persistAi(next: AiSettings) {
+    setAi(next);
+    saveAiSettings(next);
+    setAiFlash(
+      lang === "es"
+        ? next.enabled
+          ? `IA guardada · proveedor ${AI_PROVIDER_LABEL[next.provider]}`
+          : "IA desactivada · se usará heurística / retrieval local"
+        : next.enabled
+          ? `AI saved · provider ${AI_PROVIDER_LABEL[next.provider]}`
+          : "AI off · local heuristics / retrieval will be used",
+    );
+  }
+
+  const providers = Object.keys(AI_PROVIDER_LABEL) as AiProvider[];
 
   return (
     <div className="space-y-5">
@@ -255,6 +306,191 @@ function SettingsPanel({ lang }: { lang: Lang }) {
         >
           {lang === "es" ? "Cerrar sesión" : "Sign out"}
         </button>
+      </Card>
+
+      <Card
+        title={lang === "es" ? "IA · proveedores API" : "AI · API providers"}
+        subtitle={
+          lang === "es"
+            ? "Ollama · OpenAI · Claude · Gemini. Misma tubería (Lead Score, Customer Intelligence, Knowledge, Automatizaciones). La IA solo clasifica; nunca habla con el viajero."
+            : "Ollama · OpenAI · Claude · Gemini. Same pipeline (Lead Score, Customer Intelligence, Knowledge, Automations). AI only ranks; never messages the traveller."
+        }
+      >
+        <div className="mb-4 rounded-xl border border-[var(--glass-border)] bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] p-3 text-sm text-[var(--ink)]">
+          <p className="font-semibold">
+            {lang === "es" ? "Regla de oro" : "Golden rule"}: {GOLDEN_RULE}
+          </p>
+          <p className="mt-1 text-[var(--ink-muted)]">
+            {lang === "es" ? "Estado:" : "Status:"}{" "}
+            <strong className="text-[var(--ink)]">
+              {aiReady(ai)
+                ? lang === "es"
+                  ? `conectado · ${providerLabel(ai)}`
+                  : `connected · ${providerLabel(ai)}`
+                : lang === "es"
+                  ? "heurística local (sin API)"
+                  : "local heuristics (no API)"}
+            </strong>
+          </p>
+        </div>
+
+        <label className="mb-4 flex items-center gap-3 text-sm font-semibold text-[var(--ink)]">
+          <input
+            type="checkbox"
+            checked={ai.enabled}
+            onChange={(e) => persistAi({ ...ai, enabled: e.target.checked })}
+            className="h-4 w-4 accent-[var(--accent)]"
+          />
+          {lang === "es"
+            ? "Activar IA para scoring / intelligence / knowledge"
+            : "Enable AI for scoring / intelligence / knowledge"}
+        </label>
+
+        <div className="mb-4 flex flex-wrap gap-2">
+          {providers.map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => persistAi({ ...ai, provider: p })}
+              className={cn(
+                "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
+                ai.provider === p
+                  ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_18%,transparent)] text-[var(--ink)]"
+                  : "border-[var(--glass-border)] text-[var(--ink-muted)] hover:border-[var(--accent)]",
+              )}
+            >
+              {AI_PROVIDER_LABEL[p]}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:col-span-2">
+            {lang === "es" ? "Proveedor activo" : "Active provider"}
+            <select
+              className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+              value={ai.provider}
+              onChange={(e) =>
+                persistAi({ ...ai, provider: e.target.value as AiProvider })
+              }
+            >
+              {providers.map((p) => (
+                <option key={p} value={p}>
+                  {AI_PROVIDER_LABEL[p]}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:col-span-2">
+            {lang === "es" ? "Modelo" : "Model"}
+            <input
+              className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+              value={ai.models[ai.provider]}
+              onChange={(e) =>
+                setAi({
+                  ...ai,
+                  models: { ...ai.models, [ai.provider]: e.target.value },
+                })
+              }
+              placeholder={
+                ai.provider === "openai"
+                  ? "gpt-4o-mini"
+                  : ai.provider === "claude"
+                    ? "claude-sonnet-4-20250514"
+                    : ai.provider === "gemini"
+                      ? "gemini-2.0-flash"
+                      : "llama3.2"
+              }
+            />
+          </label>
+
+          {(ai.provider !== "ollama" || ai.ollamaMode === "cloud") && (
+            <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:col-span-2">
+              API Key · {AI_PROVIDER_LABEL[ai.provider]}
+              <input
+                type="password"
+                autoComplete="off"
+                className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+                value={ai.apiKeys[ai.provider]}
+                onChange={(e) =>
+                  setAi({
+                    ...ai,
+                    apiKeys: { ...ai.apiKeys, [ai.provider]: e.target.value },
+                  })
+                }
+                placeholder={
+                  ai.provider === "openai"
+                    ? "sk-…"
+                    : ai.provider === "claude"
+                      ? "sk-ant-…"
+                      : ai.provider === "gemini"
+                        ? "AIza…"
+                        : "ollama_sk_…"
+                }
+              />
+            </label>
+          )}
+
+          {ai.provider === "ollama" && (
+            <>
+              <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+                {lang === "es" ? "Modo Ollama" : "Ollama mode"}
+                <select
+                  className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+                  value={ai.ollamaMode}
+                  onChange={(e) => {
+                    const ollamaMode = e.target.value as AiSettings["ollamaMode"];
+                    persistAi({
+                      ...ai,
+                      ollamaMode,
+                      ollamaBaseUrl:
+                        ollamaMode === "local"
+                          ? "http://localhost:11434"
+                          : "https://ollama.com",
+                    });
+                  }}
+                >
+                  <option value="cloud">Cloud · ollama.com</option>
+                  <option value="local">Local · localhost:11434</option>
+                </select>
+              </label>
+              <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+                Base URL
+                <input
+                  className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+                  value={ai.ollamaBaseUrl}
+                  onChange={(e) => setAi({ ...ai, ollamaBaseUrl: e.target.value })}
+                />
+              </label>
+            </>
+          )}
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => persistAi(ai)}
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
+          >
+            <Bot className="h-4 w-4" />
+            {lang === "es" ? "Guardar IA" : "Save AI"}
+          </button>
+          <a
+            href={AI_PROVIDER_DOCS[ai.provider]}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--glass-border)] px-3 py-2 text-sm font-semibold text-[var(--ink)]"
+          >
+            {lang === "es" ? "Crear API key" : "Create API key"}
+          </a>
+        </div>
+        {aiFlash && <p className="mt-3 text-sm text-[var(--accent)]">{aiFlash}</p>}
+        <p className="mt-3 text-xs text-[var(--ink-muted)]">
+          {lang === "es"
+            ? "Puedes guardar keys de varios proveedores y cambiar el activo cuando quieras. Las keys viven en localStorage del navegador (demo); en producción usa variables de entorno Vercel."
+            : "You can store keys for several providers and switch the active one anytime. Keys live in browser localStorage (demo); in production use Vercel env vars."}
+        </p>
       </Card>
 
       <Card
@@ -649,7 +885,7 @@ function HubPanel({ lang }: { lang: Lang }) {
       <div className="grid gap-5 lg:grid-cols-3">
         <Card
           title={lang === "es" ? "Cobertura de origen" : "Origin coverage"}
-          subtitle={lang === "es" ? "Meta Quick Win ≥80% en 60 días" : "Quick Win target ≥80% in 60 days"}
+          subtitle={lang === "es" ? "Meta 6 meses: 95 % de leads con origen" : "6-month target: 95% of leads with origin"}
         >
           {(() => {
             const known = hub.leads.filter((l) => l.origin !== "unknown").length;
@@ -661,7 +897,7 @@ function HubPanel({ lang }: { lang: Lang }) {
                 </p>
                 <p className="mt-1 text-sm text-[var(--ink-muted)]">
                   {known}/{hub.leads.length}{" "}
-                  {lang === "es" ? "leads con origen conocido" : "leads with known origin"}
+                  {lang === "es" ? "leads con origen conocido · meta 95 %" : "leads with known origin · 95% target"}
                 </p>
                 <div className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--glass)]">
                   <div
@@ -671,8 +907,8 @@ function HubPanel({ lang }: { lang: Lang }) {
                 </div>
                 <p className="mt-3 text-xs text-[var(--ink-muted)]">
                   {lang === "es"
-                    ? "Sin origen = cuello de botella #1. Cada import CSV / UTM web cierra el gap."
-                    : "Unknown origin = bottleneck #1. Every CSV import / web UTM closes the gap."}
+                    ? "Sin origen = cuello de botella #1. Cada import CSV / UTM web cierra el gap hacia el 95 %."
+                    : "Unknown origin = bottleneck #1. Every CSV import / web UTM closes the gap toward 95%."}
                 </p>
               </>
             );
@@ -758,10 +994,21 @@ function HubPanel({ lang }: { lang: Lang }) {
 }
 
 function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
-  const { leads } = useDataHub();
+  const hub = useDataHub();
+  const { leads, clients, meta } = hub;
   const margins = routeMargins();
   const origins = computeOriginFromLeads(leads);
   const progress = progressToMillion();
+  const businessKpis = useMemo(
+    () =>
+      computeBusinessKpis(lang, {
+        leads,
+        clients,
+        expeditions: EXPEDITIONS,
+        hubUpdatedAt: meta?.updatedAt ?? null,
+      }),
+    [lang, leads, clients, meta?.updatedAt],
+  );
   const colors = theme === "dark" ? ORIGIN_COLORS_DARK : ORIGIN_COLORS_LIGHT;
   const chart = theme === "dark" ? "#2dd4bf" : "#0f766e";
   const chart2 = theme === "dark" ? "#38bdf8" : "#0369a1";
@@ -807,6 +1054,38 @@ function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
           />
         </div>
       </div>
+
+      <Card
+        title={lang === "es" ? "KPIs de negocio · 6 meses" : "Business KPIs · 6 months"}
+        subtitle={
+          lang === "es"
+            ? "Lo que el CEO mide. Origen, tiempo, recurrencia, ocupación, margen y visibilidad diaria."
+            : "What the CEO measures. Origin, time, recurrence, occupancy, margin and daily visibility."
+        }
+      >
+        <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {businessKpis.map((k) => (
+            <li
+              key={k.id}
+              className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-4"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm font-semibold text-[var(--ink)]">{k.title}</p>
+                <Badge tone={k.tone}>{k.display}</Badge>
+              </div>
+              <p className="mt-2 text-xs leading-relaxed text-[var(--ink-muted)]">{k.detail}</p>
+              {k.target != null && k.current != null && k.unit === "pct" && (
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--ink)_10%,transparent)]">
+                  <div
+                    className="h-full rounded-full bg-[var(--accent)]"
+                    style={{ width: `${Math.min(100, Math.round((k.current / k.target) * 100))}%` }}
+                  />
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </Card>
 
       <div className="grid gap-5 lg:grid-cols-3">
         <Card
@@ -955,9 +1234,11 @@ function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
 
 function LeadsPanel({ lang }: { lang: Lang }) {
   const hub = useDataHub();
+  const { push } = useNotifications();
   const { sorted, unknown, avg, total } = computeLeadStats(hub.leads);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = sorted.find((l) => l.id === selectedId) ?? sorted[0] ?? null;
+  const [scoring, setScoring] = useState(false);
 
   useEffect(() => {
     if (selected && selectedId !== selected.id) setSelectedId(selected.id);
@@ -978,6 +1259,33 @@ function LeadsPanel({ lang }: { lang: Lang }) {
       ...patch,
       lastTouchAt: new Date().toISOString().slice(0, 10),
     });
+  }
+
+  async function runScore() {
+    if (!selected) return;
+    setScoring(true);
+    try {
+      const linked =
+        hub.clients.find((c) => c.email.toLowerCase() === selected.email.toLowerCase()) ?? null;
+      const result = await scoreLead(selected, linked);
+      const updated = applyScoreToLead(selected, result);
+      await hub.saveLead(updated);
+      push({
+        kind: "lead",
+        tone: result.score >= 80 ? "ok" : "info",
+        actor: selected.name,
+        statusLabel: lang === "es" ? "SCORE IA" : "AI SCORE",
+        body:
+          lang === "es"
+            ? `Lead score ${result.score}/100 · ${priorityLabel(result.priority, "es")}`
+            : `Lead score ${result.score}/100 · ${priorityLabel(result.priority, "en")}`,
+        detail: result.reasons.slice(0, 3).join(" · "),
+        section: "leads",
+        entityId: selected.id,
+      });
+    } finally {
+      setScoring(false);
+    }
   }
 
   return (
@@ -1002,6 +1310,15 @@ function LeadsPanel({ lang }: { lang: Lang }) {
           <Plus className="h-4 w-4" />
           {lang === "es" ? "Añadir lead" : "Add lead"}
         </button>
+        <span className="self-center text-xs text-[var(--ink-muted)]">
+          {aiReady()
+            ? lang === "es"
+              ? `${providerLabel()} activo · score vía API`
+              : `${providerLabel()} on · API scoring`
+            : lang === "es"
+              ? "Sin IA · score heurístico"
+              : "No AI · heuristic score"}
+        </span>
       </div>
       <div className="grid gap-5 lg:grid-cols-5">
         <Card title={t(lang, "inbox")} subtitle={t(lang, "inbox_sub")} className="lg:col-span-3">
@@ -1045,6 +1362,9 @@ function LeadsPanel({ lang }: { lang: Lang }) {
                 <Badge>{selected.status}</Badge>
                 <Badge>Owner: {selected.owner}</Badge>
                 <VehicleBadge vehicle={selected.vehicle} />
+                <Badge tone={scoreTone(selected.score)}>
+                  {selected.score}/100 · {priorityLabel(priorityFromScoreSafe(selected.score), lang)}
+                </Badge>
               </div>
               <label className="mt-4 block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
                 {lang === "es" ? "Estado (humano)" : "Status (human)"}
@@ -1074,6 +1394,19 @@ function LeadsPanel({ lang }: { lang: Lang }) {
                   ))}
                 </select>
               </label>
+              <button
+                type="button"
+                disabled={scoring}
+                onClick={() => void runScore()}
+                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {scoring ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4" />
+                )}
+                {lang === "es" ? "Clasificar con IA (Lead Score)" : "Classify with AI (Lead Score)"}
+              </button>
               <ol className="mt-4 list-decimal space-y-2 pl-4 text-sm text-[var(--ink)]">
                 {selected.scoreReasons.map((r) => (
                   <li key={r}>{r}</li>
@@ -1107,20 +1440,40 @@ function LeadsPanel({ lang }: { lang: Lang }) {
   );
 }
 
+function priorityFromScoreSafe(score: number) {
+  if (score >= 85) return "muy_alta" as const;
+  if (score >= 70) return "alta" as const;
+  if (score >= 50) return "media" as const;
+  return "baja" as const;
+}
+
 function ClientsPanel({ lang }: { lang: Lang }) {
   const hub = useDataHub();
+  const { push } = useNotifications();
   const clients = hub.clients;
   const [q, setQ] = useState("");
+  const [segmentFilter, setSegmentFilter] = useState<ClientSegment | "all" | "contact_month">(
+    "all",
+  );
   const [openId, setOpenId] = useState<string | null>(null);
   const [modal, setModal] = useState<{ mode: "create" | "edit"; client: Client } | null>(
     null,
   );
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analyzeFlash, setAnalyzeFlash] = useState<string | null>(null);
+
+  const contactQueue = useMemo(() => clientsToContactThisMonth(clients), [clients]);
 
   const list = useMemo(() => {
-    const sorted = [...clients].sort((a, b) => b.reactivationPriority - a.reactivationPriority);
+    let base = [...clients].sort((a, b) => b.reactivationPriority - a.reactivationPriority);
+    if (segmentFilter === "contact_month") {
+      base = clientsToContactThisMonth(base);
+    } else if (segmentFilter !== "all") {
+      base = base.filter((c) => c.segment === segmentFilter);
+    }
     const query = q.trim().toLowerCase();
-    if (!query) return sorted;
-    return sorted.filter(
+    if (!query) return base;
+    return base.filter(
       (c) =>
         c.name.toLowerCase().includes(query) ||
         c.email.toLowerCase().includes(query) ||
@@ -1130,7 +1483,7 @@ function ClientsPanel({ lang }: { lang: Lang }) {
         c.dni.toLowerCase().includes(query) ||
         SEGMENT_LABEL[c.segment].toLowerCase().includes(query),
     );
-  }, [q, clients]);
+  }, [q, clients, segmentFilter]);
 
   function statusTone(s: Client["status"]): "good" | "warn" | "bad" | "neutral" {
     if (s === "al_dia") return "good";
@@ -1152,14 +1505,171 @@ function ClientsPanel({ lang }: { lang: Lang }) {
     setModal(null);
   }
 
+  async function runIntelligence(scope: "all" | "one", one?: Client) {
+    setAnalyzing(true);
+    setAnalyzeFlash(null);
+    try {
+      const targets = scope === "one" && one ? [one] : clients;
+      let contactHits = 0;
+      for (const c of targets) {
+        const result = await classifyCustomer(c);
+        const updated = applyIntelligenceToClient(c, result);
+        await hub.saveClient(updated);
+        if (result.contactThisMonth) {
+          contactHits += 1;
+          push({
+            kind: "client",
+            tone: "warn",
+            actor: c.name,
+            statusLabel: lang === "es" ? "CONTACTAR ESTE MES" : "CONTACT THIS MONTH",
+            body:
+              lang === "es"
+                ? `${SEGMENT_LABEL[result.segment]} · prob. volver ${result.returnProbability}% · avisar al equipo`
+                : `${SEGMENT_LABEL[result.segment]} · return prob. ${result.returnProbability}% · notify team`,
+            detail: result.reactivationWhy,
+            section: "clientes",
+            entityId: c.id,
+          });
+        }
+      }
+      setAnalyzeFlash(
+        lang === "es"
+          ? `Análisis listo (${targets.length} cliente${targets.length === 1 ? "" : "s"}) · ${contactHits} en cola de contacto · fuente: ${aiReady() ? providerLabel() : "heurística"}`
+          : `Analysis done (${targets.length} client${targets.length === 1 ? "" : "s"}) · ${contactHits} in contact queue · source: ${aiReady() ? providerLabel() : "heuristic"}`,
+      );
+      setSegmentFilter("contact_month");
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
+  const segmentChips: { id: typeof segmentFilter; label: string }[] = [
+    { id: "all", label: lang === "es" ? "Todos" : "All" },
+    { id: "contact_month", label: lang === "es" ? "Contactar este mes" : "Contact this month" },
+    { id: "vip", label: "VIP" },
+    { id: "dormido", label: lang === "es" ? "Dormidos" : "Dormant" },
+    { id: "embajador", label: lang === "es" ? "Embajadores" : "Ambassadors" },
+    { id: "en_riesgo", label: lang === "es" ? "En riesgo" : "At risk" },
+    { id: "recurrente", label: lang === "es" ? "Recurrentes" : "Repeat" },
+    { id: "activo", label: lang === "es" ? "Activos" : "Active" },
+  ];
+
   return (
     <div className="space-y-5">
+      <Card
+        title={
+          lang === "es"
+            ? "Clientes para contactar este mes"
+            : "Clients to contact this month"
+        }
+        subtitle={
+          lang === "es"
+            ? "La IA clasifica y avisa al equipo. No escribe al viajero. Ahí está el dinero de la recurrencia."
+            : "AI ranks and notifies the team. It never messages the traveller. That's the recurrence money."
+        }
+      >
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <Badge tone="bad">
+            {contactQueue.length} {lang === "es" ? "en cola" : "queued"}
+          </Badge>
+          <button
+            type="button"
+            disabled={analyzing || clients.length === 0}
+            onClick={() => void runIntelligence("all")}
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          >
+            {analyzing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Sparkles className="h-4 w-4" />
+            )}
+            {lang === "es"
+              ? "Analizar cartera con IA"
+              : "Analyze portfolio with AI"}
+          </button>
+          <span className="text-xs text-[var(--ink-muted)]">
+            {aiReady()
+              ? `${providerLabel()} API`
+              : lang === "es"
+                ? "Heurística (configura IA en Ajustes)"
+                : "Heuristic (configure AI in Settings)"}
+          </span>
+        </div>
+        {analyzeFlash && <p className="mb-3 text-sm text-[var(--accent)]">{analyzeFlash}</p>}
+        {contactQueue.length === 0 ? (
+          <p className="text-sm text-[var(--ink-muted)]">
+            {lang === "es"
+              ? "Nadie en cola. Ejecuta el análisis o completa historial / opens Brevo / último viaje."
+              : "Queue empty. Run analysis or complete history / Brevo opens / last trip."}
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {contactQueue.slice(0, 8).map((c) => {
+              const months = monthsSinceTrip(c.lastTripAt);
+              const lastRoute = c.history[0]?.route
+                ? ROUTE_LABEL[c.history[0].route]
+                : c.preferredRoute
+                  ? ROUTE_LABEL[c.preferredRoute]
+                  : "—";
+              return (
+                <li
+                  key={`q-${c.id}`}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-3"
+                >
+                  <div>
+                    <p className="font-semibold text-[var(--ink)]">
+                      {c.name}{" "}
+                      <span className="font-mono text-xs font-normal text-[var(--ink-muted)]">
+                        {c.id}
+                      </span>
+                    </p>
+                    <p className="mt-1 text-xs text-[var(--ink-muted)]">
+                      {lang === "es" ? "Último viaje" : "Last trip"} {lastRoute}
+                      {months != null
+                        ? ` · ${lang === "es" ? "hace" : ""} ${months} ${lang === "es" ? "meses" : "mo ago"}`
+                        : ""}
+                      {" · "}
+                      Brevo {c.brevoOpens}
+                      {" · "}
+                      {!c.lastOutboundAt
+                        ? lang === "es"
+                          ? "Nunca recibió llamada"
+                          : "Never called"
+                        : lang === "es"
+                          ? `Último contacto ${c.lastOutboundAt}`
+                          : `Last contact ${c.lastOutboundAt}`}
+                      {" · "}
+                      {lang === "es" ? "Prob. volver" : "Return prob."}{" "}
+                      {c.returnProbability ?? c.reactivationPriority}%
+                    </p>
+                    <p className="mt-1 text-xs text-[var(--ink)]">{c.reactivationWhy}</p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge tone={segmentTone(c.segment)}>{SEGMENT_LABEL[c.segment]}</Badge>
+                    <EntityActionBar
+                      phone={c.phone}
+                      onEdit={() => setModal({ mode: "edit", client: { ...c } })}
+                    />
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        <div className="mt-4 rounded-xl border border-dashed border-[var(--glass-border)] p-3 text-sm text-[var(--ink-muted)]">
+          <Phone className="mr-2 inline h-4 w-4 text-[var(--accent)]" />
+          {lang === "es"
+            ? "La IA no llama ni escribe. Solo mete al cliente en esta lista y dispara aviso interno."
+            : "AI does not call or write. It only queues the client and fires an internal alert."}
+        </div>
+      </Card>
+
       <Card
         title={t(lang, "reactivation")}
         subtitle={
           lang === "es"
-            ? "Ficha 360º: contacto, historial, LTV y segmento. Alta y edición en ventana. Acciones de llamada y WhatsApp para el equipo."
-            : "360° record: contact, history, LTV and segment. Create/edit in a dialog. Call and WhatsApp actions for the team."
+            ? "Ficha 360º: VIP · dormidos · embajadores · en riesgo · alto valor. Alta/edición + Llamar/WhatsApp humano."
+            : "360° record: VIP · dormant · ambassadors · at risk · high value. Create/edit + human Call/WhatsApp."
         }
       >
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -1191,9 +1701,28 @@ function ClientsPanel({ lang }: { lang: Lang }) {
           </div>
         </div>
 
+        <div className="mb-4 flex flex-wrap gap-2">
+          {segmentChips.map((chip) => (
+            <button
+              key={chip.id}
+              type="button"
+              onClick={() => setSegmentFilter(chip.id)}
+              className={cn(
+                "rounded-full border px-3 py-1 text-xs font-semibold transition",
+                segmentFilter === chip.id
+                  ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_18%,transparent)] text-[var(--ink)]"
+                  : "border-[var(--glass-border)] text-[var(--ink-muted)] hover:border-[var(--accent)]",
+              )}
+            >
+              {chip.label}
+            </button>
+          ))}
+        </div>
+
         <ul className="space-y-3">
           {list.map((c) => {
             const open = openId === c.id;
+            const highValue = (c.ltv ?? 0) >= 10_000 || (c.avgTicket ?? 0) >= 5_500;
             return (
               <li
                 key={c.id}
@@ -1224,6 +1753,16 @@ function ClientsPanel({ lang }: { lang: Lang }) {
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge tone={segmentTone(c.segment)}>{SEGMENT_LABEL[c.segment]}</Badge>
+                    {highValue && (
+                      <Badge tone="brand">
+                        {lang === "es" ? "Alto valor" : "High value"}
+                      </Badge>
+                    )}
+                    {c.contactThisMonth && (
+                      <Badge tone="bad">
+                        {lang === "es" ? "Contactar" : "Contact"}
+                      </Badge>
+                    )}
                     <Badge tone={statusTone(c.status)}>{STATUS_LABEL[c.status]}</Badge>
                     <Badge tone={clientPaymentTone(c.paymentStatus)}>
                       {PAYMENT_STATUS_LABEL[c.paymentStatus]}
@@ -1259,18 +1798,18 @@ function ClientsPanel({ lang }: { lang: Lang }) {
                       </div>
                       <div className="rounded-xl border border-[var(--glass-border)] bg-[color-mix(in_oklab,var(--bg0)_50%,transparent)] p-3">
                         <p className="text-[10px] uppercase tracking-wide text-[var(--ink-muted)]">
-                          {t(lang, "trips")}
+                          {lang === "es" ? "Prob. volver" : "Return prob."}
                         </p>
                         <p className="mt-1 font-[family-name:var(--mps-display)] text-2xl text-[var(--ink)]">
-                          {c.trips}
+                          {c.returnProbability ?? "—"}%
                         </p>
                       </div>
                       <div className="rounded-xl border border-[var(--glass-border)] bg-[color-mix(in_oklab,var(--bg0)_50%,transparent)] p-3">
                         <p className="text-[10px] uppercase tracking-wide text-[var(--ink-muted)]">
-                          {lang === "es" ? "Ticket medio" : "Avg. ticket"}
+                          {t(lang, "trips")}
                         </p>
                         <p className="mt-1 font-[family-name:var(--mps-display)] text-2xl text-[var(--ink)]">
-                          {euro(c.avgTicket, lang)}
+                          {c.trips}
                         </p>
                       </div>
                       <div className="rounded-xl border border-[var(--glass-border)] bg-[color-mix(in_oklab,var(--bg0)_50%,transparent)] p-3">
@@ -1349,6 +1888,13 @@ function ClientsPanel({ lang }: { lang: Lang }) {
                         <p>
                           <span className="text-[var(--ink-muted)]">Brevo opens:</span> {c.brevoOpens}
                         </p>
+                        <p>
+                          <span className="text-[var(--ink-muted)]">
+                            {lang === "es" ? "Último contacto equipo:" : "Last team contact:"}
+                          </span>{" "}
+                          {c.lastOutboundAt ??
+                            (lang === "es" ? "Nunca" : "Never")}
+                        </p>
                         <p className="flex flex-wrap items-center gap-2">
                           <span className="text-[var(--ink-muted)]">
                             {lang === "es" ? "Preferencia:" : "Preference:"}
@@ -1361,6 +1907,9 @@ function ClientsPanel({ lang }: { lang: Lang }) {
                             {lang === "es" ? "Último viaje:" : "Last trip:"}
                           </span>{" "}
                           {c.lastTripAt ?? "—"}
+                          {monthsSinceTrip(c.lastTripAt) != null
+                            ? ` (${monthsSinceTrip(c.lastTripAt)} ${lang === "es" ? "meses" : "mo"})`
+                            : ""}
                         </p>
                         <p>
                           <span className="text-[var(--ink-muted)]">
@@ -1399,10 +1948,29 @@ function ClientsPanel({ lang }: { lang: Lang }) {
                           {c.notes}
                         </p>
                         <p className="mt-2 text-sm text-[var(--ink-muted)]">{c.reactivationWhy}</p>
+                        {c.intelligenceSource && (
+                          <p className="mt-1 text-[10px] uppercase tracking-wide text-[var(--ink-muted)]">
+                            Intelligence: {c.intelligenceSource}
+                            {c.intelligenceAt ? ` · ${c.intelligenceAt.slice(0, 16)}` : ""}
+                          </p>
+                        )}
                       </div>
                     </div>
 
                     <div className="mt-4 flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={analyzing}
+                        onClick={() => void runIntelligence("one", c)}
+                        className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                      >
+                        {analyzing ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Sparkles className="h-4 w-4" />
+                        )}
+                        {lang === "es" ? "Reclasificar con IA" : "Reclassify with AI"}
+                      </button>
                       <button
                         type="button"
                         onClick={() => setModal({ mode: "edit", client: { ...c } })}
@@ -1436,6 +2004,22 @@ function ClientsPanel({ lang }: { lang: Lang }) {
 
 
 function KnowledgePanel({ lang }: { lang: Lang }) {
+  const hub = useDataHub();
+  const [tab, setTab] = useState<"ask" | "docs" | "playbook">("ask");
+  const [question, setQuestion] = useState(
+    lang === "es" ? "¿Cuánto costó Mongolia 2025?" : "How much did Mongolia 2025 cost?",
+  );
+  const [asking, setAsking] = useState(false);
+  const [result, setResult] = useState<KnowledgeAskResult | null>(null);
+  const [docs, setDocs] = useState<KnowledgeDoc[]>(() => loadKnowledgeDocs());
+  const [docForm, setDocForm] = useState({
+    title: "",
+    kind: "pdf" as KnowledgeDocKind,
+    content: "",
+    fileRef: "",
+    tags: "",
+  });
+
   const [active, setActive] = useState(0);
   const [cat, setCat] = useState<"all" | KnowledgeItem["category"]>("all");
   const filtered =
@@ -1452,93 +2036,210 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
     { id: "stack", label: "Stack" },
   ];
 
+  const examples =
+    lang === "es"
+      ? [
+          "¿Cuánto costó Mongolia 2025?",
+          "¿Qué hotel usamos en Namibia?",
+          "¿Cuál fue el margen medio de Alaska?",
+        ]
+      : [
+          "How much did Mongolia 2025 cost?",
+          "Which hotel did we use in Namibia?",
+          "What was Alaska’s average margin?",
+        ];
+
+  function persistDocs(next: KnowledgeDoc[]) {
+    setDocs(next);
+    saveKnowledgeDocs(next);
+  }
+
+  async function runAsk(q?: string) {
+    const text = (q ?? question).trim();
+    if (!text) return;
+    setQuestion(text);
+    setAsking(true);
+    setResult(null);
+    try {
+      const res = await askKnowledge(text, {
+        docs,
+        reservations: hub.reservations,
+        invoices: hub.invoices,
+        clients: hub.clients,
+        expeditions: EXPEDITIONS,
+        faq: KNOWLEDGE_ANSWERS,
+      });
+      setResult(res);
+    } finally {
+      setAsking(false);
+    }
+  }
+
+  function addDoc() {
+    if (!docForm.title.trim() || !docForm.content.trim()) return;
+    const next = upsertKnowledgeDoc(docs, {
+      title: docForm.title.trim(),
+      kind: docForm.kind,
+      content: docForm.content.trim(),
+      fileRef: docForm.fileRef.trim() || undefined,
+      tags: docForm.tags
+        .split(/[,;]+/)
+        .map((s) => s.trim())
+        .filter(Boolean),
+      source: "manual",
+    });
+    persistDocs(next);
+    setDocForm({ title: "", kind: "pdf", content: "", fileRef: "", tags: "" });
+  }
+
   return (
     <div className="space-y-4">
       <Card
-        title={t(lang, "knowledge_q")}
+        title={lang === "es" ? "AI Knowledge Assistant" : "AI Knowledge Assistant"}
         subtitle={
           lang === "es"
-            ? "RAG interno argumentado: cada respuesta cita fuentes y explica por qué importa al Growth OS. Solo equipo."
-            : "Argued internal RAG: every answer cites sources and why it matters to Growth OS. Team only."
+            ? "Base documental + datos vivos del Hub (reservas, hoteles, costes, facturas). RAG interno. OpenAI/Claude/Gemini/Ollama sintetizan si están en Ajustes. Solo equipo."
+            : "Document base + live Hub data (bookings, hotels, costs, invoices). Internal RAG. OpenAI/Claude/Gemini/Ollama synthesize if configured. Team only."
         }
       >
-        <div className="mb-3 flex flex-wrap gap-1.5">
-          {cats.map((c) => (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {(
+            [
+              ["ask", lang === "es" ? "Preguntar" : "Ask"],
+              ["docs", lang === "es" ? "Base documental" : "Document base"],
+              ["playbook", lang === "es" ? "Playbook Q&A" : "Q&A playbook"],
+            ] as const
+          ).map(([id, label]) => (
             <button
-              key={c.id}
+              key={id}
               type="button"
-              onClick={() => {
-                setCat(c.id);
-                setActive(0);
-              }}
+              onClick={() => setTab(id)}
               className={cn(
-                "rounded-lg border px-2.5 py-1 text-xs font-semibold",
-                cat === c.id
+                "rounded-lg border px-3 py-1.5 text-xs font-semibold",
+                tab === id
                   ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_14%,transparent)] text-[var(--ink)]"
                   : "border-[var(--glass-border)] text-[var(--ink-muted)]",
               )}
             >
-              {c.label}
+              {label}
             </button>
           ))}
           <Badge tone="brand">
-            {filtered.length} {lang === "es" ? "preguntas" : "questions"}
+            {docs.length} {lang === "es" ? "docs" : "docs"}
+          </Badge>
+          <Badge tone={aiReady() ? "good" : "neutral"}>
+            {aiReady()
+              ? `${providerLabel()} RAG`
+              : lang === "es"
+                ? "Retrieval local"
+                : "Local retrieval"}
           </Badge>
         </div>
       </Card>
 
-      <div className="grid gap-5 lg:grid-cols-2">
-        <Card title={lang === "es" ? "Cola de preguntas" : "Question queue"}>
-          <ul className="max-h-[520px] space-y-2 overflow-y-auto">
-            {filtered.map((k, i) => (
-              <li key={k.q}>
+      {tab === "ask" && (
+        <div className="grid gap-5 lg:grid-cols-5">
+          <Card
+            title={lang === "es" ? "Pregunta del CEO" : "CEO question"}
+            subtitle={
+              lang === "es"
+                ? "Ejemplos: coste Mongolia 2025 · hotel Namibia · margen Alaska"
+                : "Examples: Mongolia 2025 cost · Namibia hotel · Alaska margin"
+            }
+            className="lg:col-span-2"
+          >
+            <textarea
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              rows={4}
+              className="w-full rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] focus:ring-2"
+            />
+            <div className="mt-3 flex flex-wrap gap-2">
+              {examples.map((ex) => (
                 <button
+                  key={ex}
                   type="button"
-                  onClick={() => setActive(i)}
-                  className={cn(
-                    "w-full rounded-xl border px-3 py-3 text-left text-sm transition",
-                    active === i
-                      ? "border-[var(--accent)] bg-[var(--accent)] text-white"
-                      : "border-[var(--glass-border)] bg-[var(--glass)] text-[var(--ink)] hover:bg-[color-mix(in_oklab,var(--accent)_10%,transparent)]",
-                  )}
+                  onClick={() => void runAsk(ex)}
+                  className="rounded-full border border-[var(--glass-border)] px-2.5 py-1 text-[11px] font-semibold text-[var(--ink-muted)] hover:border-[var(--accent)]"
                 >
-                  <span className="mb-1 block text-[10px] font-semibold uppercase opacity-80">
-                    {k.category}
-                  </span>
-                  {k.q}
+                  {ex}
                 </button>
-              </li>
-            ))}
-          </ul>
-        </Card>
-        {item && (
-          <Card title={t(lang, "knowledge_a")}>
-            <p className="text-sm leading-relaxed text-[var(--ink)]">{item.a}</p>
-            <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
-              {lang === "es" ? "Por qué importa" : "Why it matters"}
-            </p>
-            <ul className="mt-2 space-y-2">
-              {item.why.map((w) => (
-                <li
-                  key={w}
-                  className="flex gap-2 rounded-lg border border-[var(--glass-border)] px-3 py-2 text-sm text-[var(--ink)]"
-                >
-                  <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />
-                  {w}
-                </li>
               ))}
-            </ul>
-            <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
-              {t(lang, "sources")}
-            </p>
-            <ul className="mt-2 space-y-1">
-              {item.sources.map((s) => (
-                <li key={s} className="flex items-center gap-2 text-sm text-[var(--ink)]">
-                  <BookOpen className="h-4 w-4 text-[var(--accent)]" />
-                  {s}
-                </li>
-              ))}
-            </ul>
+            </div>
+            <button
+              type="button"
+              disabled={asking}
+              onClick={() => void runAsk()}
+              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+            >
+              {asking ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+              {lang === "es" ? "Consultar Knowledge" : "Query Knowledge"}
+            </button>
+          </Card>
+
+          <Card
+            title={lang === "es" ? "Respuesta con fuentes" : "Answer with sources"}
+            className="lg:col-span-3"
+          >
+            {!result ? (
+              <p className="text-sm text-[var(--ink-muted)]">
+                {lang === "es"
+                  ? "Haz una pregunta. El sistema busca en docs (PDF/rutas/precios/costes/contratos/hoteles/proveedores/histórico) + Reservas/Expediciones/Facturas del Hub."
+                  : "Ask a question. The system searches docs + Hub bookings/expeditions/invoices."}
+              </p>
+            ) : (
+              <>
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--ink)]">
+                  {result.answer}
+                </p>
+                <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+                  {lang === "es" ? "Por qué importa" : "Why it matters"}
+                </p>
+                <ul className="mt-2 space-y-2">
+                  {result.why.map((w) => (
+                    <li
+                      key={w}
+                      className="flex gap-2 rounded-lg border border-[var(--glass-border)] px-3 py-2 text-sm text-[var(--ink)]"
+                    >
+                      <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />
+                      {w}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+                  {t(lang, "sources")} · {result.engine}
+                </p>
+                <ul className="mt-2 space-y-1">
+                  {result.sources.map((s) => (
+                    <li key={s} className="flex items-center gap-2 text-sm text-[var(--ink)]">
+                      <BookOpen className="h-4 w-4 text-[var(--accent)]" />
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+                {result.chunksUsed.length > 0 && (
+                  <details className="mt-4 rounded-xl border border-[var(--glass-border)] p-3 text-xs text-[var(--ink-muted)]">
+                    <summary className="cursor-pointer font-semibold text-[var(--ink)]">
+                      {lang === "es"
+                        ? `Fragmentos RAG (${result.chunksUsed.length})`
+                        : `RAG chunks (${result.chunksUsed.length})`}
+                    </summary>
+                    <ul className="mt-2 space-y-2">
+                      {result.chunksUsed.map((c) => (
+                        <li key={c.id}>
+                          <strong className="text-[var(--ink)]">{c.title}</strong>
+                          <span className="block opacity-80">{c.sourceLabel}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+              </>
+            )}
             <p className="mt-5 flex items-start gap-2 rounded-xl bg-[var(--glass)] p-3 text-xs text-[var(--ink-muted)]">
               <MessageSquareWarning className="mt-0.5 h-4 w-4 shrink-0" />
               {lang === "es"
@@ -1546,8 +2247,211 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
                 : "If data is missing, say “not in the system” — never invent. Never answers the traveler."}
             </p>
           </Card>
-        )}
-      </div>
+        </div>
+      )}
+
+      {tab === "docs" && (
+        <div className="grid gap-5 lg:grid-cols-5">
+          <Card
+            title={lang === "es" ? "Registrar documento" : "Register document"}
+            subtitle={
+              lang === "es"
+                ? "PDF (pega extracto), rutas, precios, costes, contratos, hoteles, proveedores, histórico"
+                : "PDF (paste extract), routes, prices, costs, contracts, hotels, suppliers, history"
+            }
+            className="lg:col-span-2"
+          >
+            <div className="space-y-3">
+              <label className="block text-xs font-semibold uppercase text-[var(--ink-muted)]">
+                {lang === "es" ? "Título" : "Title"}
+                <input
+                  className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+                  value={docForm.title}
+                  onChange={(e) => setDocForm({ ...docForm, title: e.target.value })}
+                />
+              </label>
+              <label className="block text-xs font-semibold uppercase text-[var(--ink-muted)]">
+                {lang === "es" ? "Tipo" : "Kind"}
+                <select
+                  className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+                  value={docForm.kind}
+                  onChange={(e) =>
+                    setDocForm({ ...docForm, kind: e.target.value as KnowledgeDocKind })
+                  }
+                >
+                  {(Object.keys(KNOWLEDGE_KIND_LABEL) as KnowledgeDocKind[]).map((k) => (
+                    <option key={k} value={k}>
+                      {KNOWLEDGE_KIND_LABEL[k]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block text-xs font-semibold uppercase text-[var(--ink-muted)]">
+                {lang === "es" ? "Archivo / ref (PDF…)" : "File / ref (PDF…)"}
+                <input
+                  className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+                  value={docForm.fileRef}
+                  onChange={(e) => setDocForm({ ...docForm, fileRef: e.target.value })}
+                  placeholder="Mongolia_2025_costes.pdf"
+                />
+              </label>
+              <label className="block text-xs font-semibold uppercase text-[var(--ink-muted)]">
+                Tags
+                <input
+                  className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+                  value={docForm.tags}
+                  onChange={(e) => setDocForm({ ...docForm, tags: e.target.value })}
+                  placeholder="mongolia, 2025, coste"
+                />
+              </label>
+              <label className="block text-xs font-semibold uppercase text-[var(--ink-muted)]">
+                {lang === "es" ? "Contenido indexable" : "Indexable content"}
+                <textarea
+                  rows={8}
+                  className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+                  value={docForm.content}
+                  onChange={(e) => setDocForm({ ...docForm, content: e.target.value })}
+                  placeholder={
+                    lang === "es"
+                      ? "Pega el extracto del PDF o ficha…"
+                      : "Paste PDF extract or sheet…"
+                  }
+                />
+              </label>
+              <button
+                type="button"
+                onClick={addDoc}
+                className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
+              >
+                <Plus className="h-4 w-4" />
+                {lang === "es" ? "Indexar en Knowledge" : "Index in Knowledge"}
+              </button>
+            </div>
+          </Card>
+
+          <Card
+            title={lang === "es" ? "Documentos indexados" : "Indexed documents"}
+            className="lg:col-span-3"
+          >
+            <ul className="max-h-[560px] space-y-2 overflow-y-auto">
+              {docs.map((d) => (
+                <li
+                  key={d.id}
+                  className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-3"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="font-semibold text-[var(--ink)]">{d.title}</p>
+                      <p className="mt-1 text-xs text-[var(--ink-muted)]">
+                        {KNOWLEDGE_KIND_LABEL[d.kind]}
+                        {d.fileRef ? ` · ${d.fileRef}` : ""} · {d.source}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => persistDocs(deleteKnowledgeDoc(docs, d.id))}
+                      className="text-xs font-semibold text-[var(--danger)] underline"
+                    >
+                      {lang === "es" ? "Eliminar" : "Delete"}
+                    </button>
+                  </div>
+                  <p className="mt-2 line-clamp-3 text-sm text-[var(--ink-muted)]">{d.content}</p>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-xs text-[var(--ink-muted)]">
+              {lang === "es"
+                ? "Además se indexan en vivo: expediciones, reservas (hoteles/proveedores), facturas y el playbook."
+                : "Also live-indexed: expeditions, bookings (hotels/suppliers), invoices and the playbook."}
+            </p>
+          </Card>
+        </div>
+      )}
+
+      {tab === "playbook" && (
+        <>
+          <Card title={t(lang, "knowledge_q")}>
+            <div className="mb-3 flex flex-wrap gap-1.5">
+              {cats.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => {
+                    setCat(c.id);
+                    setActive(0);
+                  }}
+                  className={cn(
+                    "rounded-lg border px-2.5 py-1 text-xs font-semibold",
+                    cat === c.id
+                      ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_14%,transparent)] text-[var(--ink)]"
+                      : "border-[var(--glass-border)] text-[var(--ink-muted)]",
+                  )}
+                >
+                  {c.label}
+                </button>
+              ))}
+              <Badge tone="brand">
+                {filtered.length} {lang === "es" ? "preguntas" : "questions"}
+              </Badge>
+            </div>
+          </Card>
+          <div className="grid gap-5 lg:grid-cols-2">
+            <Card title={lang === "es" ? "Cola de preguntas" : "Question queue"}>
+              <ul className="max-h-[520px] space-y-2 overflow-y-auto">
+                {filtered.map((k, i) => (
+                  <li key={k.q}>
+                    <button
+                      type="button"
+                      onClick={() => setActive(i)}
+                      className={cn(
+                        "w-full rounded-xl border px-3 py-3 text-left text-sm transition",
+                        active === i
+                          ? "border-[var(--accent)] bg-[var(--accent)] text-white"
+                          : "border-[var(--glass-border)] bg-[var(--glass)] text-[var(--ink)] hover:bg-[color-mix(in_oklab,var(--accent)_10%,transparent)]",
+                      )}
+                    >
+                      <span className="mb-1 block text-[10px] font-semibold uppercase opacity-80">
+                        {k.category}
+                      </span>
+                      {k.q}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+            {item && (
+              <Card title={t(lang, "knowledge_a")}>
+                <p className="text-sm leading-relaxed text-[var(--ink)]">{item.a}</p>
+                <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+                  {lang === "es" ? "Por qué importa" : "Why it matters"}
+                </p>
+                <ul className="mt-2 space-y-2">
+                  {item.why.map((w) => (
+                    <li
+                      key={w}
+                      className="flex gap-2 rounded-lg border border-[var(--glass-border)] px-3 py-2 text-sm text-[var(--ink)]"
+                    >
+                      <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />
+                      {w}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+                  {t(lang, "sources")}
+                </p>
+                <ul className="mt-2 space-y-1">
+                  {item.sources.map((s) => (
+                    <li key={s} className="flex items-center gap-2 text-sm text-[var(--ink)]">
+                      <BookOpen className="h-4 w-4 text-[var(--accent)]" />
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -1611,25 +2515,30 @@ function ProposalPanel({ lang }: { lang: Lang }) {
         <ul className="grid gap-2 sm:grid-cols-2 text-sm text-[var(--ink)]">
           {(lang === "es"
             ? [
-                "95% leads con origen",
-                "−60% tiempo admin. CEO (medir baseline)",
-                "~15% dormidos reactivados",
-                "Mejor ocupación y margen",
-                "Dashboard actualizado a diario",
+                "Saber el origen del 95 % de los leads",
+                "Reducir un 60 % el tiempo administrativo del CEO",
+                "Reactivar un 15 % de clientes inactivos",
+                "Incrementar la ocupación media por expedición",
+                "Mejorar el margen por ruta",
+                "Disponer de un dashboard actualizado diariamente",
               ]
             : [
-                "95% leads with origin",
-                "−60% CEO admin time (measure baseline)",
-                "~15% dormants reactivated",
-                "Better occupancy & margin",
-                "Daily-updated dashboard",
+                "Know the origin of 95% of leads",
+                "Cut CEO admin time by 60%",
+                "Reactivate 15% of inactive clients",
+                "Raise average occupancy per expedition",
+                "Improve margin per route",
+                "Have a dashboard updated daily",
               ]
           ).map((k) => (
             <li
               key={k}
-              className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2"
+              className="flex gap-2 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2"
             >
-              {k}
+              <span className="text-[var(--ok)]" aria-hidden>
+                ✓
+              </span>
+              <span>{k}</span>
             </li>
           ))}
         </ul>
