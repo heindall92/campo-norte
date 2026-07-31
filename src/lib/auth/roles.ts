@@ -40,6 +40,7 @@ export const ROLE_ALLOWED_SECTIONS: Record<UserRole, readonly AppSection[]> = {
     "propuesta",
     "slides",
     "ajustes",
+    "usuarios",
   ],
   ops: [
     "hub",

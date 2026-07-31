@@ -61,6 +61,7 @@ import {
   canAccessSection,
   canEditAiSettings,
   canEditBusinessSettings,
+  canManageCrmUsers,
   canViewDatabaseCard,
   useAuth,
 } from "@/lib/auth";
@@ -79,7 +80,17 @@ import {
 } from "@/components/OpsPanels";
 import { blankClient, ClientFormModal } from "@/components/ClientFormModal";
 import { AccountUsersCard } from "@/components/AccountUsersCard";
+import { AppearanceCard } from "@/components/AppearanceCard";
 import { ContentFactoryPanel } from "@/components/ContentFactoryPanel";
+import { ProfileModal } from "@/components/ProfileModal";
+import { SupportCard } from "@/components/SupportCard";
+import { UsersDirectoryPanel } from "@/components/UsersDirectoryPanel";
+import {
+  applyUserPrefsToDocument,
+  loadUserPrefs,
+  saveUserPrefs,
+  type UserPrefs,
+} from "@/lib/user-prefs";
 import {
   loadBusinessSettings,
   saveBusinessSettings,
@@ -119,6 +130,7 @@ import {
   RefreshCw,
   Save,
   Search,
+  ChevronDown,
   Settings,
   Shield,
   Sparkles,
@@ -126,6 +138,7 @@ import {
   Target,
   Upload,
   Users,
+  UsersRound,
   Workflow,
   CalendarDays,
   Zap,
@@ -219,7 +232,13 @@ function scoreTone(score: number): "good" | "warn" | "bad" | "neutral" {
   return "bad";
 }
 
-function SettingsPanel({ lang }: { lang: Lang }) {
+function SettingsPanel({
+  lang,
+  onPrefsChange,
+}: {
+  lang: Lang;
+  onPrefsChange?: (prefs: UserPrefs) => void;
+}) {
   const { user, supabaseReady } = useAuth();
   const hub = useDataHub();
   const [ai, setAi] = useState<AiSettings>(() => loadAiSettings());
@@ -311,6 +330,13 @@ function SettingsPanel({ lang }: { lang: Lang }) {
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2 lg:gap-5">
         {/* Columna izquierda */}
         <div className="flex min-w-0 flex-col gap-4 lg:gap-5">
+          {user && (
+            <AppearanceCard
+              lang={lang}
+              userId={user.id}
+              onPrefsChange={onPrefsChange}
+            />
+          )}
           {showBusiness && (
             <Card
               headerAlign="center"
@@ -739,6 +765,8 @@ function SettingsPanel({ lang }: { lang: Lang }) {
               </div>
             </div>
           </Card>
+
+          <SupportCard lang={lang} />
         </div>
       </div>
     </div>
@@ -3036,25 +3064,39 @@ export function MpsCrmApp() {
   const { user } = useAuth();
   const [section, setSection] = useState<Section>("hub");
   const [lang, setLang] = useState<Lang>("es");
-  const [theme, setTheme] = useState<Theme>("light");
+  const [prefs, setPrefs] = useState<UserPrefs>(() => loadUserPrefs(user?.id));
   const [collapsed, setCollapsed] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const hub = useDataHub();
   const role = user?.role ?? "guide";
+  const theme = prefs.theme;
+  const showUsersNav = canManageCrmUsers(role);
   const visibleNav = NAV_IDS.filter((item) => canAccessSection(role, item.id));
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
+    const next = loadUserPrefs(user?.id);
+    setPrefs(next);
+    applyUserPrefsToDocument(next);
+  }, [user?.id]);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = "light";
-  }, []);
+    applyUserPrefsToDocument(prefs);
+  }, [prefs]);
 
   useEffect(() => {
     if (!canAccessSection(role, section)) {
       setSection("hub");
     }
   }, [role, section]);
+
+  function setTheme(next: Theme) {
+    if (!user) return;
+    const updated = { ...prefs, theme: next };
+    setPrefs(updated);
+    saveUserPrefs(user.id, updated);
+    applyUserPrefsToDocument(updated);
+  }
 
   if (!hub.ready) {
     return (
@@ -3135,6 +3177,59 @@ export function MpsCrmApp() {
           {visibleNav.map((item) => {
             const Icon = item.icon;
             const active = section === item.id;
+            if (item.id === "ajustes") {
+              const usersActive = section === "usuarios";
+              const open = settingsOpen || active || usersActive;
+              return (
+                <div key={item.id} className="space-y-1">
+                  <button
+                    type="button"
+                    title={t(lang, item.labelKey)}
+                    onClick={() => {
+                      setSection("ajustes");
+                      setSettingsOpen((v) => !v || section !== "ajustes");
+                    }}
+                    className={cn(
+                      "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition",
+                      collapsed && "justify-center px-2",
+                      active || usersActive
+                        ? "bg-white text-slate-900"
+                        : "text-slate-200 hover:bg-white/10 hover:text-white",
+                    )}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {!collapsed && (
+                      <>
+                        <span className="min-w-0 flex-1 truncate">{t(lang, item.labelKey)}</span>
+                        {showUsersNav && (
+                          <ChevronDown
+                            className={cn(
+                              "h-3.5 w-3.5 shrink-0 transition",
+                              open && "rotate-180",
+                            )}
+                          />
+                        )}
+                      </>
+                    )}
+                  </button>
+                  {showUsersNav && open && !collapsed && (
+                    <button
+                      type="button"
+                      onClick={() => setSection("usuarios")}
+                      className={cn(
+                        "flex w-full items-center gap-2 rounded-xl py-2 pl-9 pr-3 text-left text-xs font-semibold transition",
+                        usersActive
+                          ? "bg-white/90 text-slate-900"
+                          : "text-slate-300 hover:bg-white/10 hover:text-white",
+                      )}
+                    >
+                      <UsersRound className="h-3.5 w-3.5 shrink-0" />
+                      {t(lang, "nav_users")}
+                    </button>
+                  )}
+                </div>
+              );
+            }
             return (
               <button
                 key={item.id}
@@ -3230,7 +3325,11 @@ export function MpsCrmApp() {
         )}
       >
         <AppHeader
-          title={t(lang, NAV_IDS.find((n) => n.id === section)?.labelKey ?? "nav_hub")}
+          title={
+            section === "usuarios"
+              ? t(lang, "nav_users")
+              : t(lang, NAV_IDS.find((n) => n.id === section)?.labelKey ?? "nav_hub")
+          }
           subtitle={t(lang, "internal_only")}
           hubBadge={
             hub.mode === "supabase"
@@ -3241,6 +3340,7 @@ export function MpsCrmApp() {
           }
           onRefresh={() => void hub.refresh()}
           onNavigate={(s) => setSection(s)}
+          onOpenProfile={() => setProfileOpen(true)}
         />
 
         <main className="px-4 py-5 md:px-6 md:py-6">
@@ -3255,7 +3355,10 @@ export function MpsCrmApp() {
           {section === "automatizaciones" && <AutomationsPanel lang={lang} />}
           {section === "propuesta" && <ProposalPanel lang={lang} />}
           {section === "slides" && <SlidesPanel lang={lang} />}
-          {section === "ajustes" && <SettingsPanel lang={lang} />}
+          {section === "ajustes" && (
+            <SettingsPanel lang={lang} onPrefsChange={setPrefs} />
+          )}
+          {section === "usuarios" && <UsersDirectoryPanel lang={lang} />}
 
           <footer className="mt-8 flex flex-wrap items-center gap-2 border-t border-[var(--glass-border)] pt-4 text-xs text-[var(--ink-muted)]">
             <Lightbulb className="h-3.5 w-3.5" />
@@ -3272,6 +3375,16 @@ export function MpsCrmApp() {
             </a>
           </footer>
         </main>
+
+        {user && (
+          <ProfileModal
+            open={profileOpen}
+            onClose={() => setProfileOpen(false)}
+            subject={user}
+            role={user.role}
+            lang={lang === "es" ? "es" : "en"}
+          />
+        )}
       </div>
     </div>
   );

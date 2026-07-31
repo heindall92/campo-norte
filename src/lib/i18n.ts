@@ -22,6 +22,7 @@ const es: Dict = {
   nav_slides: "Presentación",
   nav_hub: "Base de datos",
   nav_settings: "Ajustes",
+  nav_users: "Usuarios y roles",
   dash_title: "De {from} a {to}",
   dash_sub:
     "Ritmo hacia 1M €, de dónde vienen los interesados, ocupación y margen por salida — números vivos del negocio.",
@@ -102,6 +103,7 @@ const en: Dict = {
   nav_slides: "Pitch deck",
   nav_hub: "Data Hub",
   nav_settings: "Settings",
+  nav_users: "Users & roles",
   dash_title: "From {from} to {to}",
   dash_sub:
     "Pace to €1M, where prospects come from, occupancy and margin per departure — live business numbers.",

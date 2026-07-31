@@ -20,7 +20,8 @@ export type AppSection =
   | "automatizaciones"
   | "propuesta"
   | "slides"
-  | "ajustes";
+  | "ajustes"
+  | "usuarios";
 
 export interface AppNotification {
   id: string;
