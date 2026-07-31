@@ -1065,7 +1065,11 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .device { width: 100%; }
   .frame {
     width: 100%;
+    /* `min-height` evita el colapso cuando la página vive en un iframe que se
+       dimensiona por la altura de su contenido: ahí `dvh` se retroalimenta y
+       tendería a cero. En un teléfono real manda el alto de la ventana. */
     height: 100dvh;
+    min-height: 680px;
     border-radius: 0;
     box-shadow: none;
   }
