@@ -175,18 +175,16 @@ export function MobileEcosystemCarousel({
   }
 
   return (
-    <section className="mt-6">
-      <div className="mb-2 flex items-end justify-between gap-2">
-        <div>
-          <p className="text-sm font-bold text-[var(--ink)]">
-            {es ? "Ecosistema oficial" : "Official ecosystem"}
-          </p>
-          <p className="text-[11px] text-[var(--ink-muted)]">
-            {es
-              ? "Canales de la empresa · no es escaparate de viajes"
-              : "Company channels · not a trip storefront"}
-          </p>
-        </div>
+    <section className="mt-5">
+      <div className="mb-2.5">
+        <p className="text-sm font-bold text-[var(--ink)]">
+          {es ? "Ecosistema oficial" : "Official ecosystem"}
+        </p>
+        <p className="text-[11px] text-[var(--ink-muted)]">
+          {es
+            ? "Canales de la empresa · no es escaparate de viajes"
+            : "Company channels · not a trip storefront"}
+        </p>
       </div>
 
       <div
@@ -209,28 +207,28 @@ export function MobileEcosystemCarousel({
               type="button"
               data-eco-card
               onClick={() => activate(slide)}
-              className="relative h-[11.5rem] w-[85%] max-w-[22rem] shrink-0 snap-center overflow-hidden rounded-[1.35rem] text-left shadow-lg"
+              className="relative h-[15rem] w-[88%] max-w-[24rem] shrink-0 snap-center overflow-hidden rounded-[1.5rem] text-left shadow-[0_12px_32px_color-mix(in_oklab,var(--ink)_18%,transparent)]"
             >
               <img
                 src={slide.image}
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/10" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/5" />
               <div className="relative flex h-full flex-col justify-between p-4 text-white">
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-md">
-                  <Icon className="h-5 w-5" strokeWidth={2} />
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/18 backdrop-blur-md">
+                  <Icon className="h-6 w-6" strokeWidth={2} />
                 </span>
                 <div>
-                  <p className="text-base font-bold leading-tight">
+                  <p className="text-lg font-bold leading-tight">
                     {es ? slide.titleEs : slide.titleEn}
                   </p>
-                  <p className="mt-1 text-xs text-white/85 text-pretty">
+                  <p className="mt-1.5 text-xs leading-snug text-white/90 text-pretty">
                     {es ? slide.subEs : slide.subEn}
                   </p>
-                  <span className="mt-2.5 inline-flex items-center gap-1 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold text-[var(--ink)]">
+                  <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-[11px] font-bold text-[var(--ink)]">
                     {es ? slide.ctaEs : slide.ctaEn}
-                    {slide.href && <ExternalLink className="h-3 w-3" />}
+                    {slide.href && <ExternalLink className="h-3.5 w-3.5" />}
                   </span>
                 </div>
               </div>

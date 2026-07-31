@@ -19,29 +19,29 @@ export function SupportModal({
   const bullets = es
     ? [
         ["Hub / Dashboard", "KPIs y datos vivos del equipo."],
-        ["Leads · Clientes", "Clasificación humana + IA interna. Nada escribe al viajero."],
+        ["Leads · Clientes", "Clasificación humana + IA. Nada escribe al viajero."],
         ["WhatsApp", "Solo desde el número de negocio confirmado."],
         ["Roles", "Cada sesión ve solo las secciones de su rol."],
-        ["Licencia", "Uso interno autorizado. Sin redistribución ni copia sin licencia vigente."],
+        ["Licencia", "Uso interno. Sin copia ni redistribución sin licencia."],
       ]
     : [
         ["Hub / Dashboard", "Live team KPIs and data."],
-        ["Leads · Clients", "Human ranking + internal AI. Nothing writes to travellers."],
+        ["Leads · Clients", "Human ranking + AI. Nothing writes to travellers."],
         ["WhatsApp", "Only from the confirmed business number."],
         ["Roles", "Each session only sees its allowed sections."],
-        ["License", "Authorized internal use. No redistribution without a valid license."],
+        ["License", "Internal use. No copy or redistribution without a license."],
       ];
 
   return (
     <div
-      className="fixed inset-0 z-[120] flex items-center justify-center bg-[color-mix(in_oklab,#020617_55%,transparent)] p-4 backdrop-blur-md"
+      className="fixed inset-0 z-[120] flex items-center justify-center bg-[color-mix(in_oklab,#020617_55%,transparent)] p-3 backdrop-blur-md sm:p-5"
       role="dialog"
       aria-modal="true"
       aria-labelledby="support-modal-title"
       onClick={onClose}
     >
       <div
-        className="max-h-[min(85dvh,40rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-[color-mix(in_oklab,var(--accent)_45%,var(--glass-border))] bg-[var(--glass-strong)] p-5 shadow-[0_0_40px_color-mix(in_oklab,var(--accent)_25%,transparent)] sm:p-6"
+        className="flex w-full max-w-lg flex-col rounded-[1.5rem] border border-[color-mix(in_oklab,var(--accent)_45%,var(--glass-border))] bg-[var(--glass-strong)] p-4 shadow-[0_0_40px_color-mix(in_oklab,var(--accent)_25%,transparent)] sm:p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
@@ -66,33 +66,28 @@ export function SupportModal({
           </button>
         </div>
 
-        <div className="mt-4 space-y-3 text-sm leading-relaxed text-[var(--ink-muted)] text-pretty">
-          <p>
-            {es
-              ? `${COMPANY.name} Growth OS es el CRM interno del equipo. La tecnología clasifica y prioriza; nunca escribe al viajero. Cumple uso interno con autenticación y tratamiento de datos alineado a RGPD / LOPDGDD.`
-              : `${COMPANY.name} Growth OS is the internal team CRM. Tech ranks and prioritizes; it never messages travellers. Internal authenticated use with GDPR-aligned data handling.`}
-          </p>
-          <p>
-            {es
-              ? `Licencia comercial de uso interno para el equipo autorizado de ${COMPANY.legal}. Queda prohibida la copia, cesión o redistribución del software sin licencia vigente. Para configuración o incidencias, contacta a ${COMPANY.ceo} (${COMPANY.ceoTitle}) o al Admin.`
-              : `Commercial internal-use license for the authorized ${COMPANY.legal} team. Copying, transfer or redistribution without a valid license is forbidden. For setup or incidents, contact ${COMPANY.ceo} (${COMPANY.ceoTitle}) or Admin.`}
-          </p>
-          <p className="text-xs italic text-[var(--ink)]">{GOLDEN_RULE}</p>
-        </div>
+        <p className="mt-3 text-[13px] leading-snug text-[var(--ink-muted)] text-pretty">
+          {es
+            ? `${COMPANY.name} Growth OS es el CRM interno. La tecnología clasifica; nunca escribe al viajero. Licencia de uso interno para ${COMPANY.legal}. Incidencias: ${COMPANY.ceo} o Admin.`
+            : `${COMPANY.name} Growth OS is the internal CRM. Tech ranks; never messages travellers. Internal license for ${COMPANY.legal}. Incidents: ${COMPANY.ceo} or Admin.`}
+        </p>
+        <p className="mt-2 text-[11px] italic leading-snug text-[var(--ink)] text-pretty">
+          {GOLDEN_RULE}
+        </p>
 
-        <div className="mt-5 grid gap-2">
+        <div className="mt-3 grid gap-1.5">
           <a
             href={COMPANY.website}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center justify-between rounded-xl border border-[color-mix(in_oklab,var(--accent)_40%,var(--glass-border))] px-4 py-3 text-sm font-semibold text-[var(--accent)] transition hover:bg-[color-mix(in_oklab,var(--accent)_10%,transparent)]"
+            className="flex items-center justify-between rounded-xl border border-[color-mix(in_oklab,var(--accent)_40%,var(--glass-border))] px-3.5 py-2.5 text-sm font-semibold text-[var(--accent)]"
           >
             <span>{es ? "Web · 30 MPS" : "Website · 30 MPS"}</span>
             <ExternalLink className="h-4 w-4" />
           </a>
           <a
             href="/legal#aviso"
-            className="flex items-center justify-between rounded-xl border border-[color-mix(in_oklab,var(--accent)_40%,var(--glass-border))] px-4 py-3 text-sm font-semibold text-[var(--accent)] transition hover:bg-[color-mix(in_oklab,var(--accent)_10%,transparent)]"
+            className="flex items-center justify-between rounded-xl border border-[color-mix(in_oklab,var(--accent)_40%,var(--glass-border))] px-3.5 py-2.5 text-sm font-semibold text-[var(--accent)]"
           >
             <span className="inline-flex items-center gap-2">
               <BookOpen className="h-4 w-4" />
@@ -102,9 +97,9 @@ export function SupportModal({
           </a>
         </div>
 
-        <ul className="mt-5 space-y-2.5 text-sm text-[var(--ink)]">
+        <ul className="mt-3 space-y-1.5 text-[13px] leading-snug text-[var(--ink)]">
           {bullets.map(([title, detail]) => (
-            <li key={title} className="flex gap-2.5">
+            <li key={title} className="flex gap-2">
               <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]" />
               <span>
                 <strong>{title}:</strong>{" "}
@@ -114,7 +109,7 @@ export function SupportModal({
           ))}
         </ul>
 
-        <p className="mt-5 border-t border-[var(--glass-border)] pt-3 text-center text-[11px] text-[var(--ink-muted)]">
+        <p className="mt-3 border-t border-[var(--glass-border)] pt-2.5 text-center text-[10px] text-[var(--ink-muted)]">
           {es
             ? "30 MPS · Growth OS · Licencia interna · Documentación en línea"
             : "30 MPS · Growth OS · Internal license · Online docs"}
