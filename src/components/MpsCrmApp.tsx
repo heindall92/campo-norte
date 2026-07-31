@@ -2338,7 +2338,7 @@ function ClientsPanel({ lang }: { lang: Lang }) {
                     <div className="mt-4 grid gap-4 lg:grid-cols-2">
                       <div className="space-y-2 text-sm text-[var(--ink)]">
                         <p>
-                          <span className="text-[var(--ink-muted)]">DNI/NIF:</span> {c.dni}
+                          <span className="text-[var(--ink-muted)]">DNI/NIF:</span> {c.dni || "—"}
                         </p>
                         <p>
                           <span className="text-[var(--ink-muted)]">

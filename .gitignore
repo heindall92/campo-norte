@@ -34,3 +34,29 @@ Propuesta Empresarial 30MPS Yoandy Ramirez Delgado.pptx
 
 # PNG fuente de diapositivas (~20 MB); el CRM sirve public/deck/slides/*.jpg
 /slides/
+
+# --- Secretos ---
+.env
+.env.*
+!.env.example
+
+# --- Material confidencial de 30 MPS (NDA) ---
+# Documentación que nos entregó el cliente. Nunca debe entrar al repositorio,
+# ni siquiera siendo privado. Se mantiene en local, fuera de git.
+/30MPS_BusinessCase_Evolve*.pdf
+/30MPS_Presentacion_Corporativa*.pdf
+/30MPS_Growth_Builder_Job_Description*.pdf
+/30MPS_NDA*.pdf
+
+# --- Material de trabajo propio, pesado o duplicado ---
+# El deck servido por la app vive en public/deck/. Esto son las fuentes.
+/Propuesta*.pdf
+/Propuesta*.docx
+/Propuesta_Entrevista*.docx
+/propuesta*.pptx
+/*.zip
+/hero login*.mp4
+/Hero Login*.mp4
+
+# Capturas y specs con rutas locales de la máquina de desarrollo
+/docs/superpowers/specs/assets/c__Users_*

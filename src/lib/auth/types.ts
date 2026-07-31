@@ -18,7 +18,17 @@ export const ROLE_LABEL: Record<UserRole, string> = {
   guide: "Guía",
 };
 
-/** Cuentas demo del equipo 30 MPS (sin Supabase). Password: 30mps2026 */
+/**
+ * Cuentas demo del equipo 30 MPS (solo cuando NO hay Supabase — ver
+ * `allowLocalDemoAuth()`). Estas credenciales viajan en el bundle del cliente:
+ * son públicas por definición y solo dan acceso a datos semilla ficticios.
+ *
+ * La contraseña se puede rotar sin tocar código con `VITE_DEMO_PASSWORD`.
+ * Con Supabase configurado, estas cuentas quedan desactivadas por completo.
+ */
+const DEMO_PASSWORD =
+  (import.meta.env.VITE_DEMO_PASSWORD as string | undefined)?.trim() || "30mps2026";
+
 export const LOCAL_TEAM_USERS: Array<AppUser & { password: string }> = [
   {
     id: "local-miguel",
@@ -28,7 +38,7 @@ export const LOCAL_TEAM_USERS: Array<AppUser & { password: string }> = [
     roleLabel: "Admin",
     avatarInitial: "M",
     provider: "local",
-    password: "30mps2026",
+    password: DEMO_PASSWORD,
   },
   {
     id: "local-laura",
@@ -38,7 +48,7 @@ export const LOCAL_TEAM_USERS: Array<AppUser & { password: string }> = [
     roleLabel: "Booking",
     avatarInitial: "L",
     provider: "local",
-    password: "30mps2026",
+    password: DEMO_PASSWORD,
   },
   {
     id: "local-david",
@@ -48,7 +58,7 @@ export const LOCAL_TEAM_USERS: Array<AppUser & { password: string }> = [
     roleLabel: "Ops",
     avatarInitial: "D",
     provider: "local",
-    password: "30mps2026",
+    password: DEMO_PASSWORD,
   },
   {
     id: "local-ramon",
@@ -58,7 +68,7 @@ export const LOCAL_TEAM_USERS: Array<AppUser & { password: string }> = [
     roleLabel: "Guía",
     avatarInitial: "R",
     provider: "local",
-    password: "30mps2026",
+    password: DEMO_PASSWORD,
   },
 ];
 

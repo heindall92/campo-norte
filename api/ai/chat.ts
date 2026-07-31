@@ -2,7 +2,12 @@
  * Proxy unificado → Ollama Cloud | OpenAI | Claude | Gemini.
  * Body: { provider, model, messages, format?, apiKey?, ollamaMode?, ollamaBaseUrl? }
  * Keys también vía env: OLLAMA_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY
+ *
+ * Seguridad: solo acepta peticiones desde el origen de la app (ver api/_lib/guard.ts).
+ * Sin ese control, cualquiera con la URL podría gastar las API keys del servidor.
  */
+
+import { applyCors, checkPayload, guard } from "../_lib/guard";
 
 type Msg = { role: string; content: string };
 
@@ -215,6 +220,7 @@ async function callGemini(opts: {
 export default async function handler(
   req: {
     method?: string;
+    headers: Record<string, string | string[] | undefined>;
     body: {
       provider?: string;
       model?: string;
@@ -228,12 +234,15 @@ export default async function handler(
     setHeader: (k: string, v: string) => void;
   },
 ) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  const verdict = guard(req);
+  applyCors(res, verdict.allowOrigin);
 
   if (req.method === "OPTIONS") {
-    res.status(204).end();
+    res.status(verdict.ok ? 204 : verdict.status).end();
+    return;
+  }
+  if (!verdict.ok) {
+    res.status(verdict.status).json({ error: verdict.error });
     return;
   }
   if (req.method !== "POST") {
@@ -245,6 +254,12 @@ export default async function handler(
   const model = req.body?.model || "";
   const messages = Array.isArray(req.body?.messages) ? req.body.messages : [];
   const format = req.body?.format ?? null;
+
+  const payloadError = checkPayload(messages);
+  if (payloadError) {
+    res.status(413).json({ error: payloadError });
+    return;
+  }
 
   // Producción Vercel: solo keys en env del servidor (no confiar en body.apiKey del navegador).
   // Demo/local: ALLOW_CLIENT_AI_KEYS=true (o no-production) permite body.apiKey.
