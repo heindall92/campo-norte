@@ -145,7 +145,7 @@ import {
   CalendarDays,
   Zap,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Area,
   AreaChart,
@@ -232,6 +232,31 @@ function scoreTone(score: number): "good" | "warn" | "bad" | "neutral" {
   if (score >= 60) return "warn";
   if (score >= 40) return "neutral";
   return "bad";
+}
+
+
+function SettingsGroup({
+  label,
+  description,
+  children,
+}: {
+  label: string;
+  description?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="space-y-3">
+      <header className="border-b border-[color-mix(in_oklab,var(--ink)_8%,transparent)] pb-2">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--ink-muted)]">
+          {label}
+        </h2>
+        {description ? (
+          <p className="mt-1 max-w-2xl text-sm text-[var(--ink-muted)] text-pretty">{description}</p>
+        ) : null}
+      </header>
+      <div className="space-y-3">{children}</div>
+    </section>
+  );
 }
 
 function SettingsPanel({
@@ -326,20 +351,93 @@ function SettingsPanel({
   const showDb = canViewDatabaseCard(user?.role);
 
   return (
-    <div className="space-y-5">
-      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2 lg:gap-5">
-        {/* Columna izquierda */}
-        <div className="flex min-w-0 flex-col gap-4 lg:gap-5">
-          {user && (
+    <div className="mx-auto w-full max-w-3xl space-y-8">
+      <header className="space-y-1">
+        <h2 className="font-[family-name:var(--mps-display)] text-2xl text-[var(--ink)] md:text-3xl">
+          {lang === "es" ? "Ajustes" : "Settings"}
+        </h2>
+        <p className="max-w-2xl text-sm text-[var(--ink-muted)] text-pretty">
+          {lang === "es"
+            ? "Preferencias personales, seguridad, negocio e integraciones. La cuenta y los usuarios del equipo viven en Usuarios y roles."
+            : "Personal preferences, security, business and integrations. Account and team users live under Users & roles."}
+        </p>
+      </header>
+
+      <SettingsGroup
+        label={lang === "es" ? "Personalización" : "Personalization"}
+        description={
+          lang === "es"
+            ? "Cómo se ve el Growth OS en tu sesión."
+            : "How Growth OS looks in your session."
+        }
+      >
+        {user && (
             <AppearanceCard
               lang={lang}
               userId={user.id}
               onPrefsChange={onPrefsChange}
             />
           )}
-          {showBusiness && (
-            <Card
-              headerAlign="center"
+      </SettingsGroup>
+
+      <SettingsGroup
+        label={lang === "es" ? "Seguridad" : "Security"}
+        description={
+          lang === "es"
+            ? "Control de sesión e inactividad."
+            : "Session and idle controls."
+        }
+      >
+        <Card
+            title={lang === "es" ? "Seguridad · sesión" : "Security · session"}
+            subtitle={
+              lang === "es"
+                ? "Cierre automático por inactividad. También aplica si cierras la pestaña y vuelves después del tiempo límite."
+                : "Auto sign-out on idle. Also applies if you close the tab and return after the timeout."
+            }
+          >
+            <div className=" flex w-full max-w-2xl flex-col gap-3">
+              <label className={`${labelCls} w-full`}>
+                {lang === "es" ? "Cerrar sesión tras inactividad" : "Sign out after idle"}
+                <select
+                  className={`${fieldCls}`}
+                  value={security.idleTimeoutMinutes}
+                  onChange={(e) =>
+                    persistSecurity({
+                      idleTimeoutMinutes: Number(e.target.value) as IdleTimeoutMinutes,
+                    })
+                  }
+                >
+                  {IDLE_TIMEOUT_OPTIONS.map((m) => (
+                    <option key={m} value={m}>
+                      {m} {lang === "es" ? "minutos" : "minutes"}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <p className="flex items-start gap-2 text-xs text-[var(--ink-muted)] text-pretty">
+                <Shield className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
+                <span>
+                  {lang === "es"
+                    ? `Por defecto 15 min. Actual: ${security.idleTimeoutMinutes} min. Cualquier clic o tecla reinicia el contador.`
+                    : `Default 15 min. Current: ${security.idleTimeoutMinutes} min. Any click or key resets the timer.`}
+                </span>
+              </p>
+              {securityFlash && <p className="text-sm text-[var(--accent)]">{securityFlash}</p>}
+            </div>
+          </Card>
+      </SettingsGroup>
+
+      {showBusiness && (
+        <SettingsGroup
+          label={lang === "es" ? "Organización" : "Organization"}
+          description={
+            lang === "es"
+              ? "Datos del negocio y canal WhatsApp saliente."
+              : "Business details and outbound WhatsApp channel."
+          }
+        >
+          <Card
               title={lang === "es" ? "Datos del negocio" : "Business details"}
               subtitle={
                 lang === "es"
@@ -347,7 +445,7 @@ function SettingsPanel({
                   : "WhatsApp and tax data. The CRM only opens chats if this WhatsApp is configured."
               }
             >
-              <div className="mx-auto grid w-full max-w-xl gap-3 sm:grid-cols-2">
+              <div className=" grid w-full max-w-2xl gap-3 sm:grid-cols-2">
                 <label className={labelCls}>
                   {lang === "es" ? "WhatsApp (9 dígitos)" : "WhatsApp (digits)"}
                   <input
@@ -403,16 +501,16 @@ function SettingsPanel({
                   />
                 </label>
               </div>
-              <p className="mx-auto mt-3 max-w-xl text-center text-xs text-[var(--ink-muted)] text-pretty">
+              <p className=" mt-3 max-w-2xl text-xs text-[var(--ink-muted)] text-pretty">
                 {lang === "es"
                   ? "Al pulsar WhatsApp en un cliente confirmarás que el PC usa este número."
                   : "When tapping WhatsApp on a client you confirm this PC uses that number."}
               </p>
-              <div className="mt-4 flex flex-col items-center gap-2">
+              <div className="mt-4 flex flex-col gap-2">
                 <button
                   type="button"
                   onClick={() => persistBiz(biz)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white"
                 >
                   <Save className="h-4 w-4" />
                   {lang === "es" ? "Guardar negocio" : "Save business"}
@@ -420,84 +518,19 @@ function SettingsPanel({
                 {bizFlash && <p className="text-sm text-[var(--accent)]">{bizFlash}</p>}
               </div>
             </Card>
-          )}
+        </SettingsGroup>
+      )}
 
+      {showAi && (
+        <SettingsGroup
+          label={lang === "es" ? "Integraciones" : "Integrations"}
+          description={
+            lang === "es"
+              ? "Proveedores de IA. Clasifican; nunca escriben al viajero."
+              : "AI providers. They rank; never message travellers."
+          }
+        >
           <Card
-            headerAlign="center"
-            title={lang === "es" ? "Seguridad · sesión" : "Security · session"}
-            subtitle={
-              lang === "es"
-                ? "Cierre automático por inactividad. También aplica si cierras la pestaña y vuelves después del tiempo límite."
-                : "Auto sign-out on idle. Also applies if you close the tab and return after the timeout."
-            }
-          >
-            <div className="mx-auto flex w-full max-w-md flex-col items-center gap-3 text-center">
-              <label className={`${labelCls} w-full text-center`}>
-                {lang === "es" ? "Cerrar sesión tras inactividad" : "Sign out after idle"}
-                <select
-                  className={`${fieldCls} text-center`}
-                  value={security.idleTimeoutMinutes}
-                  onChange={(e) =>
-                    persistSecurity({
-                      idleTimeoutMinutes: Number(e.target.value) as IdleTimeoutMinutes,
-                    })
-                  }
-                >
-                  {IDLE_TIMEOUT_OPTIONS.map((m) => (
-                    <option key={m} value={m}>
-                      {m} {lang === "es" ? "minutos" : "minutes"}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <p className="flex items-start justify-center gap-2 text-xs text-[var(--ink-muted)] text-pretty">
-                <Shield className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
-                <span>
-                  {lang === "es"
-                    ? `Por defecto 15 min. Actual: ${security.idleTimeoutMinutes} min. Cualquier clic o tecla reinicia el contador.`
-                    : `Default 15 min. Current: ${security.idleTimeoutMinutes} min. Any click or key resets the timer.`}
-                </span>
-              </p>
-              {securityFlash && <p className="text-sm text-[var(--accent)]">{securityFlash}</p>}
-            </div>
-          </Card>
-
-          {showDb && (
-            <Card
-              headerAlign="center"
-              title={lang === "es" ? "Base de datos" : "Database"}
-              subtitle={
-                lang === "es"
-                  ? "Supabase / Postgres · base de datos"
-                  : "Supabase / Postgres · Data Hub"
-              }
-            >
-              <ul className="mx-auto grid w-full max-w-md gap-3 text-center text-sm text-[var(--ink-muted)]">
-                <li className="mps-settings-tile rounded-xl p-3">
-                  Modo Hub:{" "}
-                  <strong className="text-[var(--ink)]">{hub.mode}</strong>
-                </li>
-                <li className="mps-settings-tile rounded-xl p-3">
-                  Credenciales Supabase:{" "}
-                  <strong className="text-[var(--ink)]">
-                    {supabaseReady || supabaseConfigured()
-                      ? "detectadas"
-                      : "pendientes (.env.local)"}
-                  </strong>
-                </li>
-                <li className="mps-settings-tile rounded-xl p-3">
-                  Schema: <code className="text-[var(--accent)]">supabase/schema.sql</code>
-                </li>
-              </ul>
-            </Card>
-          )}
-        </div>
-
-        {/* Columna derecha */}
-        <div className="flex min-w-0 flex-col gap-4 lg:gap-5">
-          {showAi && (
-            <Card
-              headerAlign="center"
               title={lang === "es" ? "IA · proveedores API" : "AI · API providers"}
               subtitle={
                 lang === "es"
@@ -505,8 +538,8 @@ function SettingsPanel({
                   : "Ollama · OpenAI · Claude · Gemini. AI only ranks; never messages the traveller."
               }
             >
-              <div className="mx-auto w-full max-w-xl space-y-4">
-                <div className="rounded-xl border border-[var(--field-border)] bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] p-3 text-center text-sm text-[var(--ink)] text-pretty">
+              <div className=" w-full max-w-2xl space-y-4">
+                <div className="rounded-xl border border-[var(--field-border)] bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] p-3 text-sm text-[var(--ink)] text-pretty">
                   <p className="font-semibold">
                     {lang === "es" ? "Regla de oro" : "Golden rule"}: {GOLDEN_RULE}
                   </p>
@@ -541,7 +574,7 @@ function SettingsPanel({
                   )}
                 </div>
 
-                <label className="flex items-center justify-center gap-3 text-sm font-semibold text-[var(--ink)]">
+                <label className="flex gap-3 text-sm font-semibold text-[var(--ink)]">
                   <input
                     type="checkbox"
                     checked={ai.enabled}
@@ -553,7 +586,7 @@ function SettingsPanel({
                     : "Enable AI for scoring / intelligence / knowledge"}
                 </label>
 
-                <div className="flex flex-wrap justify-center gap-2">
+                <div className="flex flex-wrap gap-2">
                   {providers.map((p) => (
                     <button
                       key={p}
@@ -643,7 +676,7 @@ function SettingsPanel({
 
                   {!allowClientAiKeys() &&
                     (ai.provider !== "ollama" || ai.ollamaMode === "cloud") && (
-                      <p className="mps-settings-tile rounded-lg px-3 py-2 text-center text-sm sm:col-span-2 text-pretty">
+                      <p className="mps-settings-tile rounded-lg px-3 py-2 text-sm sm:col-span-2 text-pretty">
                         {lang === "es"
                           ? "Producción: las API keys viven en variables de entorno de Vercel. No se pegan en el navegador."
                           : "Production: API keys live in Vercel env vars. They are not pasted in the browser."}
@@ -685,11 +718,11 @@ function SettingsPanel({
                   )}
                 </div>
 
-                <div className="flex flex-wrap justify-center gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => persistAi(ai)}
-                    className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
+                    className="inline-flex gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
                   >
                     <Bot className="h-4 w-4" />
                     {lang === "es" ? "Guardar IA" : "Save AI"}
@@ -698,7 +731,7 @@ function SettingsPanel({
                     type="button"
                     disabled={testing || !ai.enabled}
                     onClick={() => void runConnectionTest()}
-                    className="mps-choice inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)] disabled:opacity-50"
+                    className="mps-choice inline-flex gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)] disabled:opacity-50"
                   >
                     {testing ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -711,25 +744,71 @@ function SettingsPanel({
                     href={AI_PROVIDER_DOCS[ai.provider]}
                     target="_blank"
                     rel="noreferrer"
-                    className="mps-choice inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)]"
+                    className="mps-choice inline-flex gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)]"
                   >
                     {lang === "es" ? "Crear API key" : "Create API key"}
                   </a>
                 </div>
                 {aiFlash && (
-                  <p className="text-center text-sm text-[var(--accent)]">{aiFlash}</p>
+                  <p className="text-sm text-[var(--accent)]">{aiFlash}</p>
                 )}
-                <p className="text-center text-xs text-[var(--ink-muted)] text-pretty">
+                <p className="text-xs text-[var(--ink-muted)] text-pretty">
                   {lang === "es"
                     ? "«Configuración lista» ≠ API verificada. Pulsa «Probar conexión API» para llamar de verdad al proveedor."
                     : "“Config ready” ≠ verified API. Hit “Test API connection” for a live call."}
                 </p>
               </div>
             </Card>
-          )}
+        </SettingsGroup>
+      )}
 
+      {showDb && (
+        <SettingsGroup
+          label={lang === "es" ? "Sistema" : "System"}
+          description={
+            lang === "es"
+              ? "Infraestructura de datos del Hub."
+              : "Data Hub infrastructure."
+          }
+        >
           <Card
-            headerAlign="center"
+              title={lang === "es" ? "Base de datos" : "Database"}
+              subtitle={
+                lang === "es"
+                  ? "Supabase / Postgres · base de datos"
+                  : "Supabase / Postgres · Data Hub"
+              }
+            >
+              <ul className=" grid w-full max-w-2xl gap-3 text-sm text-[var(--ink-muted)]">
+                <li className="mps-settings-tile rounded-xl p-3">
+                  Modo Hub:{" "}
+                  <strong className="text-[var(--ink)]">{hub.mode}</strong>
+                </li>
+                <li className="mps-settings-tile rounded-xl p-3">
+                  Credenciales Supabase:{" "}
+                  <strong className="text-[var(--ink)]">
+                    {supabaseReady || supabaseConfigured()
+                      ? "detectadas"
+                      : "pendientes (.env.local)"}
+                  </strong>
+                </li>
+                <li className="mps-settings-tile rounded-xl p-3">
+                  Schema: <code className="text-[var(--accent)]">supabase/schema.sql</code>
+                </li>
+              </ul>
+            </Card>
+        </SettingsGroup>
+      )}
+
+      <SettingsGroup
+        label={lang === "es" ? "Recursos" : "Resources"}
+        description={
+          lang === "es"
+            ? "Legal, privacidad y soporte interno."
+            : "Legal, privacy and internal support."
+        }
+      >
+        <Card
             title={lang === "es" ? "Legal y privacidad" : "Legal & privacy"}
             subtitle={
               lang === "es"
@@ -737,13 +816,13 @@ function SettingsPanel({
                 : "Legal notice · Privacy · Cookies (GDPR)"
             }
           >
-            <div className="mx-auto flex w-full max-w-md flex-col items-center gap-4 text-center">
+            <div className=" flex w-full max-w-2xl flex-col gap-4">
               <p className="text-sm text-[var(--ink-muted)] text-pretty">
                 {lang === "es"
                   ? "Para la demo interna basta la mención RGPD de la presentación. Antes de producción real: validar textos, firmar DPA con Vercel/Supabase y mantener el registro de actividades (art. 30)."
                   : "For the internal demo, the pitch-deck GDPR note is enough. Before real production: validate copy, sign DPAs with Vercel/Supabase and keep the Art. 30 processing record."}
               </p>
-              <div className="flex flex-wrap justify-center gap-2">
+              <div className="flex flex-wrap gap-2">
                 <a
                   href="/legal#aviso"
                   className="mps-choice rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)]"
@@ -765,12 +844,11 @@ function SettingsPanel({
               </div>
             </div>
           </Card>
-
-          <SupportCard lang={lang} />
-        </div>
-      </div>
+        <SupportCard lang={lang} />
+      </SettingsGroup>
     </div>
   );
+
 }
 
 function HubPanel({ lang }: { lang: Lang }) {

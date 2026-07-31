@@ -36,7 +36,6 @@ export function AppearanceCard({
 
   return (
     <Card
-      headerAlign="center"
       title={lang === "es" ? "Apariencia" : "Appearance"}
       subtitle={
         lang === "es"
@@ -44,12 +43,12 @@ export function AppearanceCard({
           : "Theme and accent for your session only (does not affect other users)."
       }
     >
-      <div className="mx-auto w-full max-w-md space-y-5">
+      <div className="space-y-5">
         <div>
-          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
             {lang === "es" ? "Tema" : "Theme"}
           </p>
-          <div className="flex justify-center gap-1 rounded-full border border-[var(--field-border)] bg-[var(--field-bg)] p-1">
+          <div className="flex max-w-sm gap-1 rounded-full border border-[var(--field-border)] bg-[var(--field-bg)] p-1">
             {(["light", "dark"] as UiTheme[]).map((t) => (
               <button
                 key={t}
@@ -75,10 +74,10 @@ export function AppearanceCard({
         </div>
 
         <div>
-          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
             {lang === "es" ? "Color de acento" : "Accent color"}
           </p>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid max-w-lg grid-cols-4 gap-3 sm:grid-cols-8">
             {(Object.keys(ACCENT_PALETTE) as AccentId[]).map((id) => {
               const pal = ACCENT_PALETTE[id];
               const swatch = prefs.theme === "light" ? pal.light : pal.dark;
@@ -94,7 +93,8 @@ export function AppearanceCard({
                   <span
                     className={cn(
                       "h-9 w-9 rounded-full transition",
-                      active && "ring-2 ring-[var(--ink)] ring-offset-2 ring-offset-[var(--glass-strong)]",
+                      active &&
+                        "ring-2 ring-[var(--ink)] ring-offset-2 ring-offset-[var(--glass-strong)]",
                     )}
                     style={{
                       background: swatch,
@@ -110,7 +110,7 @@ export function AppearanceCard({
               );
             })}
           </div>
-          <p className="mt-3 text-center text-xs text-[var(--ink-muted)]">
+          <p className="mt-3 text-xs text-[var(--ink-muted)]">
             {lang === "es"
               ? "Por defecto: modo claro · Azul eléctrico"
               : "Default: light mode · Electric blue"}

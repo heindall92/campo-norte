@@ -6,7 +6,6 @@ import { BookOpen, CircleHelp, ExternalLink } from "lucide-react";
 export function SupportCard({ lang }: { lang: Lang }) {
   return (
     <Card
-      headerAlign="center"
       title={lang === "es" ? "Soporte" : "Support"}
       subtitle={
         lang === "es"
@@ -14,28 +13,30 @@ export function SupportCard({ lang }: { lang: Lang }) {
           : "Internal Growth OS help · 30 MPS team"
       }
     >
-      <div className="mx-auto max-w-md space-y-4 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[color-mix(in_oklab,var(--accent)_18%,transparent)] text-[var(--accent)]">
-          <CircleHelp className="h-6 w-6" />
+      <div className="space-y-4">
+        <div className="flex items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[color-mix(in_oklab,var(--accent)_18%,transparent)] text-[var(--accent)]">
+            <CircleHelp className="h-5 w-5" />
+          </span>
+          <p className="text-sm text-[var(--ink-muted)] text-pretty">
+            {lang === "es"
+              ? `${COMPANY.name} Growth OS es el CRM interno del equipo. La tecnología clasifica; nunca escribe al viajero. Si necesitas ayuda de configuración, contacta al Admin / CEO.`
+              : `${COMPANY.name} Growth OS is the internal team CRM. Tech ranks; never messages travellers. For setup help, contact Admin / CEO.`}
+          </p>
         </div>
-        <p className="text-sm text-[var(--ink-muted)] text-pretty">
-          {lang === "es"
-            ? `${COMPANY.name} Growth OS es el CRM interno del equipo. La tecnología clasifica; nunca escribe al viajero. Si necesitas ayuda de configuración, contacta al Admin / CEO.`
-            : `${COMPANY.name} Growth OS is the internal team CRM. Tech ranks; never messages travellers. For setup help, contact Admin / CEO.`}
-        </p>
-        <div className="space-y-2">
+        <div className="grid gap-2 sm:grid-cols-2">
           <a
             href="https://30mps.com"
             target="_blank"
             rel="noreferrer"
-            className="mps-choice flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-[var(--accent)]"
+            className="mps-choice flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-[var(--accent)]"
           >
             <span>{lang === "es" ? "Web · 30 MPS" : "Website · 30 MPS"}</span>
             <ExternalLink className="h-4 w-4" />
           </a>
           <a
             href="/legal#aviso"
-            className="mps-choice flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-[var(--accent)]"
+            className="mps-choice flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-[var(--accent)]"
           >
             <span className="inline-flex items-center gap-2">
               <BookOpen className="h-4 w-4" />
@@ -44,7 +45,7 @@ export function SupportCard({ lang }: { lang: Lang }) {
             <ExternalLink className="h-4 w-4" />
           </a>
         </div>
-        <ul className="space-y-2 text-left text-sm text-[var(--ink)]">
+        <ul className="space-y-2 text-sm text-[var(--ink)]">
           {(lang === "es"
             ? [
                 ["Hub / Dashboard", "KPIs y datos vivos del equipo."],
@@ -68,9 +69,6 @@ export function SupportCard({ lang }: { lang: Lang }) {
             </li>
           ))}
         </ul>
-        <p className="text-[11px] text-[var(--ink-muted)]">
-          30 MPS · Growth OS · {lang === "es" ? "Soporte interno" : "Internal support"}
-        </p>
       </div>
     </Card>
   );
