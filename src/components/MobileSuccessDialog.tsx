@@ -36,7 +36,7 @@ export function MobileSuccessDialog({
         <button
           type="button"
           onClick={onDone}
-          className="mt-6 w-full rounded-2xl bg-[#1c1917] py-3.5 text-sm font-bold text-white"
+          className="mt-6 w-full rounded-2xl bg-[var(--accent)] py-3.5 text-sm font-bold text-white"
         >
           {doneLabel}
         </button>

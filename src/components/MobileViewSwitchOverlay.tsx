@@ -131,7 +131,7 @@ export function MobileViewSwitchOverlay({
             <button
               type="button"
               onClick={finish}
-              className="w-full rounded-2xl bg-[var(--ink)] py-3.5 text-sm font-bold text-[var(--bg0)]"
+              className="w-full rounded-2xl bg-[var(--accent)] py-3.5 text-sm font-bold text-white"
             >
               {es ? "Entendido" : "Got it"}
             </button>

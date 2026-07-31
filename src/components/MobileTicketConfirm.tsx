@@ -78,7 +78,7 @@ export function MobileTicketConfirm({
         <button
           type="button"
           onClick={onPrimary}
-          className="mt-4 w-full rounded-2xl bg-[#1c1917] py-3.5 text-sm font-bold text-white"
+          className="mt-4 w-full rounded-2xl bg-[var(--accent)] py-3.5 text-sm font-bold text-white"
         >
           {primaryLabel}
         </button>
