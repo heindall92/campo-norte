@@ -1,8 +1,10 @@
 import { useAuth, canManageCrmUsers } from "@/lib/auth";
 import { loadUserProfile } from "@/lib/user-profile";
 import {
+  ACCENT_PALETTE,
   PROFILE_LAYOUT_B_ENABLED,
   saveUserPrefs,
+  type AccentId,
   type ProfileLayoutId,
   type UserPrefs,
 } from "@/lib/user-prefs";
@@ -12,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { ViewModePicker } from "@/components/ViewModePicker";
 import {
   Bell,
+  ChevronDown,
   ChevronRight,
   CircleHelp,
   Globe,
@@ -72,6 +75,37 @@ function Card({ children, title }: { children: ReactNode; title?: string }) {
   );
 }
 
+function AppleSwitch({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: (next: boolean) => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={() => onChange(!checked)}
+      className={cn(
+        "relative h-[31px] w-[51px] shrink-0 rounded-full transition-colors duration-200 ease-out",
+        checked ? "bg-[#34c759]" : "bg-[#e9e9eb] dark:bg-[#39393d]",
+      )}
+    >
+      <span
+        className={cn(
+          "absolute top-[2px] left-[2px] h-[27px] w-[27px] rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.25)] transition-transform duration-200 ease-out",
+          checked && "translate-x-[20px]",
+        )}
+      />
+    </button>
+  );
+}
+
 export function MobileProfileScreen({
   lang,
   prefs,
@@ -89,6 +123,7 @@ export function MobileProfileScreen({
 }) {
   const { user, signOut } = useAuth();
   const [layout, setLayout] = useState<ProfileLayoutId>(prefs.profileLayout);
+  const [themeOpen, setThemeOpen] = useState(false);
 
   useEffect(() => {
     setLayout(prefs.profileLayout);
@@ -105,19 +140,17 @@ export function MobileProfileScreen({
   const es = lang === "es";
   const showUsers = canManageCrmUsers(user.role);
 
-  function setProfileLayout(next: ProfileLayoutId) {
+  function persistPrefs(patch: Partial<UserPrefs>) {
     if (!user) return;
-    setLayout(next);
-    const updated = { ...prefs, profileLayout: next };
+    const updated = { ...prefs, ...patch };
     saveUserPrefs(user.id, updated);
     onPrefsChange(updated);
   }
 
-  function toggleTheme() {
+  function setProfileLayout(next: ProfileLayoutId) {
     if (!user) return;
-    const updated = { ...prefs, theme: prefs.theme === "light" ? ("dark" as const) : ("light" as const) };
-    saveUserPrefs(user.id, updated);
-    onPrefsChange(updated);
+    setLayout(next);
+    persistPrefs({ profileLayout: next });
   }
 
   function toggleLang() {
@@ -170,12 +203,91 @@ export function MobileProfileScreen({
           value={lang === "es" ? "Español" : "English"}
           onClick={toggleLang}
         />
-        <Row
-          icon={Palette}
-          label={es ? "Tema" : "Theme"}
-          value={prefs.theme === "light" ? (es ? "Claro" : "Light") : es ? "Oscuro" : "Dark"}
-          onClick={toggleTheme}
-        />
+        <div>
+          <button
+            type="button"
+            onClick={() => setThemeOpen((o) => !o)}
+            className="flex w-full items-center gap-3 px-4 py-3.5 text-left text-[var(--ink)] active:bg-[var(--field-bg)]"
+            aria-expanded={themeOpen}
+          >
+            <Palette className="h-5 w-5 shrink-0 text-[var(--ink)]" strokeWidth={1.75} />
+            <span className="min-w-0 flex-1 text-sm font-semibold">
+              {es ? "Tema" : "Theme"}
+            </span>
+            <span className="shrink-0 text-sm text-[var(--ink-muted)]">
+              {prefs.theme === "light" ? (es ? "Claro" : "Light") : es ? "Oscuro" : "Dark"}
+            </span>
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 shrink-0 text-[var(--ink-muted)] transition-transform duration-200",
+                themeOpen && "rotate-180",
+              )}
+            />
+          </button>
+          {themeOpen && (
+            <div className="space-y-4 border-t border-[color-mix(in_oklab,var(--ink)_8%,transparent)] bg-[color-mix(in_oklab,var(--ink)_2%,transparent)] px-4 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-[var(--ink)]">
+                    {es ? "Modo oscuro" : "Dark mode"}
+                  </p>
+                  <p className="text-xs text-[var(--ink-muted)]">
+                    {prefs.theme === "dark"
+                      ? es
+                        ? "Oscuro activo"
+                        : "Dark on"
+                      : es
+                        ? "Claro activo"
+                        : "Light on"}
+                  </p>
+                </div>
+                <AppleSwitch
+                  checked={prefs.theme === "dark"}
+                  label={es ? "Modo oscuro" : "Dark mode"}
+                  onChange={(on) => persistPrefs({ theme: on ? "dark" : "light" })}
+                />
+              </div>
+              <div>
+                <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+                  {es ? "Color de acento" : "Accent color"}
+                </p>
+                <div className="grid grid-cols-4 gap-3">
+                  {(Object.keys(ACCENT_PALETTE) as AccentId[]).map((id) => {
+                    const pal = ACCENT_PALETTE[id];
+                    const swatch = prefs.theme === "light" ? pal.light : pal.dark;
+                    const active = prefs.accent === id;
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        title={pal.label}
+                        onClick={() => persistPrefs({ accent: id })}
+                        className="flex flex-col items-center gap-1"
+                      >
+                        <span
+                          className={cn(
+                            "h-9 w-9 rounded-full transition",
+                            active &&
+                              "ring-2 ring-[var(--ink)] ring-offset-2 ring-offset-[var(--glass-strong)]",
+                          )}
+                          style={{
+                            background: swatch,
+                            boxShadow: active
+                              ? `0 0 14px ${swatch}`
+                              : `0 0 8px color-mix(in srgb, ${swatch} 50%, transparent)`,
+                          }}
+                        />
+                        <span className="text-[10px] font-semibold leading-tight text-[var(--ink-muted)]">
+                          {pal.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
         <Row
           icon={Bell}
           label={es ? "Notificaciones" : "Notifications"}
