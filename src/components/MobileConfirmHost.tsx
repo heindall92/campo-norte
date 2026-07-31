@@ -51,7 +51,13 @@ export function MobileConfirmHost({ lang }: { lang: Lang }) {
         fields={ticket?.fields ?? []}
         chips={ticket?.chips}
         primaryLabel={ticket?.primaryLabel ?? (es ? "Hecho" : "Done")}
-        onPrimary={() => setTicket(null)}
+        onPrimary={() => {
+          const nav = ticket?.navigateTo;
+          setTicket(null);
+          if (nav) {
+            window.dispatchEvent(new CustomEvent("mps-navigate", { detail: nav }));
+          }
+        }}
       />
     </>
   );

@@ -7,12 +7,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { playNotificationDing } from "@/lib/notification-sound";
 import {
   NOTIFICATIONS_KEY,
   type AppNotification,
-  type AppSection,
   type NotificationKind,
   type NotificationTone,
+  type AppSection,
 } from "./types";
 
 export interface PushNotificationInput {
@@ -24,6 +25,8 @@ export interface PushNotificationInput {
   detail?: string;
   section?: AppSection;
   entityId?: string;
+  /** Si false, no reproduce el ding. Default true. */
+  silent?: boolean;
 }
 
 export interface NotificationsContextValue {
@@ -70,6 +73,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       entityId: input.entityId,
     };
     setItems((prev) => [next, ...prev].slice(0, 200));
+    if (!input.silent) playNotificationDing();
   }, []);
 
   const markAllRead = useCallback(() => {

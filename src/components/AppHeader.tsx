@@ -12,6 +12,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { UnreadDot } from "@/components/UnreadDot";
 
 function toneDot(tone: string) {
   if (tone === "ok") return "bg-[var(--ok)]";
@@ -135,9 +136,7 @@ export function AppHeader({
             className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[var(--glass-border)] bg-[var(--glass-strong)] text-[var(--ink)] hover:border-[var(--accent)]"
           >
             <Bell className="h-4 w-4" />
-            {unreadCount > 0 && (
-              <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-[var(--danger)] ring-2 ring-[var(--header)]" />
-            )}
+            {unreadCount > 0 && <UnreadDot className="right-1.5 top-1.5 ring-[var(--header)]" />}
           </button>
 
           {notifOpen && (

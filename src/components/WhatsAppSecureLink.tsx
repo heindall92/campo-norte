@@ -5,8 +5,10 @@ import {
   loadBusinessSettings,
 } from "@/lib/business-settings";
 import { useNotifications } from "@/lib/notifications";
+import { showMobileTicket } from "@/lib/mobile-confirm";
+import { resolveIsMobile } from "@/lib/view-mode";
 import { cn } from "@/lib/utils";
-import { MessageCircle, ShieldAlert, X } from "lucide-react";
+import { MessageCircle, Settings, ShieldAlert, X } from "lucide-react";
 import { useState, type MouseEvent, type ReactNode } from "react";
 
 type Props = {
@@ -20,7 +22,7 @@ type Props = {
 
 /**
  * Abre WhatsApp al cliente solo tras confirmar que el PC usa el WhatsApp de negocio del CRM.
- * wa.me no puede leer la cuenta logueada; el gate es la medida operativa.
+ * Si no hay número en Ajustes, muestra aviso (popup) + notificación.
  */
 export function WhatsAppSecureLink({
   clientPhone,
@@ -31,8 +33,14 @@ export function WhatsAppSecureLink({
 }: Props) {
   const { push } = useNotifications();
   const [open, setOpen] = useState(false);
+  const [blockedOpen, setBlockedOpen] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [bizLabel, setBizLabel] = useState("");
+
+  function goToSettings() {
+    setBlockedOpen(false);
+    window.dispatchEvent(new CustomEvent("mps-navigate", { detail: "ajustes" }));
+  }
 
   function requestOpen(e: MouseEvent) {
     e.preventDefault();
@@ -47,7 +55,32 @@ export function WhatsAppSecureLink({
         statusLabel: "BLOQUEADO",
         body: "Configura el WhatsApp de negocio en Ajustes antes de escribir a clientes",
         detail: "Ajustes → Datos del negocio",
+        section: "ajustes",
       });
+
+      if (resolveIsMobile()) {
+        showMobileTicket({
+          title: "WhatsApp no configurado",
+          subtitle: "Canal de negocio pendiente",
+          headline: "Falta el número en Ajustes",
+          meta: "Sin WhatsApp de negocio no se abre el chat",
+          fields: [
+            {
+              label: "Qué hacer",
+              value: "Ajustes → Datos del negocio → WhatsApp (mín. 9 dígitos)",
+            },
+            {
+              label: "Cliente",
+              value: clientPhone || "—",
+            },
+          ],
+          chips: ["Bloqueado", "Humano en el loop"],
+          primaryLabel: "Ir a Ajustes",
+          navigateTo: "ajustes",
+        });
+      } else {
+        setBlockedOpen(true);
+      }
       return;
     }
 
@@ -100,6 +133,79 @@ export function WhatsAppSecureLink({
         </button>
       )}
 
+      {blockedOpen && (
+        <div
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-[color-mix(in_oklab,#0f172a_45%,transparent)] p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="wa-blocked-title"
+          onClick={(e) => {
+            e.stopPropagation();
+            setBlockedOpen(false);
+          }}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-strong)] p-5 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div className="flex items-start gap-2">
+                <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-[var(--warn-ink)]" />
+                <div>
+                  <h3
+                    id="wa-blocked-title"
+                    className="font-[family-name:var(--mps-display)] text-lg text-[var(--ink)]"
+                  >
+                    WhatsApp no configurado
+                  </h3>
+                  <p className="mt-1 text-sm text-[var(--ink-muted)] text-pretty">
+                    Configura el WhatsApp de negocio en Ajustes antes de escribir a clientes. Sin
+                    ese número el CRM no abre el chat.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                aria-label="Cerrar"
+                onClick={() => setBlockedOpen(false)}
+                className="rounded-lg p-1 text-[var(--ink-muted)] hover:bg-[var(--glass)]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="mb-4 rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-3 text-sm text-[var(--ink)]">
+              <p>
+                <span className="text-[var(--ink-muted)]">Ruta:</span>{" "}
+                <strong>Ajustes → Datos del negocio → WhatsApp</strong>
+              </p>
+              <p className="mt-1">
+                <span className="text-[var(--ink-muted)]">Cliente:</span>{" "}
+                <strong>{clientPhone || "—"}</strong>
+              </p>
+            </div>
+
+            <div className="flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setBlockedOpen(false)}
+                className="rounded-xl border border-[var(--glass-border)] px-3 py-2 text-sm font-semibold text-[var(--ink)]"
+              >
+                Cerrar
+              </button>
+              <button
+                type="button"
+                onClick={goToSettings}
+                className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
+              >
+                <Settings className="h-4 w-4" />
+                Ir a Ajustes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {open && (
         <div
           className="fixed inset-0 z-[80] flex items-center justify-center bg-[color-mix(in_oklab,#0f172a_45%,transparent)] p-4"
@@ -112,8 +218,7 @@ export function WhatsAppSecureLink({
           }}
         >
           <div
-            className="w-full max-w-md rounded-2xl border border-[var(--glass-border)] bg-[var(--panel,#fff)] p-5 shadow-xl"
-            style={{ background: "var(--glass-strong, #fff)" }}
+            className="w-full max-w-md rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-strong)] p-5 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-3 flex items-start justify-between gap-3">

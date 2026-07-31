@@ -13,6 +13,7 @@ import { useNotifications, type AppSection } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
 import { ViewModePicker } from "@/components/ViewModePicker";
 import { SupportModal } from "@/components/SupportModal";
+import { UnreadDot } from "@/components/UnreadDot";
 import {
   Bell,
   ChevronDown,
@@ -342,9 +343,7 @@ export function MobileProfileScreen({
       className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--field-bg)] text-[var(--ink)] shadow-sm"
     >
       <Bell className="h-5 w-5" />
-      {unreadCount > 0 && (
-        <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-[var(--danger)] ring-2 ring-white dark:ring-[var(--glass-strong)]" />
-      )}
+      {unreadCount > 0 && <UnreadDot className="right-2.5 top-2.5 ring-white dark:ring-[var(--glass-strong)]" />}
     </button>
   );
 

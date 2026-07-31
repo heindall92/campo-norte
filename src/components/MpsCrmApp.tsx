@@ -3255,6 +3255,17 @@ export function MpsCrmApp() {
     }
   }, [role, section]);
 
+  useEffect(() => {
+    function onNavigateEvent(e: Event) {
+      const detail = (e as CustomEvent<string>).detail;
+      if (detail && canAccessSection(role, detail as Section)) {
+        setSection(detail as Section);
+      }
+    }
+    window.addEventListener("mps-navigate", onNavigateEvent);
+    return () => window.removeEventListener("mps-navigate", onNavigateEvent);
+  }, [role]);
+
   function setTheme(next: Theme) {
     if (!user) return;
     const updated = { ...prefs, theme: next };

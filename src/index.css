@@ -172,3 +172,15 @@ html[data-theme="dark"] .glass-panel {
   border: 1px solid var(--field-border);
   color: var(--ink-muted);
 }
+
+@keyframes notif-blink {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.25;
+    transform: scale(0.82);
+  }
+}

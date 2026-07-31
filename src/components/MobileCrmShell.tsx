@@ -14,6 +14,7 @@ import { MobileConfirmHost } from "@/components/MobileConfirmHost";
 import { MobileNotificationsSheet } from "@/components/MobileNotificationsSheet";
 import { MobileEcosystemCarousel } from "@/components/MobileEcosystemCarousel";
 import { SupportModal } from "@/components/SupportModal";
+import { UnreadDot } from "@/components/UnreadDot";
 import {
   ArrowRight,
   Bell,
@@ -113,13 +114,23 @@ export function MobileCrmShell({
       setNotifOpen(true);
       markAllRead();
     }
+    function onNavigateEvent(e: Event) {
+      const detail = (e as CustomEvent<string>).detail;
+      if (!detail) return;
+      setCuentaOpen(false);
+      setShowHome(false);
+      setNotifOpen(false);
+      onNavigate(detail as AppSection);
+    }
     window.addEventListener("mps-profile-saved", onProfileSaved);
     window.addEventListener("mps-mark-notifications-read", onMarkRead);
+    window.addEventListener("mps-navigate", onNavigateEvent);
     return () => {
       window.removeEventListener("mps-profile-saved", onProfileSaved);
       window.removeEventListener("mps-mark-notifications-read", onMarkRead);
+      window.removeEventListener("mps-navigate", onNavigateEvent);
     };
-  }, [lang, markAllRead]);
+  }, [lang, markAllRead, onNavigate]);
 
   useEffect(() => {
     if (section === "clientes" || section === "reservas") {
@@ -255,9 +266,7 @@ export function MobileCrmShell({
               className="relative flex h-11 w-11 items-center justify-center rounded-full bg-[var(--field-bg)] text-[var(--ink)] shadow-sm"
             >
               <Bell className="h-5 w-5" />
-              {unreadCount > 0 && (
-                <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-[var(--danger)] ring-2 ring-[var(--bg0)]" />
-              )}
+              {unreadCount > 0 && <UnreadDot className="right-2.5 top-2.5" />}
             </button>
           </div>
         </header>
