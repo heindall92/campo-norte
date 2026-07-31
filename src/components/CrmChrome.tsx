@@ -36,11 +36,14 @@ export function Card({
   subtitle,
   children,
   className,
+  headerAlign = "start",
 }: {
   title?: string;
   subtitle?: string;
   children: ReactNode;
   className?: string;
+  /** Centra título/subtítulo (útil en Ajustes 2 columnas) */
+  headerAlign?: "start" | "center";
 }) {
   return (
     <section
@@ -50,13 +53,24 @@ export function Card({
       )}
     >
       {(title || subtitle) && (
-        <header className="mb-3">
+        <header
+          className={cn("mb-3", headerAlign === "center" && "text-center")}
+        >
           {title && (
             <h3 className="font-[family-name:var(--mps-display)] text-lg text-[var(--ink)] md:text-xl">
               {title}
             </h3>
           )}
-          {subtitle && <p className="mt-0.5 text-sm text-[var(--ink-muted)]">{subtitle}</p>}
+          {subtitle && (
+            <p
+              className={cn(
+                "mt-0.5 text-sm text-[var(--ink-muted)]",
+                headerAlign === "center" && "mx-auto max-w-prose text-pretty",
+              )}
+            >
+              {subtitle}
+            </p>
+          )}
         </header>
       )}
       {children}

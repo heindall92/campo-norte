@@ -86,7 +86,8 @@ export function AccountUsersCard({
 
   return (
     <Card
-      className="h-full lg:col-span-2"
+      className="w-full"
+      headerAlign="center"
       title={lang === "es" ? "Cuenta y usuarios" : "Account & users"}
       subtitle={
         lang === "es"
