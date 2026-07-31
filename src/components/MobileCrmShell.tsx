@@ -442,13 +442,13 @@ function NavItem({
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-11 min-w-[4.5rem] flex-col items-center gap-0.5 px-2 py-1"
+      className="flex min-h-11 min-w-0 flex-1 flex-col items-center gap-0.5 px-1 py-0.5"
     >
       <span
         className={cn(
-          "flex h-10 w-10 items-center justify-center rounded-full transition",
+          "flex h-9 w-9 items-center justify-center rounded-full transition",
           active
-            ? "bg-[color-mix(in_oklab,var(--accent)_16%,transparent)] text-[var(--accent)]"
+            ? "bg-[color-mix(in_oklab,var(--accent)_20%,transparent)] text-[var(--accent)] shadow-[0_0_12px_color-mix(in_oklab,var(--accent)_35%,transparent)]"
             : "text-[var(--ink-muted)]",
         )}
       >
@@ -456,7 +456,7 @@ function NavItem({
       </span>
       <span
         className={cn(
-          "text-[10px] font-semibold",
+          "text-[9px] font-semibold tracking-wide",
           active ? "text-[var(--accent)]" : "text-[var(--ink-muted)]",
         )}
       >
