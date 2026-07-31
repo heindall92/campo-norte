@@ -380,18 +380,19 @@ function SettingsPanel({
   const showDb = canViewDatabaseCard(user?.role);
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-8">
+    <div className="mx-auto w-full max-w-6xl space-y-8">
       <header className="space-y-1">
         <h2 className="font-[family-name:var(--mps-display)] text-2xl text-[var(--ink)] md:text-3xl">
           {lang === "es" ? "Ajustes" : "Settings"}
         </h2>
-        <p className="max-w-2xl text-sm text-[var(--ink-muted)] text-pretty">
+        <p className="max-w-3xl text-sm text-[var(--ink-muted)] text-pretty">
           {lang === "es"
             ? "Preferencias personales, seguridad, negocio e integraciones. La cuenta y los usuarios del equipo viven en Usuarios y roles."
             : "Personal preferences, security, business and integrations. Account and team users live under Users & roles."}
         </p>
       </header>
 
+      <div className="grid gap-8 lg:grid-cols-2 lg:items-start lg:gap-x-8 lg:gap-y-10">
       <SettingsGroup
         label={lang === "es" ? "Personalización" : "Personalization"}
         description={
@@ -426,7 +427,7 @@ function SettingsPanel({
                 : "Auto sign-out on idle. Also applies if you close the tab and return after the timeout."
             }
           >
-            <div className=" flex w-full max-w-2xl flex-col gap-3">
+            <div className="flex w-full flex-col gap-3">
               <label className={`${labelCls} w-full`}>
                 {lang === "es" ? "Cerrar sesión tras inactividad" : "Sign out after idle"}
                 <select
@@ -475,7 +476,7 @@ function SettingsPanel({
                   : "WhatsApp and tax data. The CRM only opens chats if this WhatsApp is configured."
               }
             >
-              <div className=" grid w-full max-w-2xl gap-3 sm:grid-cols-2">
+              <div className="grid w-full gap-3 sm:grid-cols-2">
                 <label className={labelCls}>
                   {lang === "es" ? "WhatsApp (9 dígitos)" : "WhatsApp (digits)"}
                   <input
@@ -531,7 +532,7 @@ function SettingsPanel({
                   />
                 </label>
               </div>
-              <p className=" mt-3 max-w-2xl text-xs text-[var(--ink-muted)] text-pretty">
+              <p className="mt-3 text-xs text-[var(--ink-muted)] text-pretty">
                 {lang === "es"
                   ? "Al pulsar WhatsApp en un cliente confirmarás que el PC usa este número."
                   : "When tapping WhatsApp on a client you confirm this PC uses that number."}
@@ -568,7 +569,7 @@ function SettingsPanel({
                   : "Ollama · OpenAI · Claude · Gemini. AI only ranks; never messages the traveller."
               }
             >
-              <div className=" w-full max-w-2xl space-y-4">
+              <div className="w-full space-y-4">
                 <div className="rounded-xl border border-[var(--field-border)] bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] p-3 text-sm text-[var(--ink)] text-pretty">
                   <p className="font-semibold">
                     {lang === "es" ? "Regla de oro" : "Golden rule"}: {GOLDEN_RULE}
@@ -809,7 +810,7 @@ function SettingsPanel({
                   : "Supabase / Postgres · Data Hub"
               }
             >
-              <ul className=" grid w-full max-w-2xl gap-3 text-sm text-[var(--ink-muted)]">
+              <ul className="grid w-full gap-3 text-sm text-[var(--ink-muted)]">
                 <li className="mps-settings-tile rounded-xl p-3">
                   Modo Hub:{" "}
                   <strong className="text-[var(--ink)]">{hub.mode}</strong>
@@ -846,7 +847,7 @@ function SettingsPanel({
                 : "Legal notice · Privacy · Cookies (GDPR)"
             }
           >
-            <div className=" flex w-full max-w-2xl flex-col gap-4">
+            <div className="flex w-full flex-col gap-4">
               <p className="text-sm text-[var(--ink-muted)] text-pretty">
                 {lang === "es"
                   ? "Para la demo interna basta la mención RGPD de la presentación. Antes de producción real: validar textos, firmar DPA con Vercel/Supabase y mantener el registro de actividades (art. 30)."
@@ -876,6 +877,7 @@ function SettingsPanel({
           </Card>
         <SupportCard lang={lang} />
       </SettingsGroup>
+      </div>
     </div>
   );
 
