@@ -537,16 +537,20 @@ function SettingsPanel({
                   ? "Al pulsar WhatsApp en un cliente confirmarás que el PC usa este número."
                   : "When tapping WhatsApp on a client you confirm this PC uses that number."}
               </p>
-              <div className="mt-4 flex flex-col gap-2">
+              <div className="mt-4 flex flex-col items-center gap-2">
                 <button
                   type="button"
                   onClick={() => persistBiz(biz)}
-                  className="inline-flex gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex w-full max-w-sm items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-center text-sm font-semibold leading-none text-white sm:w-auto"
                 >
-                  <Save className="h-4 w-4" />
-                  {lang === "es" ? "Guardar negocio" : "Save business"}
+                  <Save className="h-4 w-4 shrink-0" aria-hidden />
+                  <span className="whitespace-nowrap">
+                    {lang === "es" ? "Guardar negocio" : "Save business"}
+                  </span>
                 </button>
-                {bizFlash && <p className="text-sm text-[var(--accent)]">{bizFlash}</p>}
+                {bizFlash && (
+                  <p className="text-center text-sm text-[var(--accent)]">{bizFlash}</p>
+                )}
               </div>
             </Card>
         </SettingsGroup>
