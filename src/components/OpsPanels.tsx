@@ -1,6 +1,7 @@
 import { N8nFlowBuilder } from "@/components/N8nFlowBuilder";
 import { blankReservation, ReservationFormModal } from "@/components/ReservationFormModal";
 import { EntityActionBar } from "@/components/EntityActionBar";
+import { WhatsAppSecureLink } from "@/components/WhatsAppSecureLink";
 import {
   aiReady,
   providerLabel,
@@ -696,14 +697,13 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
                         </div>
                         <div className="rounded-xl border border-[var(--glass-border)] p-3 text-sm">
                           <p className="text-[10px] uppercase text-[var(--ink-muted)]">WhatsApp</p>
-                          <a
-                            href={`https://wa.me/${r.clientPhone.replace(/\D/g, "")}`}
-                            className="mt-1 inline-flex items-center gap-1 font-semibold text-[var(--accent)]"
-                            target="_blank"
-                            rel="noreferrer"
+                          <WhatsAppSecureLink
+                            clientPhone={r.clientPhone}
+                            asButton={false}
+                            className="mt-1"
                           >
                             <Phone className="h-3.5 w-3.5" /> {r.clientPhone}
-                          </a>
+                          </WhatsAppSecureLink>
                         </div>
                       </div>
 

@@ -1,11 +1,7 @@
+import { WhatsAppSecureLink } from "@/components/WhatsAppSecureLink";
 import { useNotifications } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
-import { MessageCircle, Pencil, Phone, Trash2 } from "lucide-react";
-
-function waLink(phone: string) {
-  const digits = phone.replace(/\D/g, "");
-  return `https://wa.me/${digits}`;
-}
+import { Pencil, Phone, Trash2 } from "lucide-react";
 
 export function EntityActionBar({
   phone,
@@ -37,26 +33,7 @@ export function EntityActionBar({
       )}
       {phone && (
         <>
-          <a
-            href={waLink(phone)}
-            target="_blank"
-            rel="noreferrer"
-            title="WhatsApp"
-            onClick={(e) => {
-              e.stopPropagation();
-              push({
-                kind: "system",
-                tone: "ok",
-                actor: phone,
-                statusLabel: "WHATSAPP",
-                body: "Has abierto WhatsApp para seguimiento humano",
-                detail: phone,
-              });
-            }}
-            className="rounded-lg border border-[color-mix(in_oklab,#16a34a_35%,transparent)] bg-[color-mix(in_oklab,#16a34a_12%,transparent)] p-2 text-[#15803d] hover:opacity-90"
-          >
-            <MessageCircle className="h-4 w-4" />
-          </a>
+          <WhatsAppSecureLink clientPhone={phone} />
           <a
             href={`tel:${phone}`}
             title="Llamar"

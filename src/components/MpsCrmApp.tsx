@@ -74,6 +74,18 @@ import {
 import { blankClient, ClientFormModal } from "@/components/ClientFormModal";
 import { ContentFactoryPanel } from "@/components/ContentFactoryPanel";
 import {
+  loadBusinessSettings,
+  saveBusinessSettings,
+  type BusinessSettings,
+} from "@/lib/business-settings";
+import {
+  IDLE_TIMEOUT_OPTIONS,
+  loadSecuritySettings,
+  saveSecuritySettings,
+  type IdleTimeoutMinutes,
+  type SecuritySettings,
+} from "@/lib/security-settings";
+import {
   Activity,
   ArrowLeft,
   ArrowRight,
@@ -98,8 +110,10 @@ import {
   Plus,
   Presentation,
   RefreshCw,
+  Save,
   Search,
   Settings,
+  Shield,
   Sparkles,
   Sun,
   Target,
@@ -203,6 +217,10 @@ function SettingsPanel({ lang }: { lang: Lang }) {
   const hub = useDataHub();
   const [ai, setAi] = useState<AiSettings>(() => loadAiSettings());
   const [aiFlash, setAiFlash] = useState<string | null>(null);
+  const [biz, setBiz] = useState<BusinessSettings>(() => loadBusinessSettings());
+  const [bizFlash, setBizFlash] = useState<string | null>(null);
+  const [security, setSecurity] = useState<SecuritySettings>(() => loadSecuritySettings());
+  const [securityFlash, setSecurityFlash] = useState<string | null>(null);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{
     ok: boolean;
@@ -221,6 +239,26 @@ function SettingsPanel({ lang }: { lang: Lang }) {
         : next.enabled
           ? `AI saved · provider ${AI_PROVIDER_LABEL[next.provider]}`
           : "AI off · local heuristics / retrieval will be used",
+    );
+  }
+
+  function persistBiz(next: BusinessSettings) {
+    setBiz(next);
+    saveBusinessSettings(next);
+    setBizFlash(
+      lang === "es"
+        ? "Datos del negocio guardados · WhatsApp saliente protegido"
+        : "Business data saved · outbound WhatsApp protected",
+    );
+  }
+
+  function persistSecurity(next: SecuritySettings) {
+    setSecurity(next);
+    saveSecuritySettings(next);
+    setSecurityFlash(
+      lang === "es"
+        ? `Sesión: cierre tras ${next.idleTimeoutMinutes} min de inactividad`
+        : `Session: sign out after ${next.idleTimeoutMinutes} min idle`,
     );
   }
 
@@ -286,6 +324,119 @@ function SettingsPanel({ lang }: { lang: Lang }) {
         >
           {lang === "es" ? "Cerrar sesión" : "Sign out"}
         </button>
+      </Card>
+
+      <Card
+        title={lang === "es" ? "Datos del negocio" : "Business details"}
+        subtitle={
+          lang === "es"
+            ? "WhatsApp y datos fiscales visibles en reservas y contacto. El CRM solo abre chats si este WhatsApp está configurado."
+            : "WhatsApp and tax data for bookings and contact. The CRM only opens chats if this WhatsApp is configured."
+        }
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+            {lang === "es" ? "WhatsApp (9 dígitos)" : "WhatsApp (digits)"}
+            <input
+              className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+              value={biz.whatsapp}
+              inputMode="tel"
+              placeholder="628691478"
+              onChange={(e) => setBiz({ ...biz, whatsapp: e.target.value })}
+            />
+          </label>
+          <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+            {lang === "es" ? "@alias WhatsApp (próximamente)" : "WhatsApp @alias (soon)"}
+            <input
+              className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+              value={biz.whatsappAlias}
+              placeholder="30mps"
+              onChange={(e) => setBiz({ ...biz, whatsappAlias: e.target.value.replace(/^@+/, "") })}
+            />
+          </label>
+          <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:col-span-2">
+            {lang === "es" ? "Razón social" : "Legal name"}
+            <input
+              className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+              value={biz.legalName}
+              onChange={(e) => setBiz({ ...biz, legalName: e.target.value })}
+            />
+          </label>
+          <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+            CIF
+            <input
+              className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+              value={biz.cif}
+              onChange={(e) => setBiz({ ...biz, cif: e.target.value })}
+            />
+          </label>
+          <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+            {lang === "es" ? "Email de contacto" : "Contact email"}
+            <input
+              type="email"
+              className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+              value={biz.contactEmail}
+              onChange={(e) => setBiz({ ...biz, contactEmail: e.target.value })}
+            />
+          </label>
+          <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:col-span-2">
+            {lang === "es" ? "Dirección fiscal" : "Tax address"}
+            <input
+              className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+              value={biz.fiscalAddress}
+              onChange={(e) => setBiz({ ...biz, fiscalAddress: e.target.value })}
+            />
+          </label>
+        </div>
+        <p className="mt-3 text-xs text-[var(--ink-muted)]">
+          {lang === "es"
+            ? "Al pulsar WhatsApp en un cliente deberás confirmar que el ordenador usa este número (wa.me no puede leer la cuenta logueada)."
+            : "When tapping WhatsApp on a client you must confirm this PC uses that number (wa.me cannot read the logged-in account)."}
+        </p>
+        <button
+          type="button"
+          onClick={() => persistBiz(biz)}
+          className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white"
+        >
+          <Save className="h-4 w-4" />
+          {lang === "es" ? "Guardar negocio" : "Save business"}
+        </button>
+        {bizFlash && <p className="mt-3 text-sm text-[var(--accent)]">{bizFlash}</p>}
+      </Card>
+
+      <Card
+        title={lang === "es" ? "Seguridad · sesión" : "Security · session"}
+        subtitle={
+          lang === "es"
+            ? "Cierre automático por inactividad. También aplica si cierras la pestaña y vuelves después del tiempo límite."
+            : "Auto sign-out on idle. Also applies if you close the tab and return after the timeout."
+        }
+      >
+        <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+          {lang === "es" ? "Cerrar sesión tras inactividad" : "Sign out after idle"}
+          <select
+            className="mt-1 w-full max-w-xs rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
+            value={security.idleTimeoutMinutes}
+            onChange={(e) =>
+              persistSecurity({
+                idleTimeoutMinutes: Number(e.target.value) as IdleTimeoutMinutes,
+              })
+            }
+          >
+            {IDLE_TIMEOUT_OPTIONS.map((m) => (
+              <option key={m} value={m}>
+                {m} {lang === "es" ? "minutos" : "minutes"}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="mt-3 flex items-start gap-2 text-xs text-[var(--ink-muted)]">
+          <Shield className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
+          {lang === "es"
+            ? `Por defecto 15 min. Actual: ${security.idleTimeoutMinutes} min. Cualquier clic o tecla reinicia el contador.`
+            : `Default 15 min. Current: ${security.idleTimeoutMinutes} min. Any click or key resets the timer.`}
+        </p>
+        {securityFlash && <p className="mt-3 text-sm text-[var(--accent)]">{securityFlash}</p>}
       </Card>
 
       <Card

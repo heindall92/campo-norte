@@ -16,6 +16,8 @@ import {
   type AppUser,
   type UserRole,
 } from "./types";
+import { useIdleSessionTimeout } from "./useIdleSessionTimeout";
+import { clearLastActivity } from "@/lib/security-settings";
 
 export interface AuthContextValue {
   ready: boolean;
@@ -157,8 +159,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await sb.auth.signOut();
     }
     localStorage.removeItem(LOCAL_AUTH_KEY);
+    clearLastActivity();
     setUser(null);
   }, []);
+
+  useIdleSessionTimeout(Boolean(user) && ready, signOut);
 
   const value = useMemo(
     () => ({ ready, user, supabaseReady, signIn, signOut }),
