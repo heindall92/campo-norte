@@ -11,11 +11,11 @@ import { getSupabase, getSupabaseEnv } from "@/lib/supabase/client";
 import { allowLocalDemoAuth } from "@/lib/runtime";
 import {
   LOCAL_AUTH_KEY,
-  LOCAL_TEAM_USERS,
   ROLE_LABEL,
   type AppUser,
   type UserRole,
 } from "./types";
+import { findCrmUser } from "./crm-users";
 import { useIdleSessionTimeout } from "./useIdleSessionTimeout";
 import { clearLastActivity } from "@/lib/security-settings";
 
@@ -142,15 +142,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       );
     }
 
-    const match = LOCAL_TEAM_USERS.find(
-      (u) => u.email === normalized && u.password === password,
-    );
+    const match = findCrmUser(normalized, password);
     if (!match) {
       throw new Error("Email o contraseña incorrectos");
     }
-    const { password: _pw, ...safe } = match;
-    localStorage.setItem(LOCAL_AUTH_KEY, JSON.stringify(safe));
-    setUser(safe);
+    localStorage.setItem(LOCAL_AUTH_KEY, JSON.stringify(match));
+    setUser(match);
   }, []);
 
   const signOut = useCallback(async () => {

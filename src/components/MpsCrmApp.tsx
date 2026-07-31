@@ -57,7 +57,13 @@ import {
   supabaseConfigured,
   useDataHub,
 } from "@/lib/data";
-import { useAuth } from "@/lib/auth";
+import {
+  canAccessSection,
+  canEditAiSettings,
+  canEditBusinessSettings,
+  canViewDatabaseCard,
+  useAuth,
+} from "@/lib/auth";
 import { allowClientAiKeys } from "@/lib/runtime";
 import type { AppSection } from "@/lib/notifications";
 import { AppHeader } from "@/components/AppHeader";
@@ -72,6 +78,7 @@ import {
   clientPaymentTone,
 } from "@/components/OpsPanels";
 import { blankClient, ClientFormModal } from "@/components/ClientFormModal";
+import { AccountUsersCard } from "@/components/AccountUsersCard";
 import { ContentFactoryPanel } from "@/components/ContentFactoryPanel";
 import {
   loadBusinessSettings,
@@ -213,7 +220,7 @@ function scoreTone(score: number): "good" | "warn" | "bad" | "neutral" {
 }
 
 function SettingsPanel({ lang }: { lang: Lang }) {
-  const { user, signOut, supabaseReady } = useAuth();
+  const { user, supabaseReady } = useAuth();
   const hub = useDataHub();
   const [ai, setAi] = useState<AiSettings>(() => loadAiSettings());
   const [aiFlash, setAiFlash] = useState<string | null>(null);
@@ -293,46 +300,13 @@ function SettingsPanel({ lang }: { lang: Lang }) {
   const fieldCls =
     "mps-field mt-1 w-full rounded-lg px-2.5 py-2 text-sm font-normal normal-case text-[var(--ink)]";
   const labelCls = "block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]";
+  const showBusiness = canEditBusinessSettings(user?.role);
+  const showAi = canEditAiSettings(user?.role);
+  const showDb = canViewDatabaseCard(user?.role);
 
   return (
     <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2 lg:gap-5">
-      <Card
-        className="h-full"
-        title={lang === "es" ? "Ajustes · cuenta" : "Settings · account"}
-        subtitle={
-          lang === "es"
-            ? "Usuario que administra el Growth OS. Cerrar sesión vuelve al login."
-            : "User administering the Growth OS. Sign out returns to login."
-        }
-      >
-        <div className="grid h-full gap-4 sm:grid-cols-2 sm:items-center">
-          {user && (
-            <div className="flex min-w-0 items-center gap-4">
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-xl font-bold text-white">
-                {user.avatarInitial}
-              </span>
-              <div className="min-w-0">
-                <p className="truncate font-[family-name:var(--mps-display)] text-xl text-[var(--ink)]">
-                  {user.name}
-                </p>
-                <p className="truncate text-sm text-[var(--ink-muted)]">{user.email}</p>
-                <p className="mt-1 text-xs font-semibold text-[var(--accent)]">
-                  {user.roleLabel} · {user.provider === "supabase" ? "Supabase Auth" : "Demo local"}
-                </p>
-              </div>
-            </div>
-          )}
-          <div className="flex sm:justify-end">
-            <button
-              type="button"
-              onClick={() => void signOut()}
-              className="rounded-xl border border-[color-mix(in_oklab,var(--danger)_35%,transparent)] px-4 py-2 text-sm font-semibold text-[var(--danger)]"
-            >
-              {lang === "es" ? "Cerrar sesión" : "Sign out"}
-            </button>
-          </div>
-        </div>
-      </Card>
+      <AccountUsersCard lang={lang} fieldCls={fieldCls} labelCls={labelCls} />
 
       <Card
         className="h-full"
@@ -374,6 +348,7 @@ function SettingsPanel({ lang }: { lang: Lang }) {
         </div>
       </Card>
 
+      {showBusiness && (
       <Card
         className="h-full"
         title={lang === "es" ? "Datos del negocio" : "Business details"}
@@ -456,7 +431,9 @@ function SettingsPanel({ lang }: { lang: Lang }) {
           </div>
         </div>
       </Card>
+      )}
 
+      {showDb && (
       <Card
         className="h-full"
         title={lang === "es" ? "Base de datos" : "Database"}
@@ -478,7 +455,9 @@ function SettingsPanel({ lang }: { lang: Lang }) {
           </li>
         </ul>
       </Card>
+      )}
 
+      {showAi && (
       <Card
         className="h-full lg:col-span-2"
         title={lang === "es" ? "IA · proveedores API" : "AI · API providers"}
@@ -709,6 +688,7 @@ function SettingsPanel({ lang }: { lang: Lang }) {
           </div>
         </div>
       </Card>
+      )}
 
       <Card
         className="h-full lg:col-span-2"
@@ -3039,11 +3019,14 @@ function SlidesPanel({ lang }: { lang: Lang }) {
 }
 
 export function MpsCrmApp() {
+  const { user } = useAuth();
   const [section, setSection] = useState<Section>("hub");
   const [lang, setLang] = useState<Lang>("es");
   const [theme, setTheme] = useState<Theme>("light");
   const [collapsed, setCollapsed] = useState(false);
   const hub = useDataHub();
+  const role = user?.role ?? "guide";
+  const visibleNav = NAV_IDS.filter((item) => canAccessSection(role, item.id));
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -3052,6 +3035,12 @@ export function MpsCrmApp() {
   useEffect(() => {
     document.documentElement.dataset.theme = "light";
   }, []);
+
+  useEffect(() => {
+    if (!canAccessSection(role, section)) {
+      setSection("hub");
+    }
+  }, [role, section]);
 
   if (!hub.ready) {
     return (
@@ -3129,7 +3118,7 @@ export function MpsCrmApp() {
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto p-2">
-          {NAV_IDS.map((item) => {
+          {visibleNav.map((item) => {
             const Icon = item.icon;
             const active = section === item.id;
             return (
