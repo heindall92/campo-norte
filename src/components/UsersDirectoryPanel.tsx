@@ -13,6 +13,7 @@ import {
 import { loadUserProfile } from "@/lib/user-profile";
 import type { Lang } from "@/lib/i18n";
 import { ProfileModal } from "@/components/ProfileModal";
+import { AccountUsersCard } from "@/components/AccountUsersCard";
 import { showMobileTicket } from "@/lib/mobile-confirm";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, Plus, RefreshCw, Shield } from "lucide-react";
@@ -96,6 +97,8 @@ export function UsersDirectoryPanel({ lang }: { lang: Lang }) {
 
   return (
     <div className="space-y-5">
+      <AccountUsersCard lang={lang} fieldCls={fieldCls} labelCls={labelCls} />
+
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="font-[family-name:var(--mps-display)] text-2xl text-[var(--ink)]">

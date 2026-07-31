@@ -82,7 +82,6 @@ import {
   clientPaymentTone,
 } from "@/components/OpsPanels";
 import { blankClient, ClientFormModal } from "@/components/ClientFormModal";
-import { AccountUsersCard } from "@/components/AccountUsersCard";
 import { AppearanceCard } from "@/components/AppearanceCard";
 import { ContentFactoryPanel } from "@/components/ContentFactoryPanel";
 import { ProfileModal } from "@/components/ProfileModal";
@@ -328,8 +327,6 @@ function SettingsPanel({
 
   return (
     <div className="space-y-5">
-      <AccountUsersCard lang={lang} fieldCls={fieldCls} labelCls={labelCls} />
-
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2 lg:gap-5">
         {/* Columna izquierda */}
         <div className="flex min-w-0 flex-col gap-4 lg:gap-5">

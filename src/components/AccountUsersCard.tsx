@@ -31,8 +31,8 @@ export function AccountUsersCard({
       title={lang === "es" ? "Cuenta y sesión" : "Account & session"}
       subtitle={
         lang === "es"
-          ? "Tu sesión actual. Usuarios y roles del equipo están en el menú Usuarios (solo Admin)."
-          : "Your current session. Team users & roles live under Users (Admin only)."
+          ? "Tu sesión en el ecosistema Growth OS. Debajo: directorio de usuarios y roles del equipo."
+          : "Your Growth OS session. Below: team users and roles directory."
       }
     >
       <div className="mx-auto max-w-2xl space-y-4">
