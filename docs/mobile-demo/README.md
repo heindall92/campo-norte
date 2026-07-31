@@ -3,6 +3,9 @@
 `index.html` es una maqueta **interactiva y autocontenida** (sin build, sin dependencias) de la app móvil
 del CRM. Sirve para enseñar la experiencia de campo en una reunión sin levantar el proyecto Vite.
 
+Para llevar esto al CRM real: [`IMPLEMENTACION.md`](./IMPLEMENTACION.md) — plan por tareas sobre
+`src/`, pensado para dárselo a Cursor o a Claude Code.
+
 ## Abrir
 
 ```bash
