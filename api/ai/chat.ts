@@ -3,13 +3,96 @@
  * Body: { provider, model, messages, format?, apiKey?, ollamaMode?, ollamaBaseUrl? }
  * Keys también vía env: OLLAMA_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY
  *
- * Seguridad: solo acepta peticiones desde el origen de la app (ver api/_lib/guard.ts).
- * Sin ese control, cualquiera con la URL podría gastar las API keys del servidor.
+ * Seguridad: solo acepta peticiones desde el origen de la app. Sin este control,
+ * cualquiera con la URL podría usar el endpoint como pasarela gratuita contra
+ * las API keys del servidor.
+ *
+ * El guard va escrito aquí dentro a propósito: estas funciones son ESM
+ * (`"type": "module"`) y un import relativo entre carpetas de /api rompe la
+ * invocación en Vercel. Se duplica en api/ollama/chat.ts; son 40 líneas y el
+ * coste de que fallen es una factura de API ajena.
  */
 
-import { applyCors, checkPayload, guard } from "../_lib/guard";
-
 type Msg = { role: string; content: string };
+
+type ReqHeaders = Record<string, string | string[] | undefined>;
+
+const MAX_MESSAGES = 40;
+const MAX_CHARS = 24_000;
+const RATE_WINDOW_MS = 60_000;
+const RATE_MAX = Number(process.env.AI_RATE_LIMIT ?? 20);
+
+const HITS = new Map<string, number[]>();
+
+function header(headers: ReqHeaders, name: string): string {
+  const raw = headers[name] ?? headers[name.toLowerCase()];
+  if (Array.isArray(raw)) return raw[0] ?? "";
+  return typeof raw === "string" ? raw : "";
+}
+
+function originOf(url: string): string {
+  try {
+    return new URL(url).origin;
+  } catch {
+    return "";
+  }
+}
+
+function allowedOrigins(): string[] {
+  const list = new Set<string>();
+  for (const v of [
+    process.env.VERCEL_URL,
+    process.env.VERCEL_BRANCH_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+  ]) {
+    if (v) list.add(`https://${v}`);
+  }
+  for (const raw of (process.env.ALLOWED_ORIGINS ?? "").split(",")) {
+    const o = originOf(raw.trim()) || raw.trim();
+    if (o) list.add(o);
+  }
+  if (process.env.VERCEL_ENV !== "production") {
+    list.add("http://localhost:5173");
+    list.add("http://127.0.0.1:5173");
+    list.add("http://localhost:4173");
+  }
+  return [...list];
+}
+
+function rateLimited(headers: ReqHeaders): boolean {
+  const fwd = header(headers, "x-forwarded-for");
+  const ip = (fwd ? fwd.split(",")[0]!.trim() : header(headers, "x-real-ip")) || "unknown";
+  const now = Date.now();
+  const recent = (HITS.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
+  recent.push(now);
+  HITS.set(ip, recent);
+  if (HITS.size > 5_000) {
+    for (const [k, v] of HITS) {
+      if (!v.some((t) => now - t < RATE_WINDOW_MS)) HITS.delete(k);
+    }
+  }
+  return recent.length > RATE_MAX;
+}
+
+/**
+ * Los navegadores mandan `Origin` en toda petición POST, también same-origin.
+ * Una petición sin `Origin` ni `Referer` es un cliente no-navegador (curl,
+ * script): justo el vector que quema las API keys.
+ */
+function guard(headers: ReqHeaders): { ok: boolean; status: number; error?: string; origin?: string } {
+  const candidate = header(headers, "origin") || originOf(header(headers, "referer"));
+  if (!candidate) {
+    return { ok: false, status: 403, error: "Origen no permitido: este endpoint solo acepta peticiones desde la app." };
+  }
+  const allowed = allowedOrigins();
+  if (allowed.length > 0 && !allowed.includes(candidate)) {
+    return { ok: false, status: 403, error: "Origen no permitido." };
+  }
+  if (rateLimited(headers)) {
+    return { ok: false, status: 429, error: "Demasiadas peticiones. Espera un minuto.", origin: candidate };
+  }
+  return { ok: true, status: 200, origin: candidate };
+}
 
 function envKey(provider: string): string | undefined {
   switch (provider) {
@@ -220,7 +303,7 @@ async function callGemini(opts: {
 export default async function handler(
   req: {
     method?: string;
-    headers: Record<string, string | string[] | undefined>;
+    headers: ReqHeaders;
     body: {
       provider?: string;
       model?: string;
@@ -234,8 +317,15 @@ export default async function handler(
     setHeader: (k: string, v: string) => void;
   },
 ) {
-  const verdict = guard(req);
-  applyCors(res, verdict.allowOrigin);
+  const verdict = guard(req.headers ?? {});
+
+  if (verdict.origin) {
+    res.setHeader("Access-Control-Allow-Origin", verdict.origin);
+    res.setHeader("Vary", "Origin");
+  }
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("X-Content-Type-Options", "nosniff");
 
   if (req.method === "OPTIONS") {
     res.status(verdict.ok ? 204 : verdict.status).end();
@@ -255,9 +345,12 @@ export default async function handler(
   const messages = Array.isArray(req.body?.messages) ? req.body.messages : [];
   const format = req.body?.format ?? null;
 
-  const payloadError = checkPayload(messages);
-  if (payloadError) {
-    res.status(413).json({ error: payloadError });
+  if (messages.length > MAX_MESSAGES) {
+    res.status(413).json({ error: `Demasiados mensajes (máx. ${MAX_MESSAGES})` });
+    return;
+  }
+  if (messages.reduce((n, m) => n + (m.content?.length ?? 0), 0) > MAX_CHARS) {
+    res.status(413).json({ error: `Prompt demasiado largo (máx. ${MAX_CHARS} caracteres)` });
     return;
   }
 
@@ -274,15 +367,9 @@ export default async function handler(
     res.status(400).json({ error: "Faltan model o messages" });
     return;
   }
-  if (!apiKey && provider !== "ollama") {
+  if (!apiKey) {
     res.status(401).json({
       error: `Falta API key para ${provider}. En producción configura ${provider === "claude" ? "ANTHROPIC_API_KEY" : provider === "openai" ? "OPENAI_API_KEY" : provider === "gemini" ? "GEMINI_API_KEY" : "OLLAMA_API_KEY"} en Vercel.`,
-    });
-    return;
-  }
-  if (provider === "ollama" && !apiKey) {
-    res.status(401).json({
-      error: "Falta OLLAMA_API_KEY en el servidor (o key en Ajustes solo en demo local)",
     });
     return;
   }
