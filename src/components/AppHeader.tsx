@@ -48,7 +48,7 @@ export function AppHeader({
   const [notifOpen, setNotifOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [refreshFlash, setRefreshFlash] = useState(false);
+  const [refreshFlash, setRefreshFlash] = useState<"ok" | "err" | null>(null);
   const notifRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
   const [, bump] = useState(0);
@@ -74,11 +74,14 @@ export function AppHeader({
   async function handleRefresh() {
     if (!onRefresh || refreshing) return;
     setRefreshing(true);
-    setRefreshFlash(false);
+    setRefreshFlash(null);
     try {
       await onRefresh();
-      setRefreshFlash(true);
-      window.setTimeout(() => setRefreshFlash(false), 1800);
+      setRefreshFlash("ok");
+      window.setTimeout(() => setRefreshFlash(null), 2000);
+    } catch {
+      setRefreshFlash("err");
+      window.setTimeout(() => setRefreshFlash(null), 2800);
     } finally {
       setRefreshing(false);
     }
@@ -105,22 +108,34 @@ export function AppHeader({
           {hubBadge}
         </span>
 
-        {refreshFlash && (
+        {refreshFlash === "ok" && (
           <span className="hidden text-xs font-semibold text-[var(--ok)] sm:inline">
             Hub actualizado
+          </span>
+        )}
+        {refreshFlash === "err" && (
+          <span className="hidden text-xs font-semibold text-[var(--danger)] sm:inline">
+            Error al actualizar
           </span>
         )}
 
         {onRefresh && (
           <button
             type="button"
-            title="Recargar Hub"
+            title="Recargar Hub · leads, clientes, reservas, facturas"
             aria-label="Recargar Hub"
             disabled={refreshing}
             onClick={() => void handleRefresh()}
             className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--glass-border)] bg-[var(--glass-strong)] text-[var(--ink)] hover:border-[var(--accent)] disabled:opacity-60"
           >
-            <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin text-[var(--accent)]")} />
+            <RefreshCw
+              className={cn(
+                "h-4 w-4",
+                refreshing && "animate-spin text-[var(--accent)]",
+                refreshFlash === "ok" && "text-[var(--ok)]",
+                refreshFlash === "err" && "text-[var(--danger)]",
+              )}
+            />
           </button>
         )}
 

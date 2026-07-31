@@ -17,7 +17,7 @@ import { AccountUsersCard } from "@/components/AccountUsersCard";
 import { showMobileTicket } from "@/lib/mobile-confirm";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, Plus, RefreshCw, Shield } from "lucide-react";
-import { useCallback, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 
 const fieldCls =
   "mps-field mt-1 w-full rounded-lg px-2.5 py-2 text-sm font-normal text-[var(--ink)]";
@@ -41,6 +41,14 @@ export function UsersDirectoryPanel({ lang }: { lang: Lang }) {
   const [createError, setCreateError] = useState<string | null>(null);
 
   const refresh = useCallback(() => setUsers(listCrmUsersSafe()), []);
+
+  useEffect(() => {
+    function onHubRefresh() {
+      refresh();
+    }
+    window.addEventListener("mps-hub-refreshed", onHubRefresh);
+    return () => window.removeEventListener("mps-hub-refreshed", onHubRefresh);
+  }, [refresh]);
 
   if (!user || !canManage) {
     return (

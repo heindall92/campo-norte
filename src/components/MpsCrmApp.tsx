@@ -2504,6 +2504,14 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
     tags: "",
   });
 
+  useEffect(() => {
+    function onHubRefresh() {
+      setDocs(loadKnowledgeDocs());
+    }
+    window.addEventListener("mps-hub-refreshed", onHubRefresh);
+    return () => window.removeEventListener("mps-hub-refreshed", onHubRefresh);
+  }, []);
+
   const [active, setActive] = useState(0);
   const [cat, setCat] = useState<"all" | KnowledgeItem["category"]>("all");
   const filtered =
@@ -3749,7 +3757,10 @@ export function MpsCrmApp() {
                 ? t(lang, "live_badge_local_seed")
                 : t(lang, "live_badge_local")
           }
-          onRefresh={() => void hub.refresh()}
+          onRefresh={async () => {
+            await hub.refresh();
+            setAiSnap(loadAiSettings());
+          }}
           onNavigate={(s) => setSection(s)}
           onOpenProfile={() => setProfileOpen(true)}
         />

@@ -1,4 +1,5 @@
 import { useAuth, canAccessSection, canManageCrmUsers } from "@/lib/auth";
+import { useDataHub } from "@/lib/data";
 import { useNotifications, type AppSection } from "@/lib/notifications";
 import { loadUserProfile } from "@/lib/user-profile";
 import type { UserPrefs } from "@/lib/user-prefs";
@@ -28,6 +29,7 @@ import {
   LayoutDashboard,
   Plus,
   Presentation,
+  RefreshCw,
   Settings,
   Sparkles,
   UserRound,
@@ -84,6 +86,7 @@ export function MobileCrmShell({
   children: ReactNode;
 }) {
   const { user } = useAuth();
+  const hub = useDataHub();
   const { unreadCount, markAllRead } = useNotifications();
   const [showHome, setShowHome] = useState(true);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -91,6 +94,31 @@ export function MobileCrmShell({
   const [overlayOpen, setOverlayOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const es = lang === "es";
+
+  async function handleRefresh() {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      await hub.refresh();
+      showMobileSuccess({
+        title: es ? "Hub actualizado" : "Hub updated",
+        description: es
+          ? "Leads, clientes, reservas y facturas recargados."
+          : "Leads, clients, bookings and invoices reloaded.",
+      });
+    } catch {
+      showMobileSuccess({
+        title: es ? "No se pudo actualizar" : "Could not refresh",
+        description: es
+          ? "Revisa la conexión o el Data Hub."
+          : "Check your connection or Data Hub.",
+      });
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   useEffect(() => {
     try {
@@ -165,7 +193,6 @@ export function MobileCrmShell({
   });
   const displayName = profile.fullName.trim() || user.name;
   const firstName = displayName.split(" ")[0];
-  const es = lang === "es";
 
   let activeTab: MobileTab = "home";
   if (cuentaOpen) activeTab = "cuenta";
@@ -259,15 +286,29 @@ export function MobileCrmShell({
                 </span>
               </span>
             </button>
-            <button
-              type="button"
-              aria-label={es ? "Notificaciones" : "Notifications"}
-              onClick={openNotifications}
-              className="relative flex h-11 w-11 items-center justify-center rounded-full bg-[var(--field-bg)] text-[var(--ink)] shadow-sm"
-            >
-              <Bell className="h-5 w-5" />
-              {unreadCount > 0 && <UnreadDot className="right-2.5 top-2.5" />}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-label={es ? "Recargar Hub" : "Refresh Hub"}
+                title={es ? "Recargar Hub" : "Refresh Hub"}
+                disabled={refreshing}
+                onClick={() => void handleRefresh()}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--field-bg)] text-[var(--ink)] shadow-sm disabled:opacity-60"
+              >
+                <RefreshCw
+                  className={cn("h-5 w-5", refreshing && "animate-spin text-[var(--accent)]")}
+                />
+              </button>
+              <button
+                type="button"
+                aria-label={es ? "Notificaciones" : "Notifications"}
+                onClick={openNotifications}
+                className="relative flex h-11 w-11 items-center justify-center rounded-full bg-[var(--field-bg)] text-[var(--ink)] shadow-sm"
+              >
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && <UnreadDot className="right-2.5 top-2.5" />}
+              </button>
+            </div>
           </div>
         </header>
       )}
