@@ -31,7 +31,9 @@ type EcosystemSlide = {
 const SLIDES: EcosystemSlide[] = [
   {
     id: "web",
-    image: "/deck/slides/03.jpg",
+    // Portátil / sitio web
+    image:
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80",
     icon: Globe,
     titleEs: "Web oficial",
     titleEn: "Official website",
@@ -43,7 +45,9 @@ const SLIDES: EcosystemSlide[] = [
   },
   {
     id: "instagram",
-    image: "/deck/slides/07.jpg",
+    // Móvil / foto social
+    image:
+      "https://images.unsplash.com/photo-1611162616475-46b635cb4953?auto=format&fit=crop&w=1200&q=80",
     icon: Camera,
     titleEs: "Instagram",
     titleEn: "Instagram",
@@ -55,7 +59,9 @@ const SLIDES: EcosystemSlide[] = [
   },
   {
     id: "youtube",
-    image: "/deck/slides/11.jpg",
+    // Producción / vídeo
+    image:
+      "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&w=1200&q=80",
     icon: Play,
     titleEs: "YouTube",
     titleEn: "YouTube",
@@ -67,7 +73,9 @@ const SLIDES: EcosystemSlide[] = [
   },
   {
     id: "facebook",
-    image: "/deck/slides/05.jpg",
+    // Comunidad / red social
+    image:
+      "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?auto=format&fit=crop&w=1200&q=80",
     icon: MessageCircle,
     titleEs: "Facebook",
     titleEn: "Facebook",
@@ -79,7 +87,9 @@ const SLIDES: EcosystemSlide[] = [
   },
   {
     id: "support",
-    image: "/deck/slides/14.jpg",
+    // Documentación / ayuda
+    image:
+      "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1200&q=80",
     icon: CircleHelp,
     titleEs: "Soporte y licencia",
     titleEn: "Support & license",
@@ -91,7 +101,9 @@ const SLIDES: EcosystemSlide[] = [
   },
   {
     id: "settings",
-    image: "/deck/slides/09.jpg",
+    // Oficina / configuración de negocio
+    image:
+      "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1200&q=80",
     icon: Settings,
     titleEs: "Ajustes del negocio",
     titleEn: "Business settings",
