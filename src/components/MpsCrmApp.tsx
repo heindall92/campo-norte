@@ -291,7 +291,7 @@ function SettingsPanel({ lang }: { lang: Lang }) {
 
   const providers = Object.keys(AI_PROVIDER_LABEL) as AiProvider[];
   const fieldCls =
-    "mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]";
+    "mps-field mt-1 w-full rounded-lg px-2.5 py-2 text-sm font-normal normal-case text-[var(--ink)]";
   const labelCls = "block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]";
 
   return (
@@ -463,17 +463,17 @@ function SettingsPanel({ lang }: { lang: Lang }) {
         subtitle={lang === "es" ? "Supabase / Postgres · base de datos" : "Supabase / Postgres · Data Hub"}
       >
         <ul className="grid gap-3 text-sm text-[var(--ink-muted)] sm:grid-cols-2">
-          <li className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-3">
+          <li className="mps-settings-tile rounded-xl p-3">
             Modo Hub:{" "}
             <strong className="text-[var(--ink)]">{hub.mode}</strong>
           </li>
-          <li className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-3">
+          <li className="mps-settings-tile rounded-xl p-3">
             Credenciales Supabase:{" "}
             <strong className="text-[var(--ink)]">
               {supabaseReady || supabaseConfigured() ? "detectadas" : "pendientes (.env.local)"}
             </strong>
           </li>
-          <li className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-3 sm:col-span-2">
+          <li className="mps-settings-tile rounded-xl p-3 sm:col-span-2">
             Schema: <code className="text-[var(--accent)]">supabase/schema.sql</code>
           </li>
         </ul>
@@ -544,10 +544,8 @@ function SettingsPanel({ lang }: { lang: Lang }) {
                   type="button"
                   onClick={() => persistAi({ ...ai, provider: p })}
                   className={cn(
-                    "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
-                    ai.provider === p
-                      ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_18%,transparent)] text-[var(--ink)]"
-                      : "border-[var(--glass-border)] text-[var(--ink-muted)] hover:border-[var(--accent)]",
+                    "mps-choice rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                    ai.provider === p && "is-active",
                   )}
                 >
                   {AI_PROVIDER_LABEL[p]}
@@ -629,7 +627,7 @@ function SettingsPanel({ lang }: { lang: Lang }) {
               )}
 
               {!allowClientAiKeys() && (ai.provider !== "ollama" || ai.ollamaMode === "cloud") && (
-                <p className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm text-[var(--ink-muted)] sm:col-span-2">
+                <p className="mps-settings-tile rounded-lg px-3 py-2 text-sm sm:col-span-2">
                   {lang === "es"
                     ? "Producción: las API keys viven en variables de entorno de Vercel. No se pegan en el navegador."
                     : "Production: API keys live in Vercel env vars. They are not pasted in the browser."}
@@ -684,7 +682,7 @@ function SettingsPanel({ lang }: { lang: Lang }) {
                 type="button"
                 disabled={testing || !ai.enabled}
                 onClick={() => void runConnectionTest()}
-                className="inline-flex items-center gap-2 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-strong)] px-3 py-2 text-sm font-semibold text-[var(--ink)] disabled:opacity-50"
+                className="mps-choice inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)] disabled:opacity-50"
               >
                 {testing ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -697,7 +695,7 @@ function SettingsPanel({ lang }: { lang: Lang }) {
                 href={AI_PROVIDER_DOCS[ai.provider]}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-lg border border-[var(--glass-border)] px-3 py-2 text-sm font-semibold text-[var(--ink)]"
+                className="mps-choice inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)]"
               >
                 {lang === "es" ? "Crear API key" : "Create API key"}
               </a>
@@ -730,19 +728,19 @@ function SettingsPanel({ lang }: { lang: Lang }) {
           <div className="flex flex-wrap gap-2 sm:justify-end">
             <a
               href="/legal#aviso"
-              className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
+              className="mps-choice rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)]"
             >
               {lang === "es" ? "Aviso legal" : "Legal notice"}
             </a>
             <a
               href="/legal#privacidad"
-              className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
+              className="mps-choice rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)]"
             >
               {lang === "es" ? "Privacidad" : "Privacy"}
             </a>
             <a
               href="/legal#cookies"
-              className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
+              className="mps-choice rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)]"
             >
               Cookies
             </a>

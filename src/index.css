@@ -14,6 +14,12 @@ html[data-theme="light"] {
   --glass: rgba(255, 255, 255, 0.62);
   --glass-strong: rgba(255, 255, 255, 0.82);
   --glass-border: rgba(255, 255, 255, 0.7);
+  /* Campos de formulario: contraste real sobre glass blanco */
+  --field-bg: #f1f5f9;
+  --field-border: #94a3b8;
+  --field-border-strong: #64748b;
+  --chip-idle-bg: #f8fafc;
+  --chip-idle-border: #cbd5e1;
   --sidebar: rgba(15, 23, 42, 0.88);
   --sidebar-text: #f8fafc;
   --sidebar-muted: #cbd5e1;
@@ -38,6 +44,11 @@ html[data-theme="dark"] {
   --glass: rgba(30, 41, 59, 0.55);
   --glass-strong: rgba(30, 41, 59, 0.78);
   --glass-border: rgba(148, 163, 184, 0.22);
+  --field-bg: rgba(15, 23, 42, 0.72);
+  --field-border: rgba(148, 163, 184, 0.45);
+  --field-border-strong: rgba(148, 163, 184, 0.7);
+  --chip-idle-bg: rgba(15, 23, 42, 0.55);
+  --chip-idle-border: rgba(148, 163, 184, 0.35);
   --sidebar: rgba(2, 6, 23, 0.92);
   --sidebar-text: #f8fafc;
   --sidebar-muted: #94a3b8;
@@ -112,4 +123,50 @@ html[data-theme="dark"] .glass-panel {
     radial-gradient(circle at 12% 0%, color-mix(in oklab, var(--accent) 22%, transparent), transparent 42%),
     radial-gradient(circle at 100% 10%, color-mix(in oklab, var(--accent-2) 18%, transparent), transparent 40%),
     linear-gradient(160deg, var(--bg0), var(--bg1));
+}
+
+/* Controles de formulario con contraste (Ajustes / forms) */
+.mps-field {
+  background: var(--field-bg);
+  border: 1px solid var(--field-border);
+  color: var(--ink);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.mps-field::placeholder {
+  color: color-mix(in oklab, var(--ink-muted) 75%, transparent);
+}
+
+.mps-field:hover {
+  border-color: var(--field-border-strong);
+}
+
+.mps-field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 28%, transparent);
+}
+
+.mps-choice {
+  background: var(--chip-idle-bg);
+  border: 1px solid var(--chip-idle-border);
+  color: var(--ink-muted);
+}
+
+.mps-choice:hover {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.mps-choice.is-active {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 16%, var(--chip-idle-bg));
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.mps-settings-tile {
+  background: var(--field-bg);
+  border: 1px solid var(--field-border);
+  color: var(--ink-muted);
 }
