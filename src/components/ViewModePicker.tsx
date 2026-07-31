@@ -94,18 +94,33 @@ export function ViewModePicker({
               type="button"
               onClick={() => pick(opt.id)}
               className={cn(
-                "flex min-h-[4.5rem] flex-col items-center justify-center gap-1 rounded-2xl px-1.5 py-2 text-center transition",
+                "flex min-h-[4.5rem] flex-col items-center justify-center gap-1 rounded-2xl border px-1.5 py-2 text-center transition",
                 active
-                  ? "bg-[var(--accent)] text-white shadow-md"
-                  : "bg-white/70 text-[var(--ink)] hover:bg-white",
+                  ? "border-transparent bg-[var(--accent)] text-white shadow-md"
+                  : variant === "login"
+                    ? "border-slate-200/80 bg-white text-slate-900 hover:border-slate-300"
+                    : "border-[var(--glass-border)] bg-[var(--glass-strong)] text-[var(--ink)] hover:border-[color-mix(in_oklab,var(--accent)_50%,var(--glass-border))]",
               )}
             >
-              <Icon className="h-5 w-5" strokeWidth={active ? 2.4 : 2} />
-              <span className="text-[11px] font-bold">{es ? opt.labelEs : opt.labelEn}</span>
+              <Icon
+                className={cn(
+                  "h-5 w-5",
+                  !active && variant === "login" && "text-slate-800",
+                  !active && variant !== "login" && "text-[var(--ink)]",
+                )}
+                strokeWidth={active ? 2.4 : 2}
+              />
+              <span className="text-[11px] font-bold leading-tight">
+                {es ? opt.labelEs : opt.labelEn}
+              </span>
               <span
                 className={cn(
                   "text-[9px] leading-tight",
-                  active ? "text-white/85" : "text-[var(--ink-muted)]",
+                  active
+                    ? "text-white/90"
+                    : variant === "login"
+                      ? "text-slate-600"
+                      : "text-[color-mix(in_oklab,var(--ink)_72%,transparent)]",
                 )}
               >
                 {es ? opt.hintEs : opt.hintEn}
