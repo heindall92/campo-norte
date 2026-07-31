@@ -391,10 +391,12 @@ export function MobileCrmShell({
       )}
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-[color-mix(in_oklab,var(--ink)_8%,transparent)] bg-[color-mix(in_oklab,var(--glass-strong)_96%,white)] px-2 pt-1.5 pb-[max(0.4rem,env(safe-area-inset-bottom))] backdrop-blur-xl"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-3 pb-[max(0.85rem,env(safe-area-inset-bottom))]"
         aria-label={es ? "Navegación móvil" : "Mobile navigation"}
       >
-        <div className="mx-auto flex max-w-lg items-stretch justify-around">
+        <div
+          className="pointer-events-auto flex w-full max-w-md items-stretch justify-around gap-0.5 rounded-full border border-[color-mix(in_oklab,var(--accent)_40%,var(--glass-border))] bg-[color-mix(in_oklab,var(--glass-strong)_94%,transparent)] px-1.5 py-1.5 shadow-[0_10px_36px_color-mix(in_oklab,var(--ink)_22%,transparent),0_0_24px_color-mix(in_oklab,var(--accent)_18%,transparent)] backdrop-blur-xl"
+        >
           <NavItem
             active={activeTab === "home"}
             label={es ? "Inicio" : "Home"}
