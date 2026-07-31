@@ -73,7 +73,7 @@ export function MobileNotificationsSheet({
           </div>
         </div>
 
-        <ul className="max-h-[min(60dvh,28rem)] overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <ul className="max-h-[min(55dvh,24rem)] overflow-y-auto">
           {items.length === 0 && (
             <li className="px-4 py-10 text-center text-sm text-[var(--ink-muted)]">
               {es
@@ -118,15 +118,18 @@ export function MobileNotificationsSheet({
         </ul>
 
         {items.length > 0 && (
-          <div className="border-t border-[var(--glass-border)] px-4 py-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="border-t border-[var(--glass-border)] px-4 pt-3 pb-[max(2.25rem,calc(env(safe-area-inset-bottom)+1.5rem))]">
             <button
               type="button"
               onClick={() => markAllRead()}
-              className="w-full rounded-2xl bg-[var(--accent)] py-3 text-sm font-bold text-white"
+              className="w-full rounded-2xl bg-[var(--accent)] py-3.5 text-sm font-bold text-white"
             >
               {es ? "Marcar todas como leídas" : "Mark all as read"}
             </button>
           </div>
+        )}
+        {items.length === 0 && (
+          <div className="pb-[max(1.5rem,env(safe-area-inset-bottom))]" />
         )}
       </div>
     </div>
