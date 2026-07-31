@@ -121,18 +121,41 @@ export function DataHubProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       const data = await store.load();
-      snapshotRef.current = data;
-      setSnapshot(data);
+      const next = {
+        ...data,
+        meta: {
+          ...data.meta,
+          updatedAt: new Date().toISOString(),
+          lastSyncedAt: new Date().toISOString(),
+        },
+      };
+      snapshotRef.current = next;
+      setSnapshot(next);
+      try {
+        await store.save(next);
+      } catch {
+        /* load ok even if stamp save fails */
+      }
+      window.dispatchEvent(new Event("mps-hub-refreshed"));
     } catch (err) {
       if (store.mode === "supabase") {
         try {
           const local = new LocalDataStore();
           const data = await local.load();
-          snapshotRef.current = data;
-          setSnapshot(data);
+          const next = {
+            ...data,
+            meta: {
+              ...data.meta,
+              updatedAt: new Date().toISOString(),
+              lastSyncedAt: new Date().toISOString(),
+            },
+          };
+          snapshotRef.current = next;
+          setSnapshot(next);
           setError(
             `Supabase no disponible (${err instanceof Error ? err.message : "error"}). Usando Data Hub local.`,
           );
+          window.dispatchEvent(new Event("mps-hub-refreshed"));
         } catch (localErr) {
           const seed = buildSeedSnapshot("local");
           snapshotRef.current = seed;

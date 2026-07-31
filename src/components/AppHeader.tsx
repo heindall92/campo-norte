@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   ChevronDown,
   LogOut,
-  MoreHorizontal,
   RefreshCw,
   Settings,
   UserRound,
@@ -39,7 +38,7 @@ export function AppHeader({
   title: string;
   subtitle: string;
   hubBadge: string;
-  onRefresh?: () => void;
+  onRefresh?: () => void | Promise<void>;
   onNavigate: (section: AppSection) => void;
   onOpenProfile?: () => void;
 }) {
@@ -47,6 +46,8 @@ export function AppHeader({
   const { items, unreadCount, markAllRead, markRead, clear } = useNotifications();
   const [notifOpen, setNotifOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshFlash, setRefreshFlash] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
   const [, bump] = useState(0);
@@ -69,6 +70,19 @@ export function AppHeader({
     return () => window.removeEventListener("mps-profile-saved", onProfileSaved);
   }, []);
 
+  async function handleRefresh() {
+    if (!onRefresh || refreshing) return;
+    setRefreshing(true);
+    setRefreshFlash(false);
+    try {
+      await onRefresh();
+      setRefreshFlash(true);
+      window.setTimeout(() => setRefreshFlash(false), 1800);
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
   if (!user) return null;
 
   const profile = loadUserProfile(user.id, {
@@ -90,14 +104,22 @@ export function AppHeader({
           {hubBadge}
         </span>
 
+        {refreshFlash && (
+          <span className="hidden text-xs font-semibold text-[var(--ok)] sm:inline">
+            Hub actualizado
+          </span>
+        )}
+
         {onRefresh && (
           <button
             type="button"
             title="Recargar Hub"
-            onClick={onRefresh}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--glass-border)] bg-[var(--glass-strong)] text-[var(--ink)] hover:border-[var(--accent)]"
+            aria-label="Recargar Hub"
+            disabled={refreshing}
+            onClick={() => void handleRefresh()}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--glass-border)] bg-[var(--glass-strong)] text-[var(--ink)] hover:border-[var(--accent)] disabled:opacity-60"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin text-[var(--accent)]")} />
           </button>
         )}
 
@@ -270,15 +292,6 @@ export function AppHeader({
             </div>
           )}
         </div>
-
-        <button
-          type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] text-[var(--ink-muted)]"
-          title="Más"
-          onClick={() => onNavigate("ajustes")}
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </button>
       </div>
     </header>
   );
