@@ -9,7 +9,7 @@ import {
   type UserPrefs,
 } from "@/lib/user-prefs";
 import type { Lang } from "@/lib/i18n";
-import type { AppSection } from "@/lib/notifications";
+import { useNotifications, type AppSection } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
 import { ViewModePicker } from "@/components/ViewModePicker";
 import { SupportModal } from "@/components/SupportModal";
@@ -123,6 +123,7 @@ export function MobileProfileScreen({
   onLangChange: (l: Lang) => void;
 }) {
   const { user, signOut } = useAuth();
+  const { unreadCount, markAllRead } = useNotifications();
   const [layout, setLayout] = useState<ProfileLayoutId>(prefs.profileLayout);
   const [themeOpen, setThemeOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
@@ -331,12 +332,27 @@ export function MobileProfileScreen({
     </>
   );
 
+  const notifBtn = (
+    <button
+      type="button"
+      aria-label={es ? "Notificaciones" : "Notifications"}
+      onClick={() => markAllRead()}
+      className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--field-bg)] text-[var(--ink)] shadow-sm"
+    >
+      <Bell className="h-5 w-5" />
+      {unreadCount > 0 && (
+        <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-[var(--danger)] ring-2 ring-white dark:ring-[var(--glass-strong)]" />
+      )}
+    </button>
+  );
+
   // Layout B — hub centrado (conservado; oculto salvo PROFILE_LAYOUT_B_ENABLED)
   if (activeLayout === "hub") {
     return (
       <>
         <div className="space-y-4 pb-2">
-          <div className="flex flex-col items-center pt-2 text-center">
+          <div className="relative flex flex-col items-center pt-2 text-center">
+            <div className="absolute right-0 top-0">{notifBtn}</div>
             <span className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-[var(--accent)] text-xl font-bold text-white shadow-md">
               {profile.avatarDataUrl ? (
                 <img src={profile.avatarDataUrl} alt="" className="h-full w-full object-cover" />
@@ -378,10 +394,11 @@ export function MobileProfileScreen({
               user.avatarInitial
             )}
           </span>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="truncate font-bold text-[var(--ink)]">{displayName}</p>
             <p className="truncate text-sm text-[var(--ink-muted)]">{user.email}</p>
           </div>
+          {notifBtn}
         </div>
         {layoutPicker}
         <ViewModePicker lang={lang === "es" ? "es" : "en"} variant="inline" />

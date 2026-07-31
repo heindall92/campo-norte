@@ -200,48 +200,50 @@ export function MobileCrmShell({
       />
       <MobileConfirmHost lang={lang} />
 
-      <header className="sticky top-0 z-40 border-b border-[color-mix(in_oklab,var(--ink)_6%,transparent)] bg-[color-mix(in_oklab,var(--bg0)_92%,white)] px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-xl">
-        <div className="flex items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              setCuentaOpen(true);
-              setShowHome(false);
-            }}
-            className="flex min-h-11 min-w-0 items-center gap-2.5 text-left"
-          >
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent)] text-sm font-bold text-white shadow-md">
-              {profile.avatarDataUrl ? (
-                <img src={profile.avatarDataUrl} alt="" className="h-full w-full object-cover" />
-              ) : (
-                user.avatarInitial
+      {!cuentaOpen && (
+        <header className="sticky top-0 z-40 border-b border-[color-mix(in_oklab,var(--ink)_6%,transparent)] bg-[color-mix(in_oklab,var(--bg0)_92%,white)] px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-xl">
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setCuentaOpen(true);
+                setShowHome(false);
+              }}
+              className="flex min-h-11 min-w-0 items-center gap-2.5 text-left"
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent)] text-sm font-bold text-white shadow-md">
+                {profile.avatarDataUrl ? (
+                  <img src={profile.avatarDataUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  user.avatarInitial
+                )}
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-[11px] font-semibold text-[var(--ink-muted)]">
+                  {es ? "Buenos días" : "Good morning"}
+                </span>
+                <span className="block truncate text-base font-bold text-[var(--ink)]">
+                  {firstName}
+                </span>
+              </span>
+            </button>
+            <button
+              type="button"
+              aria-label={es ? "Notificaciones" : "Notifications"}
+              onClick={() => markAllRead()}
+              className="relative flex h-11 w-11 items-center justify-center rounded-full bg-[var(--field-bg)] text-[var(--ink)] shadow-sm"
+            >
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-[var(--danger)] ring-2 ring-[var(--bg0)]" />
               )}
-            </span>
-            <span className="min-w-0">
-              <span className="block truncate text-[11px] font-semibold text-[var(--ink-muted)]">
-                {es ? "Buenos días" : "Good morning"}
-              </span>
-              <span className="block truncate text-base font-bold text-[var(--ink)]">
-                {firstName}
-              </span>
-            </span>
-          </button>
-          <button
-            type="button"
-            aria-label={es ? "Notificaciones" : "Notifications"}
-            onClick={() => markAllRead()}
-            className="relative flex h-11 w-11 items-center justify-center rounded-full bg-[var(--field-bg)] text-[var(--ink)] shadow-sm"
-          >
-            <Bell className="h-5 w-5" />
-            {unreadCount > 0 && (
-              <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-[var(--danger)] ring-2 ring-[var(--bg0)]" />
-            )}
-          </button>
-        </div>
-      </header>
+            </button>
+          </div>
+        </header>
+      )}
 
       {cuentaOpen ? (
-        <div className="px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4">
+        <div className="px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]">
           <MobileProfileScreen
             lang={lang}
             prefs={prefs}

@@ -120,7 +120,7 @@ export function ViewModePicker({
                     ? "text-white/90"
                     : variant === "login"
                       ? "text-slate-600"
-                      : "text-[color-mix(in_oklab,var(--ink)_72%,transparent)]",
+                      : "text-[color-mix(in_oklab,var(--ink)_78%,transparent)]",
                 )}
               >
                 {es ? opt.hintEs : opt.hintEn}
@@ -129,7 +129,14 @@ export function ViewModePicker({
           );
         })}
       </div>
-      <p className="mt-2 text-center text-[10px] text-[var(--ink-muted)] text-pretty">
+      <p
+        className={cn(
+          "mt-2 text-center text-[10px] text-pretty",
+          variant === "login"
+            ? "text-slate-600"
+            : "text-[color-mix(in_oklab,var(--ink)_70%,transparent)]",
+        )}
+      >
         {es
           ? "Si en el móvil no ves la app, elige Móvil y vuelve a entrar."
           : "If the phone still shows desktop, pick Mobile and sign in again."}
