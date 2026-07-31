@@ -1487,11 +1487,36 @@ function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
   const margins = routeMargins();
   const origins = computeOriginFromLeads(leads);
   const progress = progressToMillion();
-  const colors = theme === "dark" ? ORIGIN_COLORS_DARK : ORIGIN_COLORS_LIGHT;
-  const chart = theme === "dark" ? "#2dd4bf" : "#0f766e";
-  const chart2 = theme === "dark" ? "#38bdf8" : "#0369a1";
-  const grid = theme === "dark" ? "#334155" : "#e2e8f0";
-  const tick = theme === "dark" ? "#94a3b8" : "#64748b";
+  const dark = theme === "dark";
+  const colors = dark ? ORIGIN_COLORS_DARK : ORIGIN_COLORS_LIGHT;
+  const chart = dark ? "#2dd4bf" : "#0f766e";
+  const chart2 = dark ? "#38bdf8" : "#0369a1";
+  const grid = dark ? "#334155" : "#e2e8f0";
+  const tick = dark ? "#94a3b8" : "#64748b";
+  const chartTooltip = {
+    contentStyle: {
+      background: dark ? "rgba(15, 23, 42, 0.96)" : "rgba(255, 255, 255, 0.98)",
+      border: `1px solid ${dark ? "rgba(148, 163, 184, 0.28)" : "rgba(15, 23, 42, 0.12)"}`,
+      borderRadius: 12,
+      color: dark ? "#f1f5f9" : "#0f172a",
+      boxShadow: dark
+        ? "0 14px 32px rgba(0,0,0,0.45)"
+        : "0 10px 24px rgba(15, 23, 42, 0.12)",
+      padding: "10px 12px",
+    },
+    labelStyle: {
+      color: dark ? "#f8fafc" : "#0f172a",
+      fontWeight: 700,
+      marginBottom: 6,
+    },
+    itemStyle: {
+      color: dark ? "#e2e8f0" : "#334155",
+      fontSize: 12,
+    },
+    cursor: {
+      fill: dark ? "rgba(148, 163, 184, 0.12)" : "rgba(15, 23, 42, 0.05)",
+    },
+  } as const;
   const chartRevenue = MONTHLY_KPIS.map((m) => ({
     month: m.month,
     revenue: m.revenue,
@@ -1552,6 +1577,7 @@ function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
                 <XAxis dataKey="month" tick={{ fill: tick, fontSize: 12 }} />
                 <YAxis tick={{ fill: tick, fontSize: 12 }} />
                 <Tooltip
+                  {...chartTooltip}
                   formatter={(value, name) =>
                     name === "revenue"
                       ? euro(Number(value ?? 0), lang)
@@ -1593,7 +1619,7 @@ function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
                     <Cell key={o.origin} fill={colors[o.origin]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip {...chartTooltip} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -1633,7 +1659,10 @@ function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
               <CartesianGrid stroke={grid} strokeDasharray="3 3" />
               <XAxis dataKey="name" tick={{ fill: tick, fontSize: 11 }} />
               <YAxis tick={{ fill: tick, fontSize: 12 }} />
-              <Tooltip formatter={(value) => `${Number(value ?? 0)}%`} />
+              <Tooltip
+                {...chartTooltip}
+                formatter={(value) => `${Number(value ?? 0)}%`}
+              />
               <Bar dataKey="marginPct" fill={chart} name="Margen %" radius={[6, 6, 0, 0]} />
               <Bar dataKey="occupancy" fill={chart2} name="Ocupación %" radius={[6, 6, 0, 0]} />
             </BarChart>
