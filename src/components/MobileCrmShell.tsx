@@ -12,6 +12,8 @@ import {
 import { MobileProfileScreen } from "@/components/MobileProfileScreen";
 import { MobileConfirmHost } from "@/components/MobileConfirmHost";
 import { MobileNotificationsSheet } from "@/components/MobileNotificationsSheet";
+import { MobileEcosystemCarousel } from "@/components/MobileEcosystemCarousel";
+import { SupportModal } from "@/components/SupportModal";
 import {
   ArrowRight,
   Bell,
@@ -87,6 +89,7 @@ export function MobileCrmShell({
   const [cuentaOpen, setCuentaOpen] = useState(false);
   const [overlayOpen, setOverlayOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -203,6 +206,11 @@ export function MobileCrmShell({
         onDone={() => setOverlayOpen(false)}
       />
       <MobileConfirmHost lang={lang} />
+      <SupportModal
+        open={supportOpen}
+        onClose={() => setSupportOpen(false)}
+        lang={lang}
+      />
       <MobileNotificationsSheet
         open={notifOpen}
         onClose={() => setNotifOpen(false)}
@@ -324,6 +332,12 @@ export function MobileCrmShell({
               );
             })}
           </div>
+
+          <MobileEcosystemCarousel
+            lang={lang}
+            onOpenSupport={() => setSupportOpen(true)}
+            onOpenSettings={() => openSection("ajustes")}
+          />
         </div>
       ) : (
         <main className="px-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-3">
