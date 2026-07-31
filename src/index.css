@@ -11,9 +11,9 @@ html[data-theme="light"] {
   --bg1: #d5dee8;
   --ink: #0f172a;
   --ink-muted: #475569;
-  --glass: rgba(255, 255, 255, 0.62);
-  --glass-strong: rgba(255, 255, 255, 0.82);
-  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass: #ffffff;
+  --glass-strong: #ffffff;
+  --glass-border: color-mix(in oklab, #0f172a 14%, transparent);
   /* Campos de formulario: contraste real sobre glass blanco */
   --field-bg: #f1f5f9;
   --field-border: #94a3b8;

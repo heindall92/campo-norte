@@ -1936,7 +1936,7 @@ function ClientsPanel({ lang }: { lang: Lang }) {
               return (
                 <li
                   key={`q-${c.id}`}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-3"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-strong)] px-3 py-3 shadow-sm"
                 >
                   <div>
                     <p className="font-semibold text-[var(--ink)]">
@@ -1966,7 +1966,7 @@ function ClientsPanel({ lang }: { lang: Lang }) {
                     </p>
                     <p className="mt-1 text-xs text-[var(--ink)]">{c.reactivationWhy}</p>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
                     <Badge tone={segmentTone(c.segment)}>{SEGMENT_LABEL[c.segment]}</Badge>
                     <EntityActionBar
                       phone={c.phone}
@@ -2048,7 +2048,7 @@ function ClientsPanel({ lang }: { lang: Lang }) {
             return (
               <li
                 key={c.id}
-                className="overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--glass)]"
+                className="overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-strong)] shadow-sm"
               >
                 <button
                   type="button"
@@ -2073,26 +2073,29 @@ function ClientsPanel({ lang }: { lang: Lang }) {
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge tone={segmentTone(c.segment)}>{SEGMENT_LABEL[c.segment]}</Badge>
-                    {highValue && (
-                      <Badge tone="brand">
-                        {lang === "es" ? "Alto valor" : "High value"}
+                  <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
+                    <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                      <Badge tone={segmentTone(c.segment)}>{SEGMENT_LABEL[c.segment]}</Badge>
+                      {highValue && (
+                        <Badge tone="brand">
+                          {lang === "es" ? "Alto valor" : "High value"}
+                        </Badge>
+                      )}
+                      {c.contactThisMonth && (
+                        <Badge tone="bad">
+                          {lang === "es" ? "Contactar" : "Contact"}
+                        </Badge>
+                      )}
+                      <Badge tone={statusTone(c.status)}>{STATUS_LABEL[c.status]}</Badge>
+                      <Badge tone={clientPaymentTone(c.paymentStatus)}>
+                        {PAYMENT_STATUS_LABEL[c.paymentStatus]}
                       </Badge>
-                    )}
-                    {c.contactThisMonth && (
-                      <Badge tone="bad">
-                        {lang === "es" ? "Contactar" : "Contact"}
-                      </Badge>
-                    )}
-                    <Badge tone={statusTone(c.status)}>{STATUS_LABEL[c.status]}</Badge>
-                    <Badge tone={clientPaymentTone(c.paymentStatus)}>
-                      {PAYMENT_STATUS_LABEL[c.paymentStatus]}
-                    </Badge>
-                    <span className="text-sm font-semibold text-[var(--ink)]">
-                      LTV {euro(c.ltv, lang)}
-                    </span>
+                      <span className="text-sm font-semibold text-[var(--ink)]">
+                        LTV {euro(c.ltv, lang)}
+                      </span>
+                    </div>
                     <EntityActionBar
+                      className="justify-end self-end"
                       phone={c.phone}
                       onEdit={() => setModal({ mode: "edit", client: { ...c } })}
                       onDelete={() => {
@@ -2301,7 +2304,7 @@ function ClientsPanel({ lang }: { lang: Lang }) {
                         <Pencil className="h-4 w-4" />
                         {lang === "es" ? "Editar datos" : "Edit details"}
                       </button>
-                      <EntityActionBar phone={c.phone} />
+                      <EntityActionBar className="justify-end" phone={c.phone} />
                     </div>
                   </div>
                 )}
