@@ -12,6 +12,7 @@ import type { Lang } from "@/lib/i18n";
 import type { AppSection } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
 import { ViewModePicker } from "@/components/ViewModePicker";
+import { SupportModal } from "@/components/SupportModal";
 import {
   Bell,
   ChevronDown,
@@ -124,6 +125,7 @@ export function MobileProfileScreen({
   const { user, signOut } = useAuth();
   const [layout, setLayout] = useState<ProfileLayoutId>(prefs.profileLayout);
   const [themeOpen, setThemeOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
 
   useEffect(() => {
     setLayout(prefs.profileLayout);
@@ -297,7 +299,7 @@ export function MobileProfileScreen({
         <Row
           icon={CircleHelp}
           label={es ? "Soporte" : "Support"}
-          onClick={() => onNavigate("ajustes")}
+          onClick={() => setSupportOpen(true)}
         />
         <Row
           icon={Settings}
@@ -332,73 +334,79 @@ export function MobileProfileScreen({
   // Layout B — hub centrado (conservado; oculto salvo PROFILE_LAYOUT_B_ENABLED)
   if (activeLayout === "hub") {
     return (
+      <>
+        <div className="space-y-4 pb-2">
+          <div className="flex flex-col items-center pt-2 text-center">
+            <span className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-[var(--accent)] text-xl font-bold text-white shadow-md">
+              {profile.avatarDataUrl ? (
+                <img src={profile.avatarDataUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                user.avatarInitial
+              )}
+            </span>
+            <p className="mt-3 text-lg font-bold text-[var(--ink)]">{displayName}</p>
+            <p className="text-sm text-[var(--ink-muted)]">{user.email}</p>
+            <button
+              type="button"
+              onClick={onOpenProfile}
+              className="mt-3 rounded-full border-2 border-[var(--accent)] px-5 py-2 text-sm font-bold text-[var(--accent)]"
+            >
+              {es ? "Editar perfil" : "Edit profile"}
+            </button>
+          </div>
+          {layoutPicker}
+          <ViewModePicker lang={lang === "es" ? "es" : "en"} variant="inline" />
+          {sharedRows}
+        </div>
+        <SupportModal open={supportOpen} onClose={() => setSupportOpen(false)} lang={lang} />
+      </>
+    );
+  }
+
+  // Layout A — lista tipo Settings (activa en móvil)
+  return (
+    <>
       <div className="space-y-4 pb-2">
-        <div className="flex flex-col items-center pt-2 text-center">
-          <span className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-[var(--accent)] text-xl font-bold text-white shadow-md">
+        <h1 className="text-center text-lg font-bold text-[var(--ink)]">
+          {es ? "Perfil" : "Profile"}
+        </h1>
+        <div className="flex items-center gap-3 rounded-[1.25rem] bg-white p-4 shadow-sm dark:bg-[var(--glass-strong)]">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent)] text-base font-bold text-white">
             {profile.avatarDataUrl ? (
               <img src={profile.avatarDataUrl} alt="" className="h-full w-full object-cover" />
             ) : (
               user.avatarInitial
             )}
           </span>
-          <p className="mt-3 text-lg font-bold text-[var(--ink)]">{displayName}</p>
-          <p className="text-sm text-[var(--ink-muted)]">{user.email}</p>
-          <button
-            type="button"
-            onClick={onOpenProfile}
-            className="mt-3 rounded-full border-2 border-[var(--accent)] px-5 py-2 text-sm font-bold text-[var(--accent)]"
-          >
-            {es ? "Editar perfil" : "Edit profile"}
-          </button>
+          <div className="min-w-0">
+            <p className="truncate font-bold text-[var(--ink)]">{displayName}</p>
+            <p className="truncate text-sm text-[var(--ink-muted)]">{user.email}</p>
+          </div>
         </div>
         {layoutPicker}
         <ViewModePicker lang={lang === "es" ? "es" : "en"} variant="inline" />
-        {sharedRows}
-      </div>
-    );
-  }
-
-  // Layout A — lista tipo Settings (activa en móvil)
-  return (
-    <div className="space-y-4 pb-2">
-      <h1 className="text-center text-lg font-bold text-[var(--ink)]">
-        {es ? "Perfil" : "Profile"}
-      </h1>
-      <div className="flex items-center gap-3 rounded-[1.25rem] bg-white p-4 shadow-sm dark:bg-[var(--glass-strong)]">
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent)] text-base font-bold text-white">
-          {profile.avatarDataUrl ? (
-            <img src={profile.avatarDataUrl} alt="" className="h-full w-full object-cover" />
-          ) : (
-            user.avatarInitial
-          )}
-        </span>
-        <div className="min-w-0">
-          <p className="truncate font-bold text-[var(--ink)]">{displayName}</p>
-          <p className="truncate text-sm text-[var(--ink-muted)]">{user.email}</p>
+        <div>
+          <p className="mb-1.5 px-1 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+            {es ? "Cuenta" : "Account"}
+          </p>
+          <Card>
+            <Row icon={User} label={es ? "Gestionar perfil" : "Manage profile"} onClick={onOpenProfile} />
+            <Row
+              icon={Shield}
+              label={es ? "Contraseña y seguridad" : "Password & security"}
+              value={es ? "Próximamente" : "Soon"}
+              disabled
+            />
+          </Card>
+        </div>
+        <div>
+          <p className="mb-1.5 px-1 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+            {es ? "Preferencias" : "Preferences"}
+          </p>
+          {sharedRows}
         </div>
       </div>
-      {layoutPicker}
-      <ViewModePicker lang={lang === "es" ? "es" : "en"} variant="inline" />
-      <div>
-        <p className="mb-1.5 px-1 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
-          {es ? "Cuenta" : "Account"}
-        </p>
-        <Card>
-          <Row icon={User} label={es ? "Gestionar perfil" : "Manage profile"} onClick={onOpenProfile} />
-          <Row
-            icon={Shield}
-            label={es ? "Contraseña y seguridad" : "Password & security"}
-            value={es ? "Próximamente" : "Soon"}
-            disabled
-          />
-        </Card>
-      </div>
-      <div>
-        <p className="mb-1.5 px-1 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
-          {es ? "Preferencias" : "Preferences"}
-        </p>
-        {sharedRows}
-      </div>
-    </div>
+      <SupportModal open={supportOpen} onClose={() => setSupportOpen(false)} lang={lang} />
+    </>
   );
 }
