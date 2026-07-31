@@ -3551,44 +3551,45 @@ export function MpsCrmApp() {
           )}
         </div>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto p-2">
+        <nav className="flex-1 space-y-1.5 overflow-y-auto p-2">
           {visibleNav.map((item) => {
             const Icon = item.icon;
             const active = section === item.id;
+            const navPill = (isActive: boolean) =>
+              cn(
+                "flex w-full items-center justify-start gap-2 rounded-full border px-3 py-2.5 text-left text-sm font-medium transition",
+                collapsed && "justify-center px-2",
+                isActive
+                  ? "border-[color-mix(in_oklab,var(--accent)_60%,transparent)] bg-[color-mix(in_oklab,var(--accent)_32%,transparent)] text-white shadow-[0_0_14px_color-mix(in_oklab,var(--accent)_28%,transparent)]"
+                  : "border-[color-mix(in_oklab,var(--accent)_30%,transparent)] bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] text-slate-100 hover:border-[color-mix(in_oklab,var(--accent)_48%,transparent)] hover:bg-[color-mix(in_oklab,var(--accent)_18%,transparent)] hover:text-white",
+              );
             if (item.id === "ajustes") {
               const usersActive = section === "usuarios";
               return (
-                <div key={item.id} className="space-y-1">
+                <div key={item.id} className="space-y-1.5">
                   <button
                     type="button"
                     title={t(lang, item.labelKey)}
                     onClick={() => setSection("ajustes")}
-                    className={cn(
-                      "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition",
-                      collapsed && "justify-center px-2",
-                      active
-                        ? "bg-white text-slate-900"
-                        : "text-slate-200 hover:bg-white/10 hover:text-white",
-                    )}
+                    className={navPill(active)}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
                     {!collapsed && (
-                      <span className="min-w-0 flex-1 truncate">{t(lang, item.labelKey)}</span>
+                      <span className="min-w-0 flex-1 truncate text-left">
+                        {t(lang, item.labelKey)}
+                      </span>
                     )}
                   </button>
                   {showUsersNav && !collapsed && (
                     <button
                       type="button"
                       onClick={() => setSection("usuarios")}
-                      className={cn(
-                        "flex w-full items-center gap-2 rounded-xl py-2 pl-9 pr-3 text-left text-xs font-semibold transition",
-                        usersActive
-                          ? "bg-white/90 text-slate-900"
-                          : "text-slate-300 hover:bg-white/10 hover:text-white",
-                      )}
+                      className={cn(navPill(usersActive), "py-2 pl-4 text-xs")}
                     >
                       <UsersRound className="h-3.5 w-3.5 shrink-0" />
-                      {t(lang, "nav_users")}
+                      <span className="min-w-0 flex-1 truncate text-left">
+                        {t(lang, "nav_users")}
+                      </span>
                     </button>
                   )}
                   {showUsersNav && collapsed && (
@@ -3596,12 +3597,7 @@ export function MpsCrmApp() {
                       type="button"
                       title={t(lang, "nav_users")}
                       onClick={() => setSection("usuarios")}
-                      className={cn(
-                        "flex w-full items-center justify-center rounded-xl px-2 py-2.5 transition",
-                        usersActive
-                          ? "bg-white text-slate-900"
-                          : "text-slate-200 hover:bg-white/10 hover:text-white",
-                      )}
+                      className={navPill(usersActive)}
                     >
                       <UsersRound className="h-4 w-4 shrink-0" />
                     </button>
@@ -3615,22 +3611,20 @@ export function MpsCrmApp() {
                 type="button"
                 title={t(lang, item.labelKey)}
                 onClick={() => setSection(item.id)}
-                className={cn(
-                  "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition",
-                  collapsed && "justify-center px-2",
-                  active
-                    ? "bg-white text-slate-900"
-                    : "text-slate-200 hover:bg-white/10 hover:text-white",
-                )}
+                className={navPill(active)}
               >
                 <Icon className="h-4 w-4 shrink-0" />
-                {!collapsed && <span className="truncate">{t(lang, item.labelKey)}</span>}
+                {!collapsed && (
+                  <span className="min-w-0 flex-1 truncate text-left">
+                    {t(lang, item.labelKey)}
+                  </span>
+                )}
               </button>
             );
           })}
         </nav>
 
-        <div className="shrink-0 space-y-0.5 border-t border-white/10 p-2">
+        <div className="shrink-0 space-y-1.5 border-t border-white/10 p-2">
           {collapsed ? (
             <div className="flex flex-col items-center gap-2.5 py-1">
               <span
@@ -3647,7 +3641,7 @@ export function MpsCrmApp() {
                 type="button"
                 title={lang === "es" ? "Soporte" : "Support"}
                 onClick={() => setSupportOpen(true)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-200 transition hover:bg-white/10 hover:text-white"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-[color-mix(in_oklab,var(--accent)_30%,transparent)] bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] text-slate-100 transition hover:bg-[color-mix(in_oklab,var(--accent)_18%,transparent)]"
               >
                 <CircleHelp className="h-4 w-4" />
               </button>
@@ -3669,7 +3663,7 @@ export function MpsCrmApp() {
               <button
                 type="button"
                 onClick={() => setSection("ajustes")}
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left transition hover:bg-white/10"
+                className="flex w-full items-center justify-start gap-2 rounded-full px-3 py-2 text-left transition hover:bg-white/5"
                 title={
                   lang === "es" ? "Ir a ajustes de IA" : "Go to AI settings"
                 }
@@ -3684,7 +3678,7 @@ export function MpsCrmApp() {
                 />
                 <span
                   className={cn(
-                    "truncate text-xs font-medium",
+                    "truncate text-left text-xs font-medium",
                     aiConnected ? "text-slate-200" : "text-slate-400",
                   )}
                 >
@@ -3695,21 +3689,21 @@ export function MpsCrmApp() {
               <button
                 type="button"
                 onClick={() => setSupportOpen(true)}
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"
+                className="flex w-full items-center justify-start gap-2 rounded-full border border-[color-mix(in_oklab,var(--accent)_30%,transparent)] bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] px-3 py-2.5 text-left text-sm font-medium text-slate-100 shadow-[0_0_12px_color-mix(in_oklab,var(--accent)_18%,transparent)] transition hover:border-[color-mix(in_oklab,var(--accent)_48%,transparent)] hover:bg-[color-mix(in_oklab,var(--accent)_18%,transparent)] hover:text-white"
               >
                 <CircleHelp className="h-4 w-4 shrink-0" />
-                <span className="truncate">
+                <span className="min-w-0 flex-1 truncate text-left">
                   {lang === "es" ? "Soporte" : "Support"}
                 </span>
               </button>
 
-              <div className="flex items-center gap-2 rounded-xl px-3 py-2">
+              <div className="flex items-center gap-2 rounded-full px-3 py-2">
                 {theme === "dark" ? (
                   <Moon className="h-4 w-4 shrink-0 text-slate-200" />
                 ) : (
                   <Sun className="h-4 w-4 shrink-0 text-slate-200" />
                 )}
-                <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-200">
+                <span className="min-w-0 flex-1 truncate text-left text-sm font-medium text-slate-200">
                   {theme === "dark" ? t(lang, "theme_dark") : t(lang, "theme_light")}
                 </span>
                 <AppleSwitch
@@ -3719,8 +3713,8 @@ export function MpsCrmApp() {
                   onChange={(on) => setTheme(on ? "dark" : "light")}
                 />
               </div>
-              <div className="flex items-center gap-2 rounded-xl px-3 py-2">
-                <span className="min-w-0 flex-1 truncate text-sm font-medium uppercase tracking-wide text-slate-200">
+              <div className="flex items-center gap-2 rounded-full px-3 py-2">
+                <span className="min-w-0 flex-1 truncate text-left text-sm font-medium uppercase tracking-wide text-slate-200">
                   {lang === "es" ? "ES" : "EN"} · {t(lang, "lang")}
                 </span>
                 <AppleSwitch
