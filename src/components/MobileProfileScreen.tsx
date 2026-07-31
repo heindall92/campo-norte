@@ -112,6 +112,7 @@ export function MobileProfileScreen({
   prefs,
   onPrefsChange,
   onOpenProfile,
+  onOpenNotifications,
   onNavigate,
   onLangChange,
 }: {
@@ -119,11 +120,12 @@ export function MobileProfileScreen({
   prefs: UserPrefs;
   onPrefsChange: (p: UserPrefs) => void;
   onOpenProfile: () => void;
+  onOpenNotifications?: () => void;
   onNavigate: (s: AppSection) => void;
   onLangChange: (l: Lang) => void;
 }) {
   const { user, signOut } = useAuth();
-  const { unreadCount, markAllRead } = useNotifications();
+  const { unreadCount } = useNotifications();
   const [layout, setLayout] = useState<ProfileLayoutId>(prefs.profileLayout);
   const [themeOpen, setThemeOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
@@ -295,7 +297,7 @@ export function MobileProfileScreen({
           icon={Bell}
           label={es ? "Notificaciones" : "Notifications"}
           value={es ? "Activas" : "On"}
-          onClick={() => window.dispatchEvent(new Event("mps-mark-notifications-read"))}
+          onClick={() => onOpenNotifications?.()}
         />
         <Row
           icon={CircleHelp}
@@ -336,7 +338,7 @@ export function MobileProfileScreen({
     <button
       type="button"
       aria-label={es ? "Notificaciones" : "Notifications"}
-      onClick={() => markAllRead()}
+      onClick={() => onOpenNotifications?.()}
       className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--field-bg)] text-[var(--ink)] shadow-sm"
     >
       <Bell className="h-5 w-5" />

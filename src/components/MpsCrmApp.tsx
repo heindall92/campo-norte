@@ -167,7 +167,6 @@ type Theme = "light" | "dark";
 type Section = AppSection;
 
 const NAV_IDS: { id: Section; icon: typeof LayoutDashboard; labelKey: string }[] = [
-  { id: "hub", icon: Database, labelKey: "nav_hub" },
   { id: "dashboard", icon: LayoutDashboard, labelKey: "nav_dashboard" },
   { id: "leads", icon: Gauge, labelKey: "nav_leads" },
   { id: "clientes", icon: Users, labelKey: "nav_clients" },
@@ -177,6 +176,7 @@ const NAV_IDS: { id: Section; icon: typeof LayoutDashboard; labelKey: string }[]
   { id: "conocimiento", icon: BookOpen, labelKey: "nav_knowledge" },
   { id: "automatizaciones", icon: Workflow, labelKey: "nav_automations" },
   { id: "propuesta", icon: ClipboardList, labelKey: "nav_pitch" },
+  { id: "hub", icon: Database, labelKey: "nav_hub" },
   { id: "slides", icon: Presentation, labelKey: "nav_slides" },
   { id: "ajustes", icon: Settings, labelKey: "nav_settings" },
 ];
@@ -3205,7 +3205,7 @@ function SlidesPanel({ lang }: { lang: Lang }) {
 
 export function MpsCrmApp() {
   const { user } = useAuth();
-  const [section, setSection] = useState<Section>("hub");
+  const [section, setSection] = useState<Section>("dashboard");
   const [lang, setLang] = useState<Lang>("es");
   const [prefs, setPrefs] = useState<UserPrefs>(() => loadUserPrefs(user?.id));
   const [collapsed, setCollapsed] = useState(false);
@@ -3248,7 +3248,7 @@ export function MpsCrmApp() {
 
   useEffect(() => {
     if (!canAccessSection(role, section)) {
-      setSection("hub");
+      setSection("dashboard");
     }
   }, [role, section]);
 

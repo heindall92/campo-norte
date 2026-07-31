@@ -11,6 +11,7 @@ import {
 } from "@/components/MobileViewSwitchOverlay";
 import { MobileProfileScreen } from "@/components/MobileProfileScreen";
 import { MobileConfirmHost } from "@/components/MobileConfirmHost";
+import { MobileNotificationsSheet } from "@/components/MobileNotificationsSheet";
 import {
   ArrowRight,
   Bell,
@@ -85,6 +86,7 @@ export function MobileCrmShell({
   const [moreOpen, setMoreOpen] = useState(false);
   const [cuentaOpen, setCuentaOpen] = useState(false);
   const [overlayOpen, setOverlayOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -105,12 +107,8 @@ export function MobileCrmShell({
       });
     }
     function onMarkRead() {
+      setNotifOpen(true);
       markAllRead();
-      showMobileSuccess({
-        title: lang === "es" ? "Listo" : "Done",
-        description:
-          lang === "es" ? "Notificaciones marcadas como leídas." : "Notifications marked as read.",
-      });
     }
     window.addEventListener("mps-profile-saved", onProfileSaved);
     window.addEventListener("mps-mark-notifications-read", onMarkRead);
@@ -184,10 +182,16 @@ export function MobileCrmShell({
     setCuentaOpen(true);
   }
 
+  function openNotifications() {
+    setNotifOpen(true);
+    markAllRead();
+  }
+
   function openSection(id: AppSection) {
     setMoreOpen(false);
     setCuentaOpen(false);
     setShowHome(false);
+    setNotifOpen(false);
     onNavigate(id);
   }
 
@@ -199,6 +203,15 @@ export function MobileCrmShell({
         onDone={() => setOverlayOpen(false)}
       />
       <MobileConfirmHost lang={lang} />
+      <MobileNotificationsSheet
+        open={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        lang={lang}
+        onNavigate={(s) => {
+          setNotifOpen(false);
+          openSection(s);
+        }}
+      />
 
       {!cuentaOpen && (
         <header className="sticky top-0 z-40 border-b border-[color-mix(in_oklab,var(--ink)_6%,transparent)] bg-[color-mix(in_oklab,var(--bg0)_92%,white)] px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-xl">
@@ -230,7 +243,7 @@ export function MobileCrmShell({
             <button
               type="button"
               aria-label={es ? "Notificaciones" : "Notifications"}
-              onClick={() => markAllRead()}
+              onClick={openNotifications}
               className="relative flex h-11 w-11 items-center justify-center rounded-full bg-[var(--field-bg)] text-[var(--ink)] shadow-sm"
             >
               <Bell className="h-5 w-5" />
@@ -249,6 +262,7 @@ export function MobileCrmShell({
             prefs={prefs}
             onPrefsChange={onPrefsChange}
             onOpenProfile={onOpenProfile}
+            onOpenNotifications={openNotifications}
             onNavigate={(s) => {
               setCuentaOpen(false);
               openSection(s);
