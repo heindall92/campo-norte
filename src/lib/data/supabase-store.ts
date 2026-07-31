@@ -6,7 +6,7 @@ import {
   type DataStore,
   type HubSnapshot,
 } from "./types";
-import type { Client, Lead } from "@/lib/demo-data";
+import { normalizePaymentChannel, type Client, type Lead } from "@/lib/demo-data";
 import type { Invoice, Reservation } from "@/lib/ops-data";
 
 type Row = { id: string; payload: unknown; updated_at?: string };
@@ -81,9 +81,18 @@ export class SupabaseDataStore implements DataStore {
         updatedAt: metaPayload.updatedAt ?? now,
       },
       leads: leadRows.map((r) => r.payload as Lead),
-      clients: clientRows.map((r) => r.payload as Client),
-      reservations: reservationRows.map((r) => r.payload as Reservation),
-      invoices: invoiceRows.map((r) => r.payload as Invoice),
+      clients: clientRows.map((r) => {
+        const c = r.payload as Client;
+        return { ...c, paymentMethod: normalizePaymentChannel(c.paymentMethod) };
+      }),
+      reservations: reservationRows.map((r) => {
+        const res = r.payload as Reservation;
+        return { ...res, paymentChannel: normalizePaymentChannel(res.paymentChannel) };
+      }),
+      invoices: invoiceRows.map((r) => {
+        const inv = r.payload as Invoice;
+        return { ...inv, paymentChannel: normalizePaymentChannel(inv.paymentChannel) };
+      }),
     };
   }
 

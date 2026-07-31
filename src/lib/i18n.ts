@@ -240,7 +240,7 @@ export const SLIDES: Record<Lang, Slide[]> = {
       bullets: [
         "Clientes: alta/edición popup · LTV · pago · docs",
         "Reservas: crear/editar/eliminar · prep checklist",
-        "Stripe · Bizum · SEPA · PayPal · depósito · efectivo",
+        "Stripe · SEPA · PayPal · depósito · efectivo",
       ],
     },
     {
@@ -364,7 +364,7 @@ export const SLIDES: Record<Lang, Slide[]> = {
       bullets: [
         "Clients: popup create/edit · LTV · payment · docs",
         "Bookings: create/edit/delete · prep checklist",
-        "Stripe · Bizum · SEPA · PayPal · deposit · cash",
+        "Stripe · SEPA · PayPal · deposit · cash",
       ],
     },
     {

@@ -47,13 +47,11 @@ import {
   FileText,
   Loader2,
   MapPin,
-  Pencil,
   Phone,
   Plus,
   Scale,
   Search,
   Sparkles,
-  Trash2,
   Utensils,
   Zap,
 } from "lucide-react";
@@ -586,8 +584,8 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
                   key={r.id}
                   className="overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-strong)] shadow-sm"
                 >
-                  <div className="grid gap-3 p-4 lg:grid-cols-[minmax(0,1fr)_9.5rem_8.5rem_7.5rem_9.5rem] lg:items-center lg:gap-x-4">
-                    {/* Col 1 · cliente + viaje + acciones principales */}
+                  {/* Misma composición que Inteligencia de clientes: info izq · badges/acciones der */}
+                  <div className="flex w-full flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
                       <button
                         type="button"
@@ -604,87 +602,10 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
                           {r.tripName} · {r.vehicle} · {r.pax} pax
                         </p>
                       </button>
-                      <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setModal({ mode: "edit", reservation: structuredClone(r) })
-                          }
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-white"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                          {lang === "es" ? "Modificar" : "Edit"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => duplicateReservation(r)}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-strong)] px-3 py-1.5 text-xs font-semibold text-[var(--ink)]"
-                        >
-                          <Copy className="h-3.5 w-3.5" />
-                          {lang === "es" ? "Duplicar" : "Duplicate"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => void deleteReservation(r.id)}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-700 dark:text-rose-300"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                          {lang === "es" ? "Eliminar" : "Delete"}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Col 2 · estado (ancho fijo → alineado entre filas) */}
-                    <div className="flex w-full flex-col gap-1 lg:w-[9.5rem]">
-                      <span className="text-[10px] font-bold uppercase tracking-wide text-[var(--ink-muted)]">
-                        {lang === "es" ? "Estado" : "Status"}
-                      </span>
-                      <select
-                        id={`status-${r.id}`}
-                        value={r.status}
-                        onChange={(e) =>
-                          void patchReservation(r.id, {
-                            status: e.target.value as ReservationStatus,
-                          })
-                        }
-                        className={cn(
-                          "w-full rounded-full border px-3 py-1.5 text-xs font-bold outline-none",
-                          statusSelectClass(r.status),
-                        )}
-                      >
-                        {statuses.map((s) => (
-                          <option key={s} value={s}>
-                            {RESERVATION_STATUS_LABEL[s]}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Col 3 · acciones rápidas (desktop) */}
-                    <div className="hidden lg:flex lg:justify-center">
-                      <EntityActionBar
-                        phone={r.clientPhone}
-                        onEdit={() =>
-                          setModal({ mode: "edit", reservation: structuredClone(r) })
-                        }
-                        onDelete={() => void deleteReservation(r.id)}
-                      />
-                    </div>
-
-                    {/* Col 4 · medio de pago */}
-                    <div className="flex lg:justify-center">
-                      <Badge tone="neutral">{PAYMENT_LABEL[r.paymentChannel]}</Badge>
-                    </div>
-
-                    {/* Col 5 · importes + logística (+ acciones en móvil) */}
-                    <div className="flex w-full flex-col items-end gap-2">
-                      <span className="whitespace-nowrap text-sm font-semibold tabular-nums text-[var(--ink)]">
-                        {euro(r.depositPaid, lang)} / {euro(r.totalAmount, lang)}
-                      </span>
                       <button
                         type="button"
                         onClick={() => setOpenId(open ? null : r.id)}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--ink-muted)] hover:text-[var(--accent)]"
+                        className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[var(--ink-muted)] hover:text-[var(--accent)]"
                       >
                         {open
                           ? lang === "es"
@@ -697,14 +618,53 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
                           className={cn("h-3.5 w-3.5 transition", open && "rotate-180")}
                         />
                       </button>
-                      <EntityActionBar
-                        className="justify-end lg:hidden"
-                        phone={r.clientPhone}
-                        onEdit={() =>
-                          setModal({ mode: "edit", reservation: structuredClone(r) })
-                        }
-                        onDelete={() => void deleteReservation(r.id)}
-                      />
+                    </div>
+
+                    <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
+                      <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                        <select
+                          id={`status-${r.id}`}
+                          value={r.status}
+                          aria-label={lang === "es" ? "Estado" : "Status"}
+                          onChange={(e) =>
+                            void patchReservation(r.id, {
+                              status: e.target.value as ReservationStatus,
+                            })
+                          }
+                          className={cn(
+                            "rounded-full border px-3 py-1.5 text-xs font-bold outline-none",
+                            statusSelectClass(r.status),
+                          )}
+                        >
+                          {statuses.map((s) => (
+                            <option key={s} value={s}>
+                              {RESERVATION_STATUS_LABEL[s]}
+                            </option>
+                          ))}
+                        </select>
+                        <Badge tone="neutral">{PAYMENT_LABEL[r.paymentChannel]}</Badge>
+                        <span className="whitespace-nowrap text-sm font-semibold tabular-nums text-[var(--ink)]">
+                          {euro(r.depositPaid, lang)} / {euro(r.totalAmount, lang)}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 self-stretch sm:justify-end sm:self-end">
+                        <button
+                          type="button"
+                          onClick={() => duplicateReservation(r)}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2.5 py-2 text-xs font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                          {lang === "es" ? "Duplicar" : "Duplicate"}
+                        </button>
+                        <EntityActionBar
+                          className="justify-end"
+                          phone={r.clientPhone}
+                          onEdit={() =>
+                            setModal({ mode: "edit", reservation: structuredClone(r) })
+                          }
+                          onDelete={() => void deleteReservation(r.id)}
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -907,7 +867,7 @@ export function InvoicesVerifactuPanel({ lang }: { lang: Lang }) {
           </p>
         </div>
         <div className="mb-4 flex flex-wrap gap-2">
-          {["Stripe", "Bizum", "SEPA", "PayPal", "Depósito", "Efectivo"].map((p) => (
+          {["Stripe", "SEPA", "PayPal", "Depósito", "Efectivo"].map((p) => (
             <Badge key={p} tone="brand">
               {p}
             </Badge>

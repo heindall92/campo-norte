@@ -1,3 +1,4 @@
+import { normalizePaymentChannel } from "@/lib/demo-data";
 import { buildSeedSnapshot } from "./seed";
 import {
   HUB_VERSION,
@@ -5,6 +6,24 @@ import {
   type DataStore,
   type HubSnapshot,
 } from "./types";
+
+function scrubBizum(snapshot: HubSnapshot): HubSnapshot {
+  return {
+    ...snapshot,
+    clients: snapshot.clients.map((c) => ({
+      ...c,
+      paymentMethod: normalizePaymentChannel(c.paymentMethod),
+    })),
+    reservations: snapshot.reservations.map((r) => ({
+      ...r,
+      paymentChannel: normalizePaymentChannel(r.paymentChannel),
+    })),
+    invoices: snapshot.invoices.map((inv) => ({
+      ...inv,
+      paymentChannel: normalizePaymentChannel(inv.paymentChannel),
+    })),
+  };
+}
 
 function isValidSnapshot(value: unknown): value is HubSnapshot {
   if (!value || typeof value !== "object") return false;
@@ -39,14 +58,14 @@ export class LocalDataStore implements DataStore {
         await this.save(seed);
         return seed;
       }
-      return {
+      return scrubBizum({
         ...parsed,
         meta: {
           ...parsed.meta,
           version: HUB_VERSION,
           mode: "local",
         },
-      };
+      });
     } catch {
       const seed = buildSeedSnapshot("local");
       await this.save(seed);

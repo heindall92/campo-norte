@@ -389,7 +389,7 @@ export const FLOW_TEMPLATES: {
   {
     id: "tpl-pago",
     name: "Webhook pago → saldo + factura",
-    description: "Stripe/Bizum/PayPal/SEPA → ficha + borrador REAV",
+    description: "Stripe/PayPal/SEPA → ficha + borrador REAV",
     modules: ["pagos", "facturas", "clientes"],
     build: () => templateChain("Cobro", "pagos", "crm_pago", "webhook"),
   },

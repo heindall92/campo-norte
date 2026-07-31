@@ -259,7 +259,7 @@ const es: PitchSlide[] = [
         type: "bullets",
         items: [
           "Exportar CSV para la gestoría · PDF limpio",
-          "Medios de pago habituales: tarjeta, Bizum, transferencia, PayPal, depósito…",
+          "Medios de pago habituales: tarjeta, transferencia SEPA, PayPal, depósito…",
           "La remisión a Hacienda se aborda por fases; no hay que inventar el futuro el mes 1",
         ],
       },

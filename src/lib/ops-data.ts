@@ -92,7 +92,6 @@ export interface Invoice {
 
 export const PAYMENT_LABEL: Record<PaymentChannel, string> = {
   stripe: "Stripe (tarjeta)",
-  bizum: "Bizum",
   transferencia: "Transferencia SEPA",
   deposito: "Depósito / señal",
   efectivo: "Efectivo",
@@ -215,8 +214,8 @@ export const RESERVATIONS: Reservation[] = [
     pax: 2,
     totalAmount: 10_800,
     depositPaid: 3_000,
-    paymentChannel: "bizum",
-    paymentRefs: ["BZ-600112204-0601"],
+    paymentChannel: "transferencia",
+    paymentRefs: ["SEPA-ES91-20260601"],
     tourLeader: "David Rodríguez",
     logisticsContacts: [
       {
@@ -260,7 +259,7 @@ export const RESERVATIONS: Reservation[] = [
       { label: "Confirmación finca + menús", done: true, owner: "David Rodríguez" },
       { label: "4x4 rental + combustible plan", done: false, owner: "Andes 4x4 Ops" },
     ],
-    internalNotes: "Pareja. Señal por Bizum. Falta documentación pax 2.",
+    internalNotes: "Pareja. Señal por transferencia SEPA. Falta documentación pax 2.",
   },
   {
     id: "R-4823",
@@ -455,10 +454,10 @@ export const INVOICES: Invoice[] = [
     operationClass: "S1",
     reavMention: true,
     status: "emitida",
-    paymentChannel: "bizum",
+    paymentChannel: "transferencia",
     amountCollected: 3_000,
     collectedAt: "2026-06-01",
-    paymentRef: "BZ-600112204-0601",
+    paymentRef: "SEPA-ES91-20260601",
     verifactuHash: "pendiente remisión",
     aeatStatus: "pendiente",
     rectifies: null,

@@ -27,14 +27,21 @@ export type PaymentStatus =
   | "saldo_pendiente"
   | "vence_pronto";
 
-/** Medios de cobro habituales en agencia de viajes ES */
+/** Medios de cobro habituales en agencia de viajes ES (sin Bizum: límite 500 €/día y riesgo fiscal). */
 export type PaymentChannel =
   | "stripe"
-  | "bizum"
   | "transferencia"
   | "deposito"
   | "efectivo"
   | "paypal";
+
+/** Migra datos antiguos (`bizum`) a transferencia SEPA. */
+export function normalizePaymentChannel(value: unknown): PaymentChannel {
+  if (value === "stripe" || value === "transferencia" || value === "deposito" || value === "efectivo" || value === "paypal") {
+    return value;
+  }
+  return "transferencia";
+}
 
 export type ExperienceLevel = "principiante" | "intermedio" | "avanzado" | "experto";
 
@@ -457,7 +464,7 @@ export const CLIENTS: Client[] = [
     status: "seguimiento",
     paymentStatus: "al_dia",
     pendingBalance: 0,
-    paymentMethod: "bizum",
+    paymentMethod: "transferencia",
     trips: 1,
     lastTripAt: "2024-03-02",
     nextInterest: "NAMIBIA",
@@ -497,7 +504,7 @@ export const CLIENTS: Client[] = [
     status: "al_dia",
     paymentStatus: "deposito_pendiente",
     pendingBalance: 7_800,
-    paymentMethod: "bizum",
+    paymentMethod: "transferencia",
     trips: 1,
     lastTripAt: "2026-05-10",
     nextInterest: "COLOMBIA",
@@ -513,7 +520,7 @@ export const CLIENTS: Client[] = [
     nps: 9,
     owner: "Laura",
     since: "03/2026",
-    notes: "Docs pax 2 pendientes. Señal Bizum Colombia.",
+    notes: "Docs pax 2 pendientes. Señal SEPA Colombia.",
     history: [{ route: "COSTA_RICA", date: "2026-05-10", vehicle: "4x4", amount: 5_400 }],
     reactivationPriority: 58,
     reactivationWhy: "Activo reciente — convertir en embajador",
@@ -709,7 +716,6 @@ export const EXPERIENCE_LABEL: Record<ExperienceLevel, string> = {
 
 export const PAYMENT_METHOD_LABEL: Record<PaymentChannel, string> = {
   stripe: "Stripe (tarjeta)",
-  bizum: "Bizum",
   transferencia: "Transferencia SEPA",
   deposito: "Depósito / señal",
   efectivo: "Efectivo",
@@ -1086,7 +1092,7 @@ ride@30mps.com`,
     arguments: [
       "Une Facturas Veri*FACTU con comunicación humana de cobro",
       "Plantilla evita tonos agresivos o inconsistentes",
-      "Editable por importe/medio (Stripe, Bizum, SEPA…)",
+      "Editable por importe/medio (Stripe, SEPA…)",
       "El PDF de factura se adjunta manualmente desde el módulo Facturas",
     ],
     updatedAt: "2026-07-28",
@@ -1169,7 +1175,7 @@ export const AUTOMATIONS: AutomationJob[] = [
   },
   {
     id: "A-05",
-    name: "Webhooks de cobro (Stripe · Bizum · PayPal · SEPA)",
+    name: "Webhooks de cobro (Stripe · PayPal · SEPA)",
     from: "Pasarelas / banco",
     to: "Reserva + Factura + saldo cliente",
     status: "ok",
@@ -1178,7 +1184,7 @@ export const AUTOMATIONS: AutomationJob[] = [
     trigger: "Pago recibido o fallido",
     cadence: "Tiempo real",
     arguments: [
-      "Multi-canal: Stripe, Bizum, transferencia, PayPal, efectivo, depósito",
+      "Multi-canal: Stripe, transferencia SEPA, PayPal, efectivo, depósito",
       "Saldo pendiente visible en ficha cliente (como un CRM de verdad)",
       "Evita Excel paralelo de Laura para conciliar señales",
     ],
@@ -1492,7 +1498,7 @@ export const KNOWLEDGE_ANSWERS: KnowledgeItem[] = [
   {
     category: "ops",
     q: "¿Qué saldos pendientes hay abiertos y por qué medio se cobran?",
-    a: "Ejemplos demo: Laura Vidal saldo 4.800 € (Stripe/transfer), Sergio Molina 7.800 € (Bizum depósito Colombia), Carlos Méndez 5.900 € (PayPal Tanzania). Medios: Stripe, Bizum, SEPA, PayPal, depósito, efectivo. Conciliación vía webhooks A-05.",
+    a: "Ejemplos demo: Laura Vidal saldo 4.800 € (Stripe/transfer), Sergio Molina 7.800 € (SEPA depósito Colombia), Carlos Méndez 5.900 € (PayPal Tanzania). Medios: Stripe, SEPA, PayPal, depósito, efectivo. Sin Bizum (límite diario y riesgo fiscal). Conciliación vía webhooks A-05.",
     sources: ["Customer Intelligence", "Reservas", "Facturas", "A-05"],
     why: [
       "Office deja de conciliar en Excel paralelo",
