@@ -4,6 +4,7 @@ import { useNotifications, type AppSection } from "@/lib/notifications";
 import type { Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 function toneDot(tone: string) {
   if (tone === "ok") return "bg-[var(--ok)]";
@@ -30,14 +31,29 @@ export function MobileNotificationsSheet({
   lang: Lang;
   onNavigate: (section: AppSection) => void;
 }) {
-  const { items, markAllRead, markRead, clear } = useNotifications();
+  const { items, unreadCount, markAllRead, markRead, clear } = useNotifications();
   const es = lang === "es";
+  const [justMarked, setJustMarked] = useState(false);
+  const hasUnread = useMemo(
+    () => unreadCount > 0 || items.some((n) => !n.read),
+    [unreadCount, items],
+  );
+
+  useEffect(() => {
+    if (open) setJustMarked(false);
+  }, [open]);
 
   if (!open) return null;
 
+  function handleMarkAllRead() {
+    markAllRead();
+    setJustMarked(true);
+    window.setTimeout(() => setJustMarked(false), 1600);
+  }
+
   return (
     <div
-      className="fixed inset-0 z-[120] flex items-end justify-center bg-[color-mix(in_oklab,#0f172a_45%,transparent)] backdrop-blur-sm"
+      className="fixed inset-0 z-[130] flex items-end justify-center bg-[color-mix(in_oklab,#0f172a_45%,transparent)] backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-labelledby="mobile-notif-title"
@@ -118,13 +134,29 @@ export function MobileNotificationsSheet({
         </ul>
 
         {items.length > 0 && (
-          <div className="border-t border-[var(--glass-border)] px-4 pt-3 pb-[max(2.25rem,calc(env(safe-area-inset-bottom)+1.5rem))]">
+          <div className="relative z-10 border-t border-[var(--glass-border)] px-4 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <button
               type="button"
-              onClick={() => markAllRead()}
-              className="w-full rounded-2xl bg-[var(--accent)] py-3.5 text-sm font-bold text-white"
+              disabled={!hasUnread && !justMarked}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleMarkAllRead();
+              }}
+              className={cn(
+                "w-full rounded-2xl py-3.5 text-sm font-bold text-white transition",
+                justMarked || !hasUnread
+                  ? "bg-[var(--ok)]"
+                  : "bg-[var(--accent)] active:opacity-90",
+                !hasUnread && !justMarked && "opacity-70",
+              )}
             >
-              {es ? "Marcar todas como leídas" : "Mark all as read"}
+              {justMarked || !hasUnread
+                ? es
+                  ? "Todas leídas"
+                  : "All read"
+                : es
+                  ? "Marcar todas como leídas"
+                  : "Mark all as read"}
             </button>
           </div>
         )}

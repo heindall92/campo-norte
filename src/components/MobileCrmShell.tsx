@@ -225,7 +225,6 @@ export function MobileCrmShell({
 
   function openNotifications() {
     setNotifOpen(true);
-    markAllRead();
   }
 
   function openSection(id: AppSection) {
@@ -455,7 +454,11 @@ export function MobileCrmShell({
       )}
 
       <nav
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-3 pb-[max(0.85rem,env(safe-area-inset-bottom))]"
+        className={cn(
+          "pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-3 pb-[max(0.85rem,env(safe-area-inset-bottom))]",
+          (notifOpen || moreOpen || supportOpen) && "invisible",
+        )}
+        aria-hidden={notifOpen || moreOpen || supportOpen}
         aria-label={es ? "Navegación móvil" : "Mobile navigation"}
       >
         <div
