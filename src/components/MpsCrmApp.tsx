@@ -114,7 +114,9 @@ import {
   Bike,
   BookOpen,
   Bot,
+  Building2,
   Car,
+  CircleHelp,
   ClipboardList,
   Cloud,
   Database,
@@ -137,6 +139,7 @@ import {
   ChevronDown,
   Settings,
   Shield,
+  SlidersHorizontal,
   Sparkles,
   Sun,
   Target,
@@ -288,6 +291,8 @@ function SettingsGroup({
   );
 }
 
+type SettingsTabId = "personal" | "ai" | "org" | "resources";
+
 function SettingsPanel({
   lang,
   onPrefsChange,
@@ -297,6 +302,7 @@ function SettingsPanel({
 }) {
   const { user, supabaseReady } = useAuth();
   const hub = useDataHub();
+  const isMobile = useIsMobile();
   const [ai, setAi] = useState<AiSettings>(() => loadAiSettings());
   const [aiFlash, setAiFlash] = useState<string | null>(null);
   const [biz, setBiz] = useState<BusinessSettings>(() => loadBusinessSettings());
@@ -308,6 +314,7 @@ function SettingsPanel({
     ok: boolean;
     message: string;
   } | null>(null);
+  const [settingsTab, setSettingsTab] = useState<SettingsTabId>("personal");
 
   function persistAi(next: AiSettings) {
     setAi(next);
@@ -378,6 +385,642 @@ function SettingsPanel({
   const showBusiness = canEditBusinessSettings(user?.role);
   const showAi = canEditAiSettings(user?.role);
   const showDb = canViewDatabaseCard(user?.role);
+  const showOrg = showBusiness || showDb;
+
+  const tabs = useMemo(() => {
+    const list: {
+      id: SettingsTabId;
+      label: string;
+      icon: typeof SlidersHorizontal;
+      badge: number;
+    }[] = [
+      {
+        id: "personal",
+        label: lang === "es" ? "Personalización" : "Personalization",
+        icon: SlidersHorizontal,
+        badge: 2,
+      },
+    ];
+    if (showAi) {
+      list.push({
+        id: "ai",
+        label: lang === "es" ? "IA" : "AI",
+        icon: Bot,
+        badge: 1,
+      });
+    }
+    if (showOrg) {
+      list.push({
+        id: "org",
+        label: lang === "es" ? "Organización" : "Organization",
+        icon: Building2,
+        badge: (showBusiness ? 1 : 0) + (showDb ? 1 : 0),
+      });
+    }
+    list.push({
+      id: "resources",
+      label: lang === "es" ? "Recursos" : "Resources",
+      icon: CircleHelp,
+      badge: 2,
+    });
+    return list;
+  }, [lang, showAi, showBusiness, showDb, showOrg]);
+
+  useEffect(() => {
+    if (!tabs.some((tab) => tab.id === settingsTab)) {
+      setSettingsTab(tabs[0]?.id ?? "personal");
+    }
+  }, [tabs, settingsTab]);
+
+  const appearanceBlock = (
+    <div className="space-y-3">
+      {user && (
+        <AppearanceCard lang={lang} userId={user.id} onPrefsChange={onPrefsChange} />
+      )}
+      <ViewModePicker lang={lang === "es" ? "es" : "en"} variant="inline" />
+    </div>
+  );
+
+  const securityCard = (
+    <Card
+      title={lang === "es" ? "Seguridad · sesión" : "Security · session"}
+      subtitle={
+        lang === "es"
+          ? "Cierre automático por inactividad. También aplica si cierras la pestaña y vuelves después del tiempo límite."
+          : "Auto sign-out on idle. Also applies if you close the tab and return after the timeout."
+      }
+    >
+      <div className="flex w-full flex-col gap-3">
+        <label className={`${labelCls} w-full`}>
+          {lang === "es" ? "Cerrar sesión tras inactividad" : "Sign out after idle"}
+          <select
+            className={fieldCls}
+            value={security.idleTimeoutMinutes}
+            onChange={(e) =>
+              persistSecurity({
+                idleTimeoutMinutes: Number(e.target.value) as IdleTimeoutMinutes,
+              })
+            }
+          >
+            {IDLE_TIMEOUT_OPTIONS.map((m) => (
+              <option key={m} value={m}>
+                {m} {lang === "es" ? "minutos" : "minutes"}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="flex items-start gap-2 text-xs text-[var(--ink-muted)] text-pretty">
+          <Shield className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
+          <span>
+            {lang === "es"
+              ? `Por defecto 15 min. Actual: ${security.idleTimeoutMinutes} min. Cualquier clic o tecla reinicia el contador.`
+              : `Default 15 min. Current: ${security.idleTimeoutMinutes} min. Any click or key resets the timer.`}
+          </span>
+        </p>
+        {securityFlash && <p className="text-sm text-[var(--accent)]">{securityFlash}</p>}
+      </div>
+    </Card>
+  );
+
+  const businessCard = showBusiness ? (
+    <Card
+      title={lang === "es" ? "Datos del negocio" : "Business details"}
+      subtitle={
+        lang === "es"
+          ? "WhatsApp y datos fiscales. El CRM solo abre chats si este WhatsApp está configurado."
+          : "WhatsApp and tax data. The CRM only opens chats if this WhatsApp is configured."
+      }
+    >
+      <div className="grid w-full gap-3 sm:grid-cols-2">
+        <label className={labelCls}>
+          {lang === "es" ? "WhatsApp (9 dígitos)" : "WhatsApp (digits)"}
+          <input
+            className={fieldCls}
+            value={biz.whatsapp}
+            inputMode="tel"
+            placeholder="628691478"
+            onChange={(e) => setBiz({ ...biz, whatsapp: e.target.value })}
+          />
+        </label>
+        <label className={labelCls}>
+          {lang === "es" ? "@alias WhatsApp (próximamente)" : "WhatsApp @alias (soon)"}
+          <input
+            className={fieldCls}
+            value={biz.whatsappAlias}
+            placeholder="30mps"
+            onChange={(e) =>
+              setBiz({ ...biz, whatsappAlias: e.target.value.replace(/^@+/, "") })
+            }
+          />
+        </label>
+        <label className={labelCls}>
+          {lang === "es" ? "Razón social" : "Legal name"}
+          <input
+            className={fieldCls}
+            value={biz.legalName}
+            onChange={(e) => setBiz({ ...biz, legalName: e.target.value })}
+          />
+        </label>
+        <label className={labelCls}>
+          CIF
+          <input
+            className={fieldCls}
+            value={biz.cif}
+            onChange={(e) => setBiz({ ...biz, cif: e.target.value })}
+          />
+        </label>
+        <label className={labelCls}>
+          {lang === "es" ? "Email de contacto" : "Contact email"}
+          <input
+            type="email"
+            className={fieldCls}
+            value={biz.contactEmail}
+            onChange={(e) => setBiz({ ...biz, contactEmail: e.target.value })}
+          />
+        </label>
+        <label className={labelCls}>
+          {lang === "es" ? "Dirección fiscal" : "Tax address"}
+          <input
+            className={fieldCls}
+            value={biz.fiscalAddress}
+            onChange={(e) => setBiz({ ...biz, fiscalAddress: e.target.value })}
+          />
+        </label>
+      </div>
+      <p className="mt-3 text-xs text-[var(--ink-muted)] text-pretty">
+        {lang === "es"
+          ? "Al pulsar WhatsApp en un cliente confirmarás que el PC usa este número."
+          : "When tapping WhatsApp on a client you confirm this PC uses that number."}
+      </p>
+      <div className="mt-4 flex w-full flex-col items-stretch gap-2">
+        <button
+          type="button"
+          onClick={() => persistBiz(biz)}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-3 text-center text-sm font-semibold leading-none text-white"
+        >
+          <Save className="h-4 w-4 shrink-0" aria-hidden />
+          <span className="whitespace-nowrap">
+            {lang === "es" ? "Guardar negocio" : "Save business"}
+          </span>
+        </button>
+        {bizFlash && (
+          <p className="text-center text-sm text-[var(--accent)]">{bizFlash}</p>
+        )}
+      </div>
+    </Card>
+  ) : null;
+
+  const aiCard = showAi ? (
+    <Card
+      title={lang === "es" ? "IA · proveedores API" : "AI · API providers"}
+      subtitle={
+        lang === "es"
+          ? "Ollama · OpenAI · Claude · Gemini. La IA solo clasifica; nunca habla con el viajero."
+          : "Ollama · OpenAI · Claude · Gemini. AI only ranks; never messages the traveller."
+      }
+    >
+      <div className="w-full space-y-4">
+        <div className="rounded-xl border border-[var(--field-border)] bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] p-3 text-sm text-[var(--ink)] text-pretty">
+          <p className="font-semibold">
+            {lang === "es" ? "Regla de oro" : "Golden rule"}: {GOLDEN_RULE}
+          </p>
+          <p className="mt-1 text-[var(--ink-muted)]">
+            {lang === "es" ? "Configuración:" : "Config:"}{" "}
+            <strong className="text-[var(--ink)]">
+              {aiReady(ai)
+                ? lang === "es"
+                  ? `lista · ${providerLabel(ai)} (falta probar API)`
+                  : `ready · ${providerLabel(ai)} (API not tested yet)`
+                : lang === "es"
+                  ? "heurística local (sin API)"
+                  : "local heuristics (no API)"}
+            </strong>
+          </p>
+          {testResult && (
+            <p
+              className={cn(
+                "mt-2 text-sm font-semibold",
+                testResult.ok ? "text-[var(--ok)]" : "text-[var(--danger)]",
+              )}
+            >
+              {testResult.ok
+                ? lang === "es"
+                  ? "Conexión API verificada"
+                  : "API connection verified"
+                : lang === "es"
+                  ? "Conexión API fallida"
+                  : "API connection failed"}
+              : {testResult.message}
+            </p>
+          )}
+        </div>
+
+        <label className="flex gap-3 text-sm font-semibold text-[var(--ink)]">
+          <input
+            type="checkbox"
+            checked={ai.enabled}
+            onChange={(e) => persistAi({ ...ai, enabled: e.target.checked })}
+            className="h-4 w-4 accent-[var(--accent)]"
+          />
+          {lang === "es"
+            ? "Activar IA para scoring / intelligence / knowledge"
+            : "Enable AI for scoring / intelligence / knowledge"}
+        </label>
+
+        <div className="flex flex-wrap gap-2">
+          {providers.map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => persistAi({ ...ai, provider: p })}
+              className={cn(
+                "mps-choice rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                ai.provider === p && "is-active",
+              )}
+            >
+              {AI_PROVIDER_LABEL[p]}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className={labelCls}>
+            {lang === "es" ? "Proveedor activo" : "Active provider"}
+            <select
+              className={fieldCls}
+              value={ai.provider}
+              onChange={(e) =>
+                persistAi({ ...ai, provider: e.target.value as AiProvider })
+              }
+            >
+              {providers.map((p) => (
+                <option key={p} value={p}>
+                  {AI_PROVIDER_LABEL[p]}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className={labelCls}>
+            {lang === "es" ? "Modelo" : "Model"}
+            <input
+              className={fieldCls}
+              value={ai.models[ai.provider]}
+              onChange={(e) =>
+                setAi({
+                  ...ai,
+                  models: { ...ai.models, [ai.provider]: e.target.value },
+                })
+              }
+              placeholder={
+                ai.provider === "openai"
+                  ? "gpt-4o-mini"
+                  : ai.provider === "claude"
+                    ? "claude-sonnet-4-20250514"
+                    : ai.provider === "gemini"
+                      ? "gemini-2.0-flash"
+                      : "llama3.2"
+              }
+            />
+          </label>
+
+          {allowClientAiKeys() &&
+            (ai.provider !== "ollama" || ai.ollamaMode === "cloud") && (
+              <label className={`${labelCls} sm:col-span-2`}>
+                API Key · {AI_PROVIDER_LABEL[ai.provider]}
+                <span className="ml-2 font-normal normal-case text-[var(--warn-ink)]">
+                  {lang === "es" ? "(solo demo local)" : "(local demo only)"}
+                </span>
+                <input
+                  type="password"
+                  autoComplete="off"
+                  className={fieldCls}
+                  value={ai.apiKeys[ai.provider]}
+                  onChange={(e) =>
+                    setAi({
+                      ...ai,
+                      apiKeys: { ...ai.apiKeys, [ai.provider]: e.target.value },
+                    })
+                  }
+                  placeholder={
+                    ai.provider === "openai"
+                      ? "sk-…"
+                      : ai.provider === "claude"
+                        ? "sk-ant-…"
+                        : ai.provider === "gemini"
+                          ? "AIza…"
+                          : "ollama_sk_…"
+                  }
+                />
+              </label>
+            )}
+
+          {!allowClientAiKeys() &&
+            (ai.provider !== "ollama" || ai.ollamaMode === "cloud") && (
+              <p className="mps-settings-tile rounded-lg px-3 py-2 text-sm sm:col-span-2 text-pretty">
+                {lang === "es"
+                  ? "Producción: las API keys viven en variables de entorno de Vercel. No se pegan en el navegador."
+                  : "Production: API keys live in Vercel env vars. They are not pasted in the browser."}
+              </p>
+            )}
+
+          {ai.provider === "ollama" && (
+            <>
+              <label className={labelCls}>
+                {lang === "es" ? "Modo Ollama" : "Ollama mode"}
+                <select
+                  className={fieldCls}
+                  value={ai.ollamaMode}
+                  onChange={(e) => {
+                    const ollamaMode = e.target.value as AiSettings["ollamaMode"];
+                    persistAi({
+                      ...ai,
+                      ollamaMode,
+                      ollamaBaseUrl:
+                        ollamaMode === "local"
+                          ? "http://localhost:11434"
+                          : "https://ollama.com",
+                    });
+                  }}
+                >
+                  <option value="cloud">Cloud · ollama.com</option>
+                  <option value="local">Local · localhost:11434</option>
+                </select>
+              </label>
+              <label className={labelCls}>
+                Base URL
+                <input
+                  className={fieldCls}
+                  value={ai.ollamaBaseUrl}
+                  onChange={(e) => setAi({ ...ai, ollamaBaseUrl: e.target.value })}
+                />
+              </label>
+            </>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => persistAi(ai)}
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
+          >
+            <Bot className="h-4 w-4" />
+            {lang === "es" ? "Guardar IA" : "Save AI"}
+          </button>
+          <button
+            type="button"
+            disabled={testing || !ai.enabled}
+            onClick={() => void runConnectionTest()}
+            className="mps-choice inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)] disabled:opacity-50"
+          >
+            {testing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Zap className="h-4 w-4 text-[var(--accent)]" />
+            )}
+            {lang === "es" ? "Probar conexión API" : "Test API connection"}
+          </button>
+          <a
+            href={AI_PROVIDER_DOCS[ai.provider]}
+            target="_blank"
+            rel="noreferrer"
+            className="mps-choice inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)]"
+          >
+            {lang === "es" ? "Crear API key" : "Create API key"}
+          </a>
+        </div>
+        {aiFlash && <p className="text-sm text-[var(--accent)]">{aiFlash}</p>}
+        <p className="text-xs text-[var(--ink-muted)] text-pretty">
+          {lang === "es"
+            ? "«Configuración lista» ≠ API verificada. Pulsa «Probar conexión API» para llamar de verdad al proveedor."
+            : "“Config ready” ≠ verified API. Hit “Test API connection” for a live call."}
+        </p>
+      </div>
+    </Card>
+  ) : null;
+
+  const databaseCard = showDb ? (
+    <Card
+      title={lang === "es" ? "Base de datos" : "Database"}
+      subtitle={
+        lang === "es"
+          ? "Supabase / Postgres · base de datos"
+          : "Supabase / Postgres · Data Hub"
+      }
+    >
+      <ul className="grid w-full gap-3 text-sm text-[var(--ink-muted)]">
+        <li className="mps-settings-tile rounded-xl p-3">
+          Modo Hub: <strong className="text-[var(--ink)]">{hub.mode}</strong>
+        </li>
+        <li className="mps-settings-tile rounded-xl p-3">
+          Credenciales Supabase:{" "}
+          <strong className="text-[var(--ink)]">
+            {supabaseReady || supabaseConfigured()
+              ? "detectadas"
+              : "pendientes (.env.local)"}
+          </strong>
+        </li>
+        <li className="mps-settings-tile rounded-xl p-3">
+          Schema: <code className="text-[var(--accent)]">supabase/schema.sql</code>
+        </li>
+      </ul>
+    </Card>
+  ) : null;
+
+  const legalCard = (
+    <Card
+      title={lang === "es" ? "Legal y privacidad" : "Legal & privacy"}
+      subtitle={
+        lang === "es"
+          ? "Aviso legal · Privacidad · Cookies (RGPD / LOPDGDD)"
+          : "Legal notice · Privacy · Cookies (GDPR)"
+      }
+    >
+      <div className="flex w-full flex-col gap-4">
+        <p className="text-sm text-[var(--ink-muted)] text-pretty">
+          {lang === "es"
+            ? "Para la demo interna basta la mención RGPD de la presentación. Antes de producción real: validar textos, firmar DPA con Vercel/Supabase y mantener el registro de actividades (art. 30)."
+            : "For the internal demo, the pitch-deck GDPR note is enough. Before real production: validate copy, sign DPAs with Vercel/Supabase and keep the Art. 30 processing record."}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <a
+            href="/legal#aviso"
+            className="mps-choice rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)]"
+          >
+            {lang === "es" ? "Aviso legal" : "Legal notice"}
+          </a>
+          <a
+            href="/legal#privacidad"
+            className="mps-choice rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)]"
+          >
+            {lang === "es" ? "Privacidad" : "Privacy"}
+          </a>
+          <a
+            href="/legal#cookies"
+            className="mps-choice rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)]"
+          >
+            Cookies
+          </a>
+        </div>
+      </div>
+    </Card>
+  );
+
+  const mobileLayout = (
+    <div className="grid gap-8 lg:grid-cols-2 lg:items-start lg:gap-x-8 lg:gap-y-10">
+      <SettingsGroup
+        label={lang === "es" ? "Personalización" : "Personalization"}
+        description={
+          lang === "es"
+            ? "Cómo se ve el Growth OS en tu sesión."
+            : "How Growth OS looks in your session."
+        }
+      >
+        {appearanceBlock}
+      </SettingsGroup>
+
+      <SettingsGroup
+        label={lang === "es" ? "Seguridad" : "Security"}
+        description={
+          lang === "es"
+            ? "Control de sesión e inactividad."
+            : "Session and idle controls."
+        }
+      >
+        {securityCard}
+      </SettingsGroup>
+
+      {showBusiness && (
+        <SettingsGroup
+          label={lang === "es" ? "Organización" : "Organization"}
+          description={
+            lang === "es"
+              ? "Datos del negocio y canal WhatsApp saliente."
+              : "Business details and outbound WhatsApp channel."
+          }
+        >
+          {businessCard}
+        </SettingsGroup>
+      )}
+
+      {showAi && (
+        <SettingsGroup
+          label={lang === "es" ? "Integraciones" : "Integrations"}
+          description={
+            lang === "es"
+              ? "Proveedores de IA. Clasifican; nunca escriben al viajero."
+              : "AI providers. They rank; never message travellers."
+          }
+        >
+          {aiCard}
+        </SettingsGroup>
+      )}
+
+      {showDb && (
+        <SettingsGroup
+          label={lang === "es" ? "Sistema" : "System"}
+          description={
+            lang === "es"
+              ? "Infraestructura de datos del Hub."
+              : "Data Hub infrastructure."
+          }
+        >
+          {databaseCard}
+        </SettingsGroup>
+      )}
+
+      <SettingsGroup
+        label={lang === "es" ? "Recursos" : "Resources"}
+        description={
+          lang === "es"
+            ? "Legal, privacidad y soporte interno."
+            : "Legal, privacy and internal support."
+        }
+      >
+        {legalCard}
+        <SupportCard lang={lang} />
+      </SettingsGroup>
+    </div>
+  );
+
+  const desktopTabPanel =
+    settingsTab === "personal" ? (
+      <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+        {appearanceBlock}
+        {securityCard}
+      </div>
+    ) : settingsTab === "ai" ? (
+      aiCard
+    ) : settingsTab === "org" ? (
+      <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+        {businessCard}
+        {databaseCard}
+      </div>
+    ) : (
+      <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+        {legalCard}
+        <SupportCard lang={lang} />
+      </div>
+    );
+
+  const desktopLayout = (
+    <div className="space-y-0">
+      <div
+        role="tablist"
+        aria-label={lang === "es" ? "Secciones de ajustes" : "Settings sections"}
+        className="flex flex-wrap gap-1.5 rounded-t-[1.75rem] bg-[color-mix(in_oklab,var(--ink)_4%,transparent)] p-1.5"
+      >
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const active = settingsTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => setSettingsTab(tab.id)}
+              className={cn(
+                "inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full px-3.5 py-2 text-sm font-semibold transition sm:justify-start sm:px-4",
+                active
+                  ? "bg-[var(--glass-strong)] text-[var(--ink)] shadow-[0_6px_18px_color-mix(in_oklab,var(--ink)_10%,transparent)]"
+                  : "text-[var(--ink-muted)] hover:bg-[color-mix(in_oklab,var(--ink)_6%,transparent)] hover:text-[var(--ink)]",
+              )}
+            >
+              <span
+                className={cn(
+                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                  active
+                    ? "bg-[color-mix(in_oklab,var(--accent)_18%,transparent)] text-[var(--accent)]"
+                    : "bg-[color-mix(in_oklab,var(--ink)_8%,transparent)]",
+                )}
+              >
+                <Icon className="h-4 w-4" strokeWidth={2} />
+              </span>
+              <span className="truncate">{tab.label}</span>
+              <span
+                className={cn(
+                  "ml-auto hidden h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-[11px] font-bold sm:inline-flex",
+                  active
+                    ? "bg-[color-mix(in_oklab,var(--accent)_16%,transparent)] text-[var(--accent)]"
+                    : "bg-[color-mix(in_oklab,var(--ink)_10%,transparent)] text-[var(--ink-muted)]",
+                )}
+              >
+                {tab.badge}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <div
+        role="tabpanel"
+        className="rounded-b-[1.75rem] rounded-tr-[1.75rem] border border-[var(--glass-border)] bg-[var(--panel)] p-4 shadow-[0_10px_28px_color-mix(in_oklab,var(--ink)_8%,transparent)] md:p-6"
+      >
+        {desktopTabPanel}
+      </div>
+    </div>
+  );
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8">
@@ -392,499 +1035,9 @@ function SettingsPanel({
         </p>
       </header>
 
-      <div className="grid gap-8 lg:grid-cols-2 lg:items-start lg:gap-x-8 lg:gap-y-10">
-      <SettingsGroup
-        label={lang === "es" ? "Personalización" : "Personalization"}
-        description={
-          lang === "es"
-            ? "Cómo se ve el Growth OS en tu sesión."
-            : "How Growth OS looks in your session."
-        }
-      >
-        {user && (
-            <AppearanceCard
-              lang={lang}
-              userId={user.id}
-              onPrefsChange={onPrefsChange}
-            />
-          )}
-        <ViewModePicker lang={lang === "es" ? "es" : "en"} variant="inline" />
-      </SettingsGroup>
-
-      <SettingsGroup
-        label={lang === "es" ? "Seguridad" : "Security"}
-        description={
-          lang === "es"
-            ? "Control de sesión e inactividad."
-            : "Session and idle controls."
-        }
-      >
-        <Card
-            title={lang === "es" ? "Seguridad · sesión" : "Security · session"}
-            subtitle={
-              lang === "es"
-                ? "Cierre automático por inactividad. También aplica si cierras la pestaña y vuelves después del tiempo límite."
-                : "Auto sign-out on idle. Also applies if you close the tab and return after the timeout."
-            }
-          >
-            <div className="flex w-full flex-col gap-3">
-              <label className={`${labelCls} w-full`}>
-                {lang === "es" ? "Cerrar sesión tras inactividad" : "Sign out after idle"}
-                <select
-                  className={`${fieldCls}`}
-                  value={security.idleTimeoutMinutes}
-                  onChange={(e) =>
-                    persistSecurity({
-                      idleTimeoutMinutes: Number(e.target.value) as IdleTimeoutMinutes,
-                    })
-                  }
-                >
-                  {IDLE_TIMEOUT_OPTIONS.map((m) => (
-                    <option key={m} value={m}>
-                      {m} {lang === "es" ? "minutos" : "minutes"}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <p className="flex items-start gap-2 text-xs text-[var(--ink-muted)] text-pretty">
-                <Shield className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
-                <span>
-                  {lang === "es"
-                    ? `Por defecto 15 min. Actual: ${security.idleTimeoutMinutes} min. Cualquier clic o tecla reinicia el contador.`
-                    : `Default 15 min. Current: ${security.idleTimeoutMinutes} min. Any click or key resets the timer.`}
-                </span>
-              </p>
-              {securityFlash && <p className="text-sm text-[var(--accent)]">{securityFlash}</p>}
-            </div>
-          </Card>
-      </SettingsGroup>
-
-      {showBusiness && (
-        <SettingsGroup
-          label={lang === "es" ? "Organización" : "Organization"}
-          description={
-            lang === "es"
-              ? "Datos del negocio y canal WhatsApp saliente."
-              : "Business details and outbound WhatsApp channel."
-          }
-        >
-          <Card
-              title={lang === "es" ? "Datos del negocio" : "Business details"}
-              subtitle={
-                lang === "es"
-                  ? "WhatsApp y datos fiscales. El CRM solo abre chats si este WhatsApp está configurado."
-                  : "WhatsApp and tax data. The CRM only opens chats if this WhatsApp is configured."
-              }
-            >
-              <div className="grid w-full gap-3 sm:grid-cols-2">
-                <label className={labelCls}>
-                  {lang === "es" ? "WhatsApp (9 dígitos)" : "WhatsApp (digits)"}
-                  <input
-                    className={fieldCls}
-                    value={biz.whatsapp}
-                    inputMode="tel"
-                    placeholder="628691478"
-                    onChange={(e) => setBiz({ ...biz, whatsapp: e.target.value })}
-                  />
-                </label>
-                <label className={labelCls}>
-                  {lang === "es" ? "@alias WhatsApp (próximamente)" : "WhatsApp @alias (soon)"}
-                  <input
-                    className={fieldCls}
-                    value={biz.whatsappAlias}
-                    placeholder="30mps"
-                    onChange={(e) =>
-                      setBiz({ ...biz, whatsappAlias: e.target.value.replace(/^@+/, "") })
-                    }
-                  />
-                </label>
-                <label className={labelCls}>
-                  {lang === "es" ? "Razón social" : "Legal name"}
-                  <input
-                    className={fieldCls}
-                    value={biz.legalName}
-                    onChange={(e) => setBiz({ ...biz, legalName: e.target.value })}
-                  />
-                </label>
-                <label className={labelCls}>
-                  CIF
-                  <input
-                    className={fieldCls}
-                    value={biz.cif}
-                    onChange={(e) => setBiz({ ...biz, cif: e.target.value })}
-                  />
-                </label>
-                <label className={labelCls}>
-                  {lang === "es" ? "Email de contacto" : "Contact email"}
-                  <input
-                    type="email"
-                    className={fieldCls}
-                    value={biz.contactEmail}
-                    onChange={(e) => setBiz({ ...biz, contactEmail: e.target.value })}
-                  />
-                </label>
-                <label className={labelCls}>
-                  {lang === "es" ? "Dirección fiscal" : "Tax address"}
-                  <input
-                    className={fieldCls}
-                    value={biz.fiscalAddress}
-                    onChange={(e) => setBiz({ ...biz, fiscalAddress: e.target.value })}
-                  />
-                </label>
-              </div>
-              <p className="mt-3 text-xs text-[var(--ink-muted)] text-pretty">
-                {lang === "es"
-                  ? "Al pulsar WhatsApp en un cliente confirmarás que el PC usa este número."
-                  : "When tapping WhatsApp on a client you confirm this PC uses that number."}
-              </p>
-              <div className="mt-4 flex w-full flex-col items-stretch gap-2">
-                <button
-                  type="button"
-                  onClick={() => persistBiz(biz)}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-3 text-center text-sm font-semibold leading-none text-white"
-                >
-                  <Save className="h-4 w-4 shrink-0" aria-hidden />
-                  <span className="whitespace-nowrap">
-                    {lang === "es" ? "Guardar negocio" : "Save business"}
-                  </span>
-                </button>
-                {bizFlash && (
-                  <p className="text-center text-sm text-[var(--accent)]">{bizFlash}</p>
-                )}
-              </div>
-            </Card>
-        </SettingsGroup>
-      )}
-
-      {showAi && (
-        <SettingsGroup
-          label={lang === "es" ? "Integraciones" : "Integrations"}
-          description={
-            lang === "es"
-              ? "Proveedores de IA. Clasifican; nunca escriben al viajero."
-              : "AI providers. They rank; never message travellers."
-          }
-        >
-          <Card
-              title={lang === "es" ? "IA · proveedores API" : "AI · API providers"}
-              subtitle={
-                lang === "es"
-                  ? "Ollama · OpenAI · Claude · Gemini. La IA solo clasifica; nunca habla con el viajero."
-                  : "Ollama · OpenAI · Claude · Gemini. AI only ranks; never messages the traveller."
-              }
-            >
-              <div className="w-full space-y-4">
-                <div className="rounded-xl border border-[var(--field-border)] bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] p-3 text-sm text-[var(--ink)] text-pretty">
-                  <p className="font-semibold">
-                    {lang === "es" ? "Regla de oro" : "Golden rule"}: {GOLDEN_RULE}
-                  </p>
-                  <p className="mt-1 text-[var(--ink-muted)]">
-                    {lang === "es" ? "Configuración:" : "Config:"}{" "}
-                    <strong className="text-[var(--ink)]">
-                      {aiReady(ai)
-                        ? lang === "es"
-                          ? `lista · ${providerLabel(ai)} (falta probar API)`
-                          : `ready · ${providerLabel(ai)} (API not tested yet)`
-                        : lang === "es"
-                          ? "heurística local (sin API)"
-                          : "local heuristics (no API)"}
-                    </strong>
-                  </p>
-                  {testResult && (
-                    <p
-                      className={cn(
-                        "mt-2 text-sm font-semibold",
-                        testResult.ok ? "text-[var(--ok)]" : "text-[var(--danger)]",
-                      )}
-                    >
-                      {testResult.ok
-                        ? lang === "es"
-                          ? "Conexión API verificada"
-                          : "API connection verified"
-                        : lang === "es"
-                          ? "Conexión API fallida"
-                          : "API connection failed"}
-                      : {testResult.message}
-                    </p>
-                  )}
-                </div>
-
-                <label className="flex gap-3 text-sm font-semibold text-[var(--ink)]">
-                  <input
-                    type="checkbox"
-                    checked={ai.enabled}
-                    onChange={(e) => persistAi({ ...ai, enabled: e.target.checked })}
-                    className="h-4 w-4 accent-[var(--accent)]"
-                  />
-                  {lang === "es"
-                    ? "Activar IA para scoring / intelligence / knowledge"
-                    : "Enable AI for scoring / intelligence / knowledge"}
-                </label>
-
-                <div className="flex flex-wrap gap-2">
-                  {providers.map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => persistAi({ ...ai, provider: p })}
-                      className={cn(
-                        "mps-choice rounded-full px-3 py-1.5 text-xs font-semibold transition",
-                        ai.provider === p && "is-active",
-                      )}
-                    >
-                      {AI_PROVIDER_LABEL[p]}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <label className={labelCls}>
-                    {lang === "es" ? "Proveedor activo" : "Active provider"}
-                    <select
-                      className={fieldCls}
-                      value={ai.provider}
-                      onChange={(e) =>
-                        persistAi({ ...ai, provider: e.target.value as AiProvider })
-                      }
-                    >
-                      {providers.map((p) => (
-                        <option key={p} value={p}>
-                          {AI_PROVIDER_LABEL[p]}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <label className={labelCls}>
-                    {lang === "es" ? "Modelo" : "Model"}
-                    <input
-                      className={fieldCls}
-                      value={ai.models[ai.provider]}
-                      onChange={(e) =>
-                        setAi({
-                          ...ai,
-                          models: { ...ai.models, [ai.provider]: e.target.value },
-                        })
-                      }
-                      placeholder={
-                        ai.provider === "openai"
-                          ? "gpt-4o-mini"
-                          : ai.provider === "claude"
-                            ? "claude-sonnet-4-20250514"
-                            : ai.provider === "gemini"
-                              ? "gemini-2.0-flash"
-                              : "llama3.2"
-                      }
-                    />
-                  </label>
-
-                  {allowClientAiKeys() &&
-                    (ai.provider !== "ollama" || ai.ollamaMode === "cloud") && (
-                      <label className={`${labelCls} sm:col-span-2`}>
-                        API Key · {AI_PROVIDER_LABEL[ai.provider]}
-                        <span className="ml-2 font-normal normal-case text-[var(--warn-ink)]">
-                          {lang === "es" ? "(solo demo local)" : "(local demo only)"}
-                        </span>
-                        <input
-                          type="password"
-                          autoComplete="off"
-                          className={fieldCls}
-                          value={ai.apiKeys[ai.provider]}
-                          onChange={(e) =>
-                            setAi({
-                              ...ai,
-                              apiKeys: { ...ai.apiKeys, [ai.provider]: e.target.value },
-                            })
-                          }
-                          placeholder={
-                            ai.provider === "openai"
-                              ? "sk-…"
-                              : ai.provider === "claude"
-                                ? "sk-ant-…"
-                                : ai.provider === "gemini"
-                                  ? "AIza…"
-                                  : "ollama_sk_…"
-                          }
-                        />
-                      </label>
-                    )}
-
-                  {!allowClientAiKeys() &&
-                    (ai.provider !== "ollama" || ai.ollamaMode === "cloud") && (
-                      <p className="mps-settings-tile rounded-lg px-3 py-2 text-sm sm:col-span-2 text-pretty">
-                        {lang === "es"
-                          ? "Producción: las API keys viven en variables de entorno de Vercel. No se pegan en el navegador."
-                          : "Production: API keys live in Vercel env vars. They are not pasted in the browser."}
-                      </p>
-                    )}
-
-                  {ai.provider === "ollama" && (
-                    <>
-                      <label className={labelCls}>
-                        {lang === "es" ? "Modo Ollama" : "Ollama mode"}
-                        <select
-                          className={fieldCls}
-                          value={ai.ollamaMode}
-                          onChange={(e) => {
-                            const ollamaMode = e.target.value as AiSettings["ollamaMode"];
-                            persistAi({
-                              ...ai,
-                              ollamaMode,
-                              ollamaBaseUrl:
-                                ollamaMode === "local"
-                                  ? "http://localhost:11434"
-                                  : "https://ollama.com",
-                            });
-                          }}
-                        >
-                          <option value="cloud">Cloud · ollama.com</option>
-                          <option value="local">Local · localhost:11434</option>
-                        </select>
-                      </label>
-                      <label className={labelCls}>
-                        Base URL
-                        <input
-                          className={fieldCls}
-                          value={ai.ollamaBaseUrl}
-                          onChange={(e) => setAi({ ...ai, ollamaBaseUrl: e.target.value })}
-                        />
-                      </label>
-                    </>
-                  )}
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => persistAi(ai)}
-                    className="inline-flex gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
-                  >
-                    <Bot className="h-4 w-4" />
-                    {lang === "es" ? "Guardar IA" : "Save AI"}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={testing || !ai.enabled}
-                    onClick={() => void runConnectionTest()}
-                    className="mps-choice inline-flex gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)] disabled:opacity-50"
-                  >
-                    {testing ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Zap className="h-4 w-4 text-[var(--accent)]" />
-                    )}
-                    {lang === "es" ? "Probar conexión API" : "Test API connection"}
-                  </button>
-                  <a
-                    href={AI_PROVIDER_DOCS[ai.provider]}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mps-choice inline-flex gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)]"
-                  >
-                    {lang === "es" ? "Crear API key" : "Create API key"}
-                  </a>
-                </div>
-                {aiFlash && (
-                  <p className="text-sm text-[var(--accent)]">{aiFlash}</p>
-                )}
-                <p className="text-xs text-[var(--ink-muted)] text-pretty">
-                  {lang === "es"
-                    ? "«Configuración lista» ≠ API verificada. Pulsa «Probar conexión API» para llamar de verdad al proveedor."
-                    : "“Config ready” ≠ verified API. Hit “Test API connection” for a live call."}
-                </p>
-              </div>
-            </Card>
-        </SettingsGroup>
-      )}
-
-      {showDb && (
-        <SettingsGroup
-          label={lang === "es" ? "Sistema" : "System"}
-          description={
-            lang === "es"
-              ? "Infraestructura de datos del Hub."
-              : "Data Hub infrastructure."
-          }
-        >
-          <Card
-              title={lang === "es" ? "Base de datos" : "Database"}
-              subtitle={
-                lang === "es"
-                  ? "Supabase / Postgres · base de datos"
-                  : "Supabase / Postgres · Data Hub"
-              }
-            >
-              <ul className="grid w-full gap-3 text-sm text-[var(--ink-muted)]">
-                <li className="mps-settings-tile rounded-xl p-3">
-                  Modo Hub:{" "}
-                  <strong className="text-[var(--ink)]">{hub.mode}</strong>
-                </li>
-                <li className="mps-settings-tile rounded-xl p-3">
-                  Credenciales Supabase:{" "}
-                  <strong className="text-[var(--ink)]">
-                    {supabaseReady || supabaseConfigured()
-                      ? "detectadas"
-                      : "pendientes (.env.local)"}
-                  </strong>
-                </li>
-                <li className="mps-settings-tile rounded-xl p-3">
-                  Schema: <code className="text-[var(--accent)]">supabase/schema.sql</code>
-                </li>
-              </ul>
-            </Card>
-        </SettingsGroup>
-      )}
-
-      <SettingsGroup
-        label={lang === "es" ? "Recursos" : "Resources"}
-        description={
-          lang === "es"
-            ? "Legal, privacidad y soporte interno."
-            : "Legal, privacy and internal support."
-        }
-      >
-        <Card
-            title={lang === "es" ? "Legal y privacidad" : "Legal & privacy"}
-            subtitle={
-              lang === "es"
-                ? "Aviso legal · Privacidad · Cookies (RGPD / LOPDGDD)"
-                : "Legal notice · Privacy · Cookies (GDPR)"
-            }
-          >
-            <div className="flex w-full flex-col gap-4">
-              <p className="text-sm text-[var(--ink-muted)] text-pretty">
-                {lang === "es"
-                  ? "Para la demo interna basta la mención RGPD de la presentación. Antes de producción real: validar textos, firmar DPA con Vercel/Supabase y mantener el registro de actividades (art. 30)."
-                  : "For the internal demo, the pitch-deck GDPR note is enough. Before real production: validate copy, sign DPAs with Vercel/Supabase and keep the Art. 30 processing record."}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <a
-                  href="/legal#aviso"
-                  className="mps-choice rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)]"
-                >
-                  {lang === "es" ? "Aviso legal" : "Legal notice"}
-                </a>
-                <a
-                  href="/legal#privacidad"
-                  className="mps-choice rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)]"
-                >
-                  {lang === "es" ? "Privacidad" : "Privacy"}
-                </a>
-                <a
-                  href="/legal#cookies"
-                  className="mps-choice rounded-lg px-3 py-2 text-sm font-semibold text-[var(--ink)]"
-                >
-                  Cookies
-                </a>
-              </div>
-            </div>
-          </Card>
-        <SupportCard lang={lang} />
-      </SettingsGroup>
-      </div>
+      {isMobile ? mobileLayout : desktopLayout}
     </div>
   );
-
 }
 
 function HubPanel({ lang }: { lang: Lang }) {
