@@ -45,9 +45,9 @@ const SLIDES: EcosystemSlide[] = [
   },
   {
     id: "instagram",
-    // Móvil / foto social
+    // Logo 3D Instagram (Alexander Shatov)
     image:
-      "https://images.unsplash.com/photo-1611162616475-46b635cb4953?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&w=1200&q=80",
     icon: Camera,
     titleEs: "Instagram",
     titleEn: "Instagram",
@@ -59,9 +59,9 @@ const SLIDES: EcosystemSlide[] = [
   },
   {
     id: "youtube",
-    // Producción / vídeo
+    // Logo 3D YouTube
     image:
-      "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1611162616475-46b635cb6868?auto=format&fit=crop&w=1200&q=80",
     icon: Play,
     titleEs: "YouTube",
     titleEn: "YouTube",
@@ -73,9 +73,9 @@ const SLIDES: EcosystemSlide[] = [
   },
   {
     id: "facebook",
-    // Comunidad / red social
+    // Logo 3D Facebook
     image:
-      "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?auto=format&fit=crop&w=1200&q=80",
     icon: MessageCircle,
     titleEs: "Facebook",
     titleEn: "Facebook",
@@ -226,7 +226,12 @@ export function MobileEcosystemCarousel({
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/5" />
+              {/* Blur suave solo en el pie · estilo foggy del dark card */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-[48%] backdrop-blur-[2.5px] [mask-image:linear-gradient(to_top,black_40%,transparent)] [-webkit-mask-image:linear-gradient(to_top,black_40%,transparent)]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
               <div className="relative flex h-full flex-col justify-between p-4 text-white">
                 <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/18 backdrop-blur-md">
                   <Icon className="h-6 w-6" strokeWidth={2} />

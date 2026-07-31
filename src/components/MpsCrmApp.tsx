@@ -537,11 +537,11 @@ function SettingsPanel({
                   ? "Al pulsar WhatsApp en un cliente confirmarás que el PC usa este número."
                   : "When tapping WhatsApp on a client you confirm this PC uses that number."}
               </p>
-              <div className="mt-4 flex flex-col items-center gap-2">
+              <div className="mt-4 flex w-full flex-col items-stretch gap-2">
                 <button
                   type="button"
                   onClick={() => persistBiz(biz)}
-                  className="inline-flex w-full max-w-sm items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-center text-sm font-semibold leading-none text-white sm:w-auto"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-3 text-center text-sm font-semibold leading-none text-white"
                 >
                   <Save className="h-4 w-4 shrink-0" aria-hidden />
                   <span className="whitespace-nowrap">
