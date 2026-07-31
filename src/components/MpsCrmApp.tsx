@@ -69,6 +69,7 @@ import { allowClientAiKeys } from "@/lib/runtime";
 import type { AppSection } from "@/lib/notifications";
 import { AppHeader } from "@/components/AppHeader";
 import { MobileCrmShell } from "@/components/MobileCrmShell";
+import { MobileLeadScoreSheet } from "@/components/MobileLeadScoreSheet";
 import { useIsMobile } from "@/lib/use-is-mobile";
 import { showMobileTicket } from "@/lib/mobile-confirm";
 import { Badge, Card } from "@/components/CrmChrome";
@@ -206,14 +207,41 @@ function euro(n: number, lang: Lang) {
   }).format(n);
 }
 
-function Kpi({ label, value, hint }: { label: string; value: string; hint?: string }) {
+function Kpi({
+  label,
+  value,
+  hint,
+  compact,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  compact?: boolean;
+}) {
   return (
-    <div className="rounded-[1.25rem] border border-[color-mix(in_oklab,var(--ink)_6%,transparent)] bg-[var(--glass-strong)] p-4 shadow-sm backdrop-blur-md">
-      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">{label}</p>
-      <p className="mt-2 font-[family-name:var(--mps-display)] text-2xl text-[var(--ink)] md:text-3xl">
+    <div
+      className={cn(
+        "rounded-[1.25rem] border border-[color-mix(in_oklab,var(--ink)_6%,transparent)] bg-[var(--glass-strong)] shadow-sm backdrop-blur-md",
+        compact ? "px-2.5 py-2" : "p-4",
+      )}
+    >
+      <p
+        className={cn(
+          "font-semibold uppercase tracking-wide text-[var(--ink-muted)]",
+          compact ? "text-[9px] leading-tight" : "text-xs",
+        )}
+      >
+        {label}
+      </p>
+      <p
+        className={cn(
+          "font-[family-name:var(--mps-display)] text-[var(--ink)]",
+          compact ? "mt-0.5 text-xl leading-none" : "mt-2 text-2xl md:text-3xl",
+        )}
+      >
         {value}
       </p>
-      {hint && <p className="mt-1 text-xs text-[var(--ink-muted)]">{hint}</p>}
+      {hint && !compact && <p className="mt-1 text-xs text-[var(--ink-muted)]">{hint}</p>}
     </div>
   );
 }
@@ -1494,14 +1522,16 @@ function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
 function LeadsPanel({ lang }: { lang: Lang }) {
   const hub = useDataHub();
   const { push } = useNotifications();
+  const isMobile = useIsMobile();
   const { sorted, unknown, avg, total } = computeLeadStats(hub.leads);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const selected = sorted.find((l) => l.id === selectedId) ?? sorted[0] ?? null;
+  const selected = sorted.find((l) => l.id === selectedId) ?? (isMobile ? null : sorted[0]) ?? null;
   const [scoring, setScoring] = useState(false);
+  const [scoreSheetOpen, setScoreSheetOpen] = useState(false);
 
   useEffect(() => {
-    if (selected && selectedId !== selected.id) setSelectedId(selected.id);
-  }, [selected, selectedId]);
+    if (!isMobile && selected && selectedId !== selected.id) setSelectedId(selected.id);
+  }, [selected, selectedId, isMobile]);
 
   const statuses = Object.keys({
     nuevo: 1,
@@ -1547,12 +1577,17 @@ function LeadsPanel({ lang }: { lang: Lang }) {
     }
   }
 
+  function selectLead(id: string) {
+    setSelectedId(id);
+    if (isMobile) setScoreSheetOpen(true);
+  }
+
   return (
-    <div className="space-y-5">
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Kpi label={t(lang, "leads_queue")} value={String(total)} />
-        <Kpi label={t(lang, "score_avg")} value={String(avg)} />
-        <Kpi label={t(lang, "without_origin")} value={String(unknown)} />
+    <div className={cn("space-y-5", isMobile && "space-y-3")}>
+      <div className={cn("grid gap-3 sm:grid-cols-3", isMobile && "grid-cols-3 gap-2")}>
+        <Kpi compact={isMobile} label={t(lang, "leads_queue")} value={String(total)} />
+        <Kpi compact={isMobile} label={t(lang, "score_avg")} value={String(avg)} />
+        <Kpi compact={isMobile} label={t(lang, "without_origin")} value={String(unknown)} />
       </div>
       <div className="flex flex-wrap gap-2">
         <button
@@ -1563,6 +1598,7 @@ function LeadsPanel({ lang }: { lang: Lang }) {
             lead.email = `lead-${lead.id.toLowerCase()}@pendiente.local`;
             await hub.saveLead(lead);
             setSelectedId(lead.id);
+            if (isMobile) setScoreSheetOpen(true);
           }}
           className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
         >
@@ -1580,15 +1616,20 @@ function LeadsPanel({ lang }: { lang: Lang }) {
         </span>
       </div>
       <div className="grid gap-5 lg:grid-cols-5">
-        <Card title={t(lang, "inbox")} subtitle={t(lang, "inbox_sub")} className="lg:col-span-3">
+        <Card
+          title={t(lang, "inbox")}
+          subtitle={isMobile ? undefined : t(lang, "inbox_sub")}
+          className={cn("lg:col-span-3", isMobile && "p-3")}
+        >
           <ul className="divide-y divide-[var(--glass-border)]">
             {sorted.map((lead) => (
               <li key={lead.id}>
                 <button
                   type="button"
-                  onClick={() => setSelectedId(lead.id)}
+                  onClick={() => selectLead(lead.id)}
                   className={cn(
-                    "flex w-full items-start justify-between gap-3 rounded-lg px-1 py-3 text-left transition hover:bg-[color-mix(in_oklab,var(--accent)_8%,transparent)]",
+                    "flex w-full items-start justify-between gap-3 rounded-lg px-1 text-left transition hover:bg-[color-mix(in_oklab,var(--accent)_8%,transparent)]",
+                    isMobile ? "py-2" : "py-3",
                     selected?.id === lead.id &&
                       "bg-[color-mix(in_oklab,var(--accent)_12%,transparent)]",
                   )}
@@ -1609,6 +1650,7 @@ function LeadsPanel({ lang }: { lang: Lang }) {
             ))}
           </ul>
         </Card>
+        {!isMobile && (
         <Card title={t(lang, "detail")} subtitle={t(lang, "detail_sub")} className="lg:col-span-2">
           {selected ? (
             <>
@@ -1694,7 +1736,14 @@ function LeadsPanel({ lang }: { lang: Lang }) {
             </p>
           )}
         </Card>
+        )}
       </div>
+      <MobileLeadScoreSheet
+        open={isMobile && scoreSheetOpen}
+        lead={selected}
+        lang={lang}
+        onClose={() => setScoreSheetOpen(false)}
+      />
     </div>
   );
 }
