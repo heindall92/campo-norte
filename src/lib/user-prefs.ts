@@ -14,6 +14,12 @@ export type AccentId =
 
 export type ProfileLayoutId = "settings" | "hub";
 
+/**
+ * Layout B (hub centrado) se conserva en código y en `profileLayout`,
+ * pero está oculto en UI. Activar a `true` si se vuelve a pedir en móvil.
+ */
+export const PROFILE_LAYOUT_B_ENABLED = false;
+
 export interface UserPrefs {
   theme: UiTheme;
   accent: AccentId;
@@ -89,7 +95,7 @@ export const ACCENT_PALETTE: Record<
 export const DEFAULT_USER_PREFS: UserPrefs = {
   theme: "light",
   accent: "electric",
-  profileLayout: "hub",
+  profileLayout: "settings",
 };
 
 function key(userId: string) {
@@ -107,8 +113,9 @@ export function loadUserPrefs(userId: string | undefined | null): UserPrefs {
       parsed.accent && parsed.accent in ACCENT_PALETTE
         ? parsed.accent
         : DEFAULT_USER_PREFS.accent;
+    // Conservamos "hub" en storage por si se reactiva PROFILE_LAYOUT_B_ENABLED.
     const profileLayout: ProfileLayoutId =
-      parsed.profileLayout === "settings" ? "settings" : "hub";
+      parsed.profileLayout === "hub" ? "hub" : "settings";
     return { theme, accent, profileLayout };
   } catch {
     return { ...DEFAULT_USER_PREFS };

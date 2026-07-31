@@ -1,6 +1,7 @@
 import { useAuth, canManageCrmUsers } from "@/lib/auth";
 import { loadUserProfile } from "@/lib/user-profile";
 import {
+  PROFILE_LAYOUT_B_ENABLED,
   saveUserPrefs,
   type ProfileLayoutId,
   type UserPrefs,
@@ -123,7 +124,8 @@ export function MobileProfileScreen({
     onLangChange(lang === "es" ? "en" : "es");
   }
 
-  const layoutPicker = (
+  // Selector A/B oculto mientras PROFILE_LAYOUT_B_ENABLED === false (B queda en código).
+  const layoutPicker = PROFILE_LAYOUT_B_ENABLED ? (
     <Card title={es ? "Estilo de mi perfil" : "My profile style"}>
       <div className="grid grid-cols-2 gap-2 p-3">
         {(
@@ -152,7 +154,12 @@ export function MobileProfileScreen({
         ))}
       </div>
     </Card>
-  );
+  ) : null;
+
+  /** A (settings) fija en UI; B (hub) solo si se reactiva el flag. */
+  const activeLayout: ProfileLayoutId = PROFILE_LAYOUT_B_ENABLED
+    ? layout
+    : "settings";
 
   const sharedRows = (
     <>
@@ -210,7 +217,8 @@ export function MobileProfileScreen({
     </>
   );
 
-  if (layout === "hub") {
+  // Layout B — hub centrado (conservado; oculto salvo PROFILE_LAYOUT_B_ENABLED)
+  if (activeLayout === "hub") {
     return (
       <div className="space-y-4 pb-2">
         <div className="flex flex-col items-center pt-2 text-center">
@@ -238,7 +246,7 @@ export function MobileProfileScreen({
     );
   }
 
-  // Layout A — settings list
+  // Layout A — lista tipo Settings (activa en móvil)
   return (
     <div className="space-y-4 pb-2">
       <h1 className="text-center text-lg font-bold text-[var(--ink)]">
