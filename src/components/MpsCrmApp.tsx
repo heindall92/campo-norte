@@ -290,10 +290,14 @@ function SettingsPanel({ lang }: { lang: Lang }) {
   }
 
   const providers = Object.keys(AI_PROVIDER_LABEL) as AiProvider[];
+  const fieldCls =
+    "mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]";
+  const labelCls = "block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]";
 
   return (
-    <div className="space-y-5">
+    <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2 lg:gap-5">
       <Card
+        className="h-full"
         title={lang === "es" ? "Ajustes · cuenta" : "Settings · account"}
         subtitle={
           lang === "es"
@@ -301,110 +305,37 @@ function SettingsPanel({ lang }: { lang: Lang }) {
             : "User administering the Growth OS. Sign out returns to login."
         }
       >
-        {user && (
-          <div className="flex flex-wrap items-center gap-4">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent)] text-xl font-bold text-white">
-              {user.avatarInitial}
-            </span>
-            <div>
-              <p className="font-[family-name:var(--mps-display)] text-xl text-[var(--ink)]">
-                {user.name}
-              </p>
-              <p className="text-sm text-[var(--ink-muted)]">{user.email}</p>
-              <p className="mt-1 text-xs font-semibold text-[var(--accent)]">
-                {user.roleLabel} · {user.provider === "supabase" ? "Supabase Auth" : "Demo local"}
-              </p>
+        <div className="grid h-full gap-4 sm:grid-cols-2 sm:items-center">
+          {user && (
+            <div className="flex min-w-0 items-center gap-4">
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-xl font-bold text-white">
+                {user.avatarInitial}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate font-[family-name:var(--mps-display)] text-xl text-[var(--ink)]">
+                  {user.name}
+                </p>
+                <p className="truncate text-sm text-[var(--ink-muted)]">{user.email}</p>
+                <p className="mt-1 text-xs font-semibold text-[var(--accent)]">
+                  {user.roleLabel} · {user.provider === "supabase" ? "Supabase Auth" : "Demo local"}
+                </p>
+              </div>
             </div>
+          )}
+          <div className="flex sm:justify-end">
+            <button
+              type="button"
+              onClick={() => void signOut()}
+              className="rounded-xl border border-[color-mix(in_oklab,var(--danger)_35%,transparent)] px-4 py-2 text-sm font-semibold text-[var(--danger)]"
+            >
+              {lang === "es" ? "Cerrar sesión" : "Sign out"}
+            </button>
           </div>
-        )}
-        <button
-          type="button"
-          onClick={() => void signOut()}
-          className="mt-5 rounded-xl border border-[color-mix(in_oklab,var(--danger)_35%,transparent)] px-4 py-2 text-sm font-semibold text-[var(--danger)]"
-        >
-          {lang === "es" ? "Cerrar sesión" : "Sign out"}
-        </button>
-      </Card>
-
-      <Card
-        title={lang === "es" ? "Datos del negocio" : "Business details"}
-        subtitle={
-          lang === "es"
-            ? "WhatsApp y datos fiscales visibles en reservas y contacto. El CRM solo abre chats si este WhatsApp está configurado."
-            : "WhatsApp and tax data for bookings and contact. The CRM only opens chats if this WhatsApp is configured."
-        }
-      >
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
-            {lang === "es" ? "WhatsApp (9 dígitos)" : "WhatsApp (digits)"}
-            <input
-              className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
-              value={biz.whatsapp}
-              inputMode="tel"
-              placeholder="628691478"
-              onChange={(e) => setBiz({ ...biz, whatsapp: e.target.value })}
-            />
-          </label>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
-            {lang === "es" ? "@alias WhatsApp (próximamente)" : "WhatsApp @alias (soon)"}
-            <input
-              className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
-              value={biz.whatsappAlias}
-              placeholder="30mps"
-              onChange={(e) => setBiz({ ...biz, whatsappAlias: e.target.value.replace(/^@+/, "") })}
-            />
-          </label>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:col-span-2">
-            {lang === "es" ? "Razón social" : "Legal name"}
-            <input
-              className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
-              value={biz.legalName}
-              onChange={(e) => setBiz({ ...biz, legalName: e.target.value })}
-            />
-          </label>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
-            CIF
-            <input
-              className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
-              value={biz.cif}
-              onChange={(e) => setBiz({ ...biz, cif: e.target.value })}
-            />
-          </label>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
-            {lang === "es" ? "Email de contacto" : "Contact email"}
-            <input
-              type="email"
-              className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
-              value={biz.contactEmail}
-              onChange={(e) => setBiz({ ...biz, contactEmail: e.target.value })}
-            />
-          </label>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:col-span-2">
-            {lang === "es" ? "Dirección fiscal" : "Tax address"}
-            <input
-              className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
-              value={biz.fiscalAddress}
-              onChange={(e) => setBiz({ ...biz, fiscalAddress: e.target.value })}
-            />
-          </label>
         </div>
-        <p className="mt-3 text-xs text-[var(--ink-muted)]">
-          {lang === "es"
-            ? "Al pulsar WhatsApp en un cliente deberás confirmar que el ordenador usa este número (wa.me no puede leer la cuenta logueada)."
-            : "When tapping WhatsApp on a client you must confirm this PC uses that number (wa.me cannot read the logged-in account)."}
-        </p>
-        <button
-          type="button"
-          onClick={() => persistBiz(biz)}
-          className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white"
-        >
-          <Save className="h-4 w-4" />
-          {lang === "es" ? "Guardar negocio" : "Save business"}
-        </button>
-        {bizFlash && <p className="mt-3 text-sm text-[var(--accent)]">{bizFlash}</p>}
       </Card>
 
       <Card
+        className="h-full"
         title={lang === "es" ? "Seguridad · sesión" : "Security · session"}
         subtitle={
           lang === "es"
@@ -412,34 +343,144 @@ function SettingsPanel({ lang }: { lang: Lang }) {
             : "Auto sign-out on idle. Also applies if you close the tab and return after the timeout."
         }
       >
-        <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
-          {lang === "es" ? "Cerrar sesión tras inactividad" : "Sign out after idle"}
-          <select
-            className="mt-1 w-full max-w-xs rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
-            value={security.idleTimeoutMinutes}
-            onChange={(e) =>
-              persistSecurity({
-                idleTimeoutMinutes: Number(e.target.value) as IdleTimeoutMinutes,
-              })
-            }
-          >
-            {IDLE_TIMEOUT_OPTIONS.map((m) => (
-              <option key={m} value={m}>
-                {m} {lang === "es" ? "minutos" : "minutes"}
-              </option>
-            ))}
-          </select>
-        </label>
-        <p className="mt-3 flex items-start gap-2 text-xs text-[var(--ink-muted)]">
-          <Shield className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
-          {lang === "es"
-            ? `Por defecto 15 min. Actual: ${security.idleTimeoutMinutes} min. Cualquier clic o tecla reinicia el contador.`
-            : `Default 15 min. Current: ${security.idleTimeoutMinutes} min. Any click or key resets the timer.`}
-        </p>
-        {securityFlash && <p className="mt-3 text-sm text-[var(--accent)]">{securityFlash}</p>}
+        <div className="grid gap-4 sm:grid-cols-2 sm:items-start">
+          <label className={labelCls}>
+            {lang === "es" ? "Cerrar sesión tras inactividad" : "Sign out after idle"}
+            <select
+              className={fieldCls}
+              value={security.idleTimeoutMinutes}
+              onChange={(e) =>
+                persistSecurity({
+                  idleTimeoutMinutes: Number(e.target.value) as IdleTimeoutMinutes,
+                })
+              }
+            >
+              {IDLE_TIMEOUT_OPTIONS.map((m) => (
+                <option key={m} value={m}>
+                  {m} {lang === "es" ? "minutos" : "minutes"}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="space-y-2">
+            <p className="flex items-start gap-2 text-xs text-[var(--ink-muted)]">
+              <Shield className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
+              {lang === "es"
+                ? `Por defecto 15 min. Actual: ${security.idleTimeoutMinutes} min. Cualquier clic o tecla reinicia el contador.`
+                : `Default 15 min. Current: ${security.idleTimeoutMinutes} min. Any click or key resets the timer.`}
+            </p>
+            {securityFlash && <p className="text-sm text-[var(--accent)]">{securityFlash}</p>}
+          </div>
+        </div>
       </Card>
 
       <Card
+        className="h-full"
+        title={lang === "es" ? "Datos del negocio" : "Business details"}
+        subtitle={
+          lang === "es"
+            ? "WhatsApp y datos fiscales. El CRM solo abre chats si este WhatsApp está configurado."
+            : "WhatsApp and tax data. The CRM only opens chats if this WhatsApp is configured."
+        }
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className={labelCls}>
+            {lang === "es" ? "WhatsApp (9 dígitos)" : "WhatsApp (digits)"}
+            <input
+              className={fieldCls}
+              value={biz.whatsapp}
+              inputMode="tel"
+              placeholder="628691478"
+              onChange={(e) => setBiz({ ...biz, whatsapp: e.target.value })}
+            />
+          </label>
+          <label className={labelCls}>
+            {lang === "es" ? "@alias WhatsApp (próximamente)" : "WhatsApp @alias (soon)"}
+            <input
+              className={fieldCls}
+              value={biz.whatsappAlias}
+              placeholder="30mps"
+              onChange={(e) => setBiz({ ...biz, whatsappAlias: e.target.value.replace(/^@+/, "") })}
+            />
+          </label>
+          <label className={labelCls}>
+            {lang === "es" ? "Razón social" : "Legal name"}
+            <input
+              className={fieldCls}
+              value={biz.legalName}
+              onChange={(e) => setBiz({ ...biz, legalName: e.target.value })}
+            />
+          </label>
+          <label className={labelCls}>
+            CIF
+            <input
+              className={fieldCls}
+              value={biz.cif}
+              onChange={(e) => setBiz({ ...biz, cif: e.target.value })}
+            />
+          </label>
+          <label className={labelCls}>
+            {lang === "es" ? "Email de contacto" : "Contact email"}
+            <input
+              type="email"
+              className={fieldCls}
+              value={biz.contactEmail}
+              onChange={(e) => setBiz({ ...biz, contactEmail: e.target.value })}
+            />
+          </label>
+          <label className={labelCls}>
+            {lang === "es" ? "Dirección fiscal" : "Tax address"}
+            <input
+              className={fieldCls}
+              value={biz.fiscalAddress}
+              onChange={(e) => setBiz({ ...biz, fiscalAddress: e.target.value })}
+            />
+          </label>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 sm:items-center">
+          <p className="text-xs text-[var(--ink-muted)]">
+            {lang === "es"
+              ? "Al pulsar WhatsApp en un cliente confirmarás que el PC usa este número."
+              : "When tapping WhatsApp on a client you confirm this PC uses that number."}
+          </p>
+          <div className="flex flex-col items-start gap-2 sm:items-end">
+            <button
+              type="button"
+              onClick={() => persistBiz(biz)}
+              className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white"
+            >
+              <Save className="h-4 w-4" />
+              {lang === "es" ? "Guardar negocio" : "Save business"}
+            </button>
+            {bizFlash && <p className="text-sm text-[var(--accent)]">{bizFlash}</p>}
+          </div>
+        </div>
+      </Card>
+
+      <Card
+        className="h-full"
+        title={lang === "es" ? "Base de datos" : "Database"}
+        subtitle={lang === "es" ? "Supabase / Postgres · base de datos" : "Supabase / Postgres · Data Hub"}
+      >
+        <ul className="grid gap-3 text-sm text-[var(--ink-muted)] sm:grid-cols-2">
+          <li className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-3">
+            Modo Hub:{" "}
+            <strong className="text-[var(--ink)]">{hub.mode}</strong>
+          </li>
+          <li className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-3">
+            Credenciales Supabase:{" "}
+            <strong className="text-[var(--ink)]">
+              {supabaseReady || supabaseConfigured() ? "detectadas" : "pendientes (.env.local)"}
+            </strong>
+          </li>
+          <li className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-3 sm:col-span-2">
+            Schema: <code className="text-[var(--accent)]">supabase/schema.sql</code>
+          </li>
+        </ul>
+      </Card>
+
+      <Card
+        className="h-full lg:col-span-2"
         title={lang === "es" ? "IA · proveedores API" : "AI · API providers"}
         subtitle={
           lang === "es"
@@ -447,246 +488,232 @@ function SettingsPanel({ lang }: { lang: Lang }) {
             : "Ollama · OpenAI · Claude · Gemini. Same pipeline (Lead Score, Customer Intelligence, Knowledge, Automations). AI only ranks; never messages the traveller."
         }
       >
-        <div className="mb-4 rounded-xl border border-[var(--glass-border)] bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] p-3 text-sm text-[var(--ink)]">
-          <p className="font-semibold">
-            {lang === "es" ? "Regla de oro" : "Golden rule"}: {GOLDEN_RULE}
-          </p>
-          <p className="mt-1 text-[var(--ink-muted)]">
-            {lang === "es" ? "Configuración:" : "Config:"}{" "}
-            <strong className="text-[var(--ink)]">
-              {aiReady(ai)
-                ? lang === "es"
-                  ? `lista · ${providerLabel(ai)} (falta probar API)`
-                  : `ready · ${providerLabel(ai)} (API not tested yet)`
-                : lang === "es"
-                  ? "heurística local (sin API)"
-                  : "local heuristics (no API)"}
-            </strong>
-          </p>
-          {testResult && (
-            <p
-              className={cn(
-                "mt-2 text-sm font-semibold",
-                testResult.ok ? "text-[var(--ok)]" : "text-[var(--danger)]",
-              )}
-            >
-              {testResult.ok
-                ? lang === "es"
-                  ? "Conexión API verificada"
-                  : "API connection verified"
-                : lang === "es"
-                  ? "Conexión API fallida"
-                  : "API connection failed"}
-              : {testResult.message}
-            </p>
-          )}
-        </div>
-
-        <label className="mb-4 flex items-center gap-3 text-sm font-semibold text-[var(--ink)]">
-          <input
-            type="checkbox"
-            checked={ai.enabled}
-            onChange={(e) => persistAi({ ...ai, enabled: e.target.checked })}
-            className="h-4 w-4 accent-[var(--accent)]"
-          />
-          {lang === "es"
-            ? "Activar IA para scoring / intelligence / knowledge"
-            : "Enable AI for scoring / intelligence / knowledge"}
-        </label>
-
-        <div className="mb-4 flex flex-wrap gap-2">
-          {providers.map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => persistAi({ ...ai, provider: p })}
-              className={cn(
-                "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
-                ai.provider === p
-                  ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_18%,transparent)] text-[var(--ink)]"
-                  : "border-[var(--glass-border)] text-[var(--ink-muted)] hover:border-[var(--accent)]",
-              )}
-            >
-              {AI_PROVIDER_LABEL[p]}
-            </button>
-          ))}
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:col-span-2">
-            {lang === "es" ? "Proveedor activo" : "Active provider"}
-            <select
-              className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
-              value={ai.provider}
-              onChange={(e) =>
-                persistAi({ ...ai, provider: e.target.value as AiProvider })
-              }
-            >
-              {providers.map((p) => (
-                <option key={p} value={p}>
-                  {AI_PROVIDER_LABEL[p]}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:col-span-2">
-            {lang === "es" ? "Modelo" : "Model"}
-            <input
-              className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
-              value={ai.models[ai.provider]}
-              onChange={(e) =>
-                setAi({
-                  ...ai,
-                  models: { ...ai.models, [ai.provider]: e.target.value },
-                })
-              }
-              placeholder={
-                ai.provider === "openai"
-                  ? "gpt-4o-mini"
-                  : ai.provider === "claude"
-                    ? "claude-sonnet-4-20250514"
-                    : ai.provider === "gemini"
-                      ? "gemini-2.0-flash"
-                      : "llama3.2"
-              }
-            />
-          </label>
-
-          {allowClientAiKeys() && (ai.provider !== "ollama" || ai.ollamaMode === "cloud") && (
-            <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:col-span-2">
-              API Key · {AI_PROVIDER_LABEL[ai.provider]}
-              <span className="ml-2 font-normal normal-case text-[var(--warn-ink)]">
-                {lang === "es" ? "(solo demo local)" : "(local demo only)"}
-              </span>
-              <input
-                type="password"
-                autoComplete="off"
-                className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
-                value={ai.apiKeys[ai.provider]}
-                onChange={(e) =>
-                  setAi({
-                    ...ai,
-                    apiKeys: { ...ai.apiKeys, [ai.provider]: e.target.value },
-                  })
-                }
-                placeholder={
-                  ai.provider === "openai"
-                    ? "sk-…"
-                    : ai.provider === "claude"
-                      ? "sk-ant-…"
-                      : ai.provider === "gemini"
-                        ? "AIza…"
-                        : "ollama_sk_…"
-                }
-              />
-            </label>
-          )}
-
-          {!allowClientAiKeys() && (ai.provider !== "ollama" || ai.ollamaMode === "cloud") && (
-            <p className="sm:col-span-2 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm text-[var(--ink-muted)]">
-              {lang === "es"
-                ? "Producción: las API keys viven en variables de entorno de Vercel (OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, OLLAMA_API_KEY). No se pegan en el navegador."
-                : "Production: API keys live in Vercel env vars (OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, OLLAMA_API_KEY). They are not pasted in the browser."}
-            </p>
-          )}
-
-          {ai.provider === "ollama" && (
-            <>
-              <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
-                {lang === "es" ? "Modo Ollama" : "Ollama mode"}
-                <select
-                  className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
-                  value={ai.ollamaMode}
-                  onChange={(e) => {
-                    const ollamaMode = e.target.value as AiSettings["ollamaMode"];
-                    persistAi({
-                      ...ai,
-                      ollamaMode,
-                      ollamaBaseUrl:
-                        ollamaMode === "local"
-                          ? "http://localhost:11434"
-                          : "https://ollama.com",
-                    });
-                  }}
+        <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+          <div className="space-y-4">
+            <div className="rounded-xl border border-[var(--glass-border)] bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] p-3 text-sm text-[var(--ink)]">
+              <p className="font-semibold">
+                {lang === "es" ? "Regla de oro" : "Golden rule"}: {GOLDEN_RULE}
+              </p>
+              <p className="mt-1 text-[var(--ink-muted)]">
+                {lang === "es" ? "Configuración:" : "Config:"}{" "}
+                <strong className="text-[var(--ink)]">
+                  {aiReady(ai)
+                    ? lang === "es"
+                      ? `lista · ${providerLabel(ai)} (falta probar API)`
+                      : `ready · ${providerLabel(ai)} (API not tested yet)`
+                    : lang === "es"
+                      ? "heurística local (sin API)"
+                      : "local heuristics (no API)"}
+                </strong>
+              </p>
+              {testResult && (
+                <p
+                  className={cn(
+                    "mt-2 text-sm font-semibold",
+                    testResult.ok ? "text-[var(--ok)]" : "text-[var(--danger)]",
+                  )}
                 >
-                  <option value="cloud">Cloud · ollama.com</option>
-                  <option value="local">Local · localhost:11434</option>
+                  {testResult.ok
+                    ? lang === "es"
+                      ? "Conexión API verificada"
+                      : "API connection verified"
+                    : lang === "es"
+                      ? "Conexión API fallida"
+                      : "API connection failed"}
+                  : {testResult.message}
+                </p>
+              )}
+            </div>
+
+            <label className="flex items-center gap-3 text-sm font-semibold text-[var(--ink)]">
+              <input
+                type="checkbox"
+                checked={ai.enabled}
+                onChange={(e) => persistAi({ ...ai, enabled: e.target.checked })}
+                className="h-4 w-4 accent-[var(--accent)]"
+              />
+              {lang === "es"
+                ? "Activar IA para scoring / intelligence / knowledge"
+                : "Enable AI for scoring / intelligence / knowledge"}
+            </label>
+
+            <div className="flex flex-wrap gap-2">
+              {providers.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => persistAi({ ...ai, provider: p })}
+                  className={cn(
+                    "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
+                    ai.provider === p
+                      ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_18%,transparent)] text-[var(--ink)]"
+                      : "border-[var(--glass-border)] text-[var(--ink-muted)] hover:border-[var(--accent)]",
+                  )}
+                >
+                  {AI_PROVIDER_LABEL[p]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className={labelCls}>
+                {lang === "es" ? "Proveedor activo" : "Active provider"}
+                <select
+                  className={fieldCls}
+                  value={ai.provider}
+                  onChange={(e) =>
+                    persistAi({ ...ai, provider: e.target.value as AiProvider })
+                  }
+                >
+                  {providers.map((p) => (
+                    <option key={p} value={p}>
+                      {AI_PROVIDER_LABEL[p]}
+                    </option>
+                  ))}
                 </select>
               </label>
-              <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
-                Base URL
+
+              <label className={labelCls}>
+                {lang === "es" ? "Modelo" : "Model"}
                 <input
-                  className="mt-1 w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-2 py-2 text-sm font-normal normal-case text-[var(--ink)]"
-                  value={ai.ollamaBaseUrl}
-                  onChange={(e) => setAi({ ...ai, ollamaBaseUrl: e.target.value })}
+                  className={fieldCls}
+                  value={ai.models[ai.provider]}
+                  onChange={(e) =>
+                    setAi({
+                      ...ai,
+                      models: { ...ai.models, [ai.provider]: e.target.value },
+                    })
+                  }
+                  placeholder={
+                    ai.provider === "openai"
+                      ? "gpt-4o-mini"
+                      : ai.provider === "claude"
+                        ? "claude-sonnet-4-20250514"
+                        : ai.provider === "gemini"
+                          ? "gemini-2.0-flash"
+                          : "llama3.2"
+                  }
                 />
               </label>
-            </>
-          )}
-        </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => persistAi(ai)}
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
-          >
-            <Bot className="h-4 w-4" />
-            {lang === "es" ? "Guardar IA" : "Save AI"}
-          </button>
-          <button
-            type="button"
-            disabled={testing || !ai.enabled}
-            onClick={() => void runConnectionTest()}
-            className="inline-flex items-center gap-2 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-strong)] px-3 py-2 text-sm font-semibold text-[var(--ink)] disabled:opacity-50"
-          >
-            {testing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Zap className="h-4 w-4 text-[var(--accent)]" />
-            )}
-            {lang === "es" ? "Probar conexión API" : "Test API connection"}
-          </button>
-          <a
-            href={AI_PROVIDER_DOCS[ai.provider]}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg border border-[var(--glass-border)] px-3 py-2 text-sm font-semibold text-[var(--ink)]"
-          >
-            {lang === "es" ? "Crear API key" : "Create API key"}
-          </a>
+              {allowClientAiKeys() && (ai.provider !== "ollama" || ai.ollamaMode === "cloud") && (
+                <label className={`${labelCls} sm:col-span-2`}>
+                  API Key · {AI_PROVIDER_LABEL[ai.provider]}
+                  <span className="ml-2 font-normal normal-case text-[var(--warn-ink)]">
+                    {lang === "es" ? "(solo demo local)" : "(local demo only)"}
+                  </span>
+                  <input
+                    type="password"
+                    autoComplete="off"
+                    className={fieldCls}
+                    value={ai.apiKeys[ai.provider]}
+                    onChange={(e) =>
+                      setAi({
+                        ...ai,
+                        apiKeys: { ...ai.apiKeys, [ai.provider]: e.target.value },
+                      })
+                    }
+                    placeholder={
+                      ai.provider === "openai"
+                        ? "sk-…"
+                        : ai.provider === "claude"
+                          ? "sk-ant-…"
+                          : ai.provider === "gemini"
+                            ? "AIza…"
+                            : "ollama_sk_…"
+                    }
+                  />
+                </label>
+              )}
+
+              {!allowClientAiKeys() && (ai.provider !== "ollama" || ai.ollamaMode === "cloud") && (
+                <p className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm text-[var(--ink-muted)] sm:col-span-2">
+                  {lang === "es"
+                    ? "Producción: las API keys viven en variables de entorno de Vercel. No se pegan en el navegador."
+                    : "Production: API keys live in Vercel env vars. They are not pasted in the browser."}
+                </p>
+              )}
+
+              {ai.provider === "ollama" && (
+                <>
+                  <label className={labelCls}>
+                    {lang === "es" ? "Modo Ollama" : "Ollama mode"}
+                    <select
+                      className={fieldCls}
+                      value={ai.ollamaMode}
+                      onChange={(e) => {
+                        const ollamaMode = e.target.value as AiSettings["ollamaMode"];
+                        persistAi({
+                          ...ai,
+                          ollamaMode,
+                          ollamaBaseUrl:
+                            ollamaMode === "local"
+                              ? "http://localhost:11434"
+                              : "https://ollama.com",
+                        });
+                      }}
+                    >
+                      <option value="cloud">Cloud · ollama.com</option>
+                      <option value="local">Local · localhost:11434</option>
+                    </select>
+                  </label>
+                  <label className={labelCls}>
+                    Base URL
+                    <input
+                      className={fieldCls}
+                      value={ai.ollamaBaseUrl}
+                      onChange={(e) => setAi({ ...ai, ollamaBaseUrl: e.target.value })}
+                    />
+                  </label>
+                </>
+              )}
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => persistAi(ai)}
+                className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
+              >
+                <Bot className="h-4 w-4" />
+                {lang === "es" ? "Guardar IA" : "Save AI"}
+              </button>
+              <button
+                type="button"
+                disabled={testing || !ai.enabled}
+                onClick={() => void runConnectionTest()}
+                className="inline-flex items-center gap-2 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-strong)] px-3 py-2 text-sm font-semibold text-[var(--ink)] disabled:opacity-50"
+              >
+                {testing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Zap className="h-4 w-4 text-[var(--accent)]" />
+                )}
+                {lang === "es" ? "Probar conexión API" : "Test API connection"}
+              </button>
+              <a
+                href={AI_PROVIDER_DOCS[ai.provider]}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg border border-[var(--glass-border)] px-3 py-2 text-sm font-semibold text-[var(--ink)]"
+              >
+                {lang === "es" ? "Crear API key" : "Create API key"}
+              </a>
+            </div>
+            {aiFlash && <p className="text-sm text-[var(--accent)]">{aiFlash}</p>}
+            <p className="text-xs text-[var(--ink-muted)]">
+              {lang === "es"
+                ? "«Configuración lista» ≠ API verificada. Pulsa «Probar conexión API» para llamar de verdad al proveedor."
+                : "“Config ready” ≠ verified API. Hit “Test API connection” for a live call."}
+            </p>
+          </div>
         </div>
-        {aiFlash && <p className="mt-3 text-sm text-[var(--accent)]">{aiFlash}</p>}
-        <p className="mt-3 text-xs text-[var(--ink-muted)]">
-          {lang === "es"
-            ? "«Configuración lista» ≠ API verificada. Pulsa «Probar conexión API» para llamar de verdad al proveedor. También puedes probar en Inteligencia de leads → Clasificar con IA."
-            : "“Config ready” ≠ verified API. Hit “Test API connection” for a live call. Or try Lead Intelligence → Classify with AI."}
-        </p>
       </Card>
 
       <Card
-        title={lang === "es" ? "Base de datos" : "Database"}
-        subtitle={lang === "es" ? "Supabase / Postgres · base de datos" : "Supabase / Postgres · Data Hub"}
-      >
-        <ul className="space-y-2 text-sm text-[var(--ink-muted)]">
-          <li>
-            Modo Hub:{" "}
-            <strong className="text-[var(--ink)]">{hub.mode}</strong>
-          </li>
-          <li>
-            Credenciales Supabase:{" "}
-            <strong className="text-[var(--ink)]">
-              {supabaseReady || supabaseConfigured() ? "detectadas" : "pendientes (.env.local)"}
-            </strong>
-          </li>
-          <li>
-            Schema: <code className="text-[var(--accent)]">supabase/schema.sql</code>
-          </li>
-        </ul>
-      </Card>
-
-      <Card
+        className="h-full lg:col-span-2"
         title={lang === "es" ? "Legal y privacidad" : "Legal & privacy"}
         subtitle={
           lang === "es"
@@ -694,30 +721,32 @@ function SettingsPanel({ lang }: { lang: Lang }) {
             : "Legal notice · Privacy · Cookies (GDPR)"
         }
       >
-        <p className="mb-3 text-sm text-[var(--ink-muted)]">
-          {lang === "es"
-            ? "Para la demo interna basta la mención RGPD de la presentación. Antes de producción real: validar textos, firmar DPA con Vercel/Supabase y mantener el registro de actividades (art. 30)."
-            : "For the internal demo, the pitch-deck GDPR note is enough. Before real production: validate copy, sign DPAs with Vercel/Supabase and keep the Art. 30 processing record."}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <a
-            href="/legal#aviso"
-            className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
-          >
-            {lang === "es" ? "Aviso legal" : "Legal notice"}
-          </a>
-          <a
-            href="/legal#privacidad"
-            className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
-          >
-            {lang === "es" ? "Privacidad" : "Privacy"}
-          </a>
-          <a
-            href="/legal#cookies"
-            className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
-          >
-            Cookies
-          </a>
+        <div className="grid gap-4 sm:grid-cols-2 sm:items-center">
+          <p className="text-sm text-[var(--ink-muted)]">
+            {lang === "es"
+              ? "Para la demo interna basta la mención RGPD de la presentación. Antes de producción real: validar textos, firmar DPA con Vercel/Supabase y mantener el registro de actividades (art. 30)."
+              : "For the internal demo, the pitch-deck GDPR note is enough. Before real production: validate copy, sign DPAs with Vercel/Supabase and keep the Art. 30 processing record."}
+          </p>
+          <div className="flex flex-wrap gap-2 sm:justify-end">
+            <a
+              href="/legal#aviso"
+              className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
+            >
+              {lang === "es" ? "Aviso legal" : "Legal notice"}
+            </a>
+            <a
+              href="/legal#privacidad"
+              className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
+            >
+              {lang === "es" ? "Privacidad" : "Privacy"}
+            </a>
+            <a
+              href="/legal#cookies"
+              className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
+            >
+              Cookies
+            </a>
+          </div>
         </div>
       </Card>
     </div>
