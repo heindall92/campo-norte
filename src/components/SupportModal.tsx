@@ -34,14 +34,14 @@ export function SupportModal({
 
   return (
     <div
-      className="fixed inset-0 z-[120] flex items-end justify-center bg-[color-mix(in_oklab,#020617_55%,transparent)] p-4 backdrop-blur-md sm:items-center"
+      className="fixed inset-0 z-[120] flex items-center justify-center bg-[color-mix(in_oklab,#020617_55%,transparent)] p-4 backdrop-blur-md"
       role="dialog"
       aria-modal="true"
       aria-labelledby="support-modal-title"
       onClick={onClose}
     >
       <div
-        className="max-h-[88dvh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[color-mix(in_oklab,var(--accent)_45%,var(--glass-border))] bg-[var(--glass-strong)] p-5 shadow-[0_0_40px_color-mix(in_oklab,var(--accent)_25%,transparent)] sm:p-6"
+        className="max-h-[min(85dvh,40rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-[color-mix(in_oklab,var(--accent)_45%,var(--glass-border))] bg-[var(--glass-strong)] p-5 shadow-[0_0_40px_color-mix(in_oklab,var(--accent)_25%,transparent)] sm:p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
