@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "preview": "vite preview",
-    "serve": "python3 serve.py"
+    "serve": "python3 serve.py",
+    "demo:mobile": "node docs/mobile-demo/build-public.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.111.0",

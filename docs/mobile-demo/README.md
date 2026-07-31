@@ -34,8 +34,22 @@ inferior). Gestos: arrastrar para recargar el Hub y arrastrar el tirador para ce
 Semilla del repo (`src/lib/demo-data.ts`, `src/lib/ops-data.ts`): mismos leads, clientes, reservas y
 facturas que el CRM en modo local. Son datos ficticios y ninguna acción sale hacia el viajero.
 
-## Nota de despliegue
+## Publicar en el dominio
 
-El archivo lleva el JS en línea. La CSP de producción (`vercel.json`) usa `script-src 'self'`, así que
-**no basta con copiarlo a `public/`**: habría que extraer el `<script>` a un `.js` aparte antes de
-servirlo desde el dominio.
+`docs/mobile-demo/index.html` lleva el JS en línea, y la CSP de producción (`vercel.json`) usa
+`script-src 'self'`. El generador saca el script a su propio archivo y escribe la versión desplegable:
+
+```bash
+npm run demo:mobile
+```
+
+Salida (versionada, **no editar a mano**):
+
+```
+public/mobile-demo/index.html   documento completo, script externo
+public/mobile-demo/app.js       el mismo script, servido como archivo
+```
+
+Vite copia `public/` a `dist/`, así que tras `npm run build` la demo queda en
+`https://30mps.vercel.app/mobile-demo/`. Edita siempre el fuente de `docs/` y vuelve a ejecutar el
+comando; verificado sirviéndolo con la cabecera CSP real: sin violaciones ni errores de consola.

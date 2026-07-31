@@ -163,6 +163,7 @@ Añade en Vercel:
 | [`PROPUESTA.md`](./PROPUESTA.md) | Versión ejecutiva |
 | [`PROPUESTA-EXTENDIDA.md`](./PROPUESTA-EXTENDIDA.md) | Informe completo |
 | [`supabase/schema.sql`](./supabase/schema.sql) | Schema Data Hub |
+| [`docs/mobile-demo/`](./docs/mobile-demo/) | Demo interactiva de la vista móvil (iOS / Android) · `npm run demo:mobile` la publica en `/mobile-demo/` |
 
 ---
 
