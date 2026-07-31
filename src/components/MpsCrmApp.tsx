@@ -3630,38 +3630,35 @@ export function MpsCrmApp() {
           })}
         </nav>
 
-        <div className="shrink-0 space-y-2 border-t border-white/10 p-2">
-          {/* Estado IA + Soporte encima de interruptores */}
+        <div className="shrink-0 space-y-0.5 border-t border-white/10 p-2">
           {collapsed ? (
-            <div className="flex flex-col items-center gap-2 py-0.5">
+            <div className="flex flex-col items-center gap-2.5 py-1">
               <span
-                className="relative flex h-2.5 w-2.5"
+                className={cn(
+                  "h-2 w-2 rounded-full",
+                  aiConnected
+                    ? "bg-[var(--ok)] animate-[notif-blink_1.05s_ease-in-out_infinite]"
+                    : "bg-[var(--danger)] opacity-80",
+                )}
                 title={aiStatusLabel}
                 aria-label={aiStatusLabel}
-              >
-                <span
-                  className={cn(
-                    "absolute inset-0 rounded-full",
-                    aiConnected
-                      ? "bg-[var(--ok)] animate-[notif-blink_1.05s_ease-in-out_infinite]"
-                      : "bg-[var(--danger)] opacity-80",
-                  )}
-                />
-              </span>
+              />
               <button
                 type="button"
                 title={lang === "es" ? "Soporte" : "Support"}
                 onClick={() => setSupportOpen(true)}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-sky-400/50 bg-sky-500/15 text-sky-200 shadow-[0_0_12px_color-mix(in_oklab,#38bdf8_35%,transparent)] hover:bg-sky-500/25"
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-200 transition hover:bg-white/10 hover:text-white"
               >
                 <CircleHelp className="h-4 w-4" />
               </button>
               <AppleSwitch
+                size="sm"
                 checked={theme === "dark"}
                 label={t(lang, "theme_dark")}
                 onChange={(on) => setTheme(on ? "dark" : "light")}
               />
               <AppleSwitch
+                size="sm"
                 checked={lang === "en"}
                 label={lang === "es" ? "English" : "Español"}
                 onChange={(on) => setLang(on ? "en" : "es")}
@@ -3672,16 +3669,14 @@ export function MpsCrmApp() {
               <button
                 type="button"
                 onClick={() => setSection("ajustes")}
-                className="flex w-full items-center gap-2 px-2 py-1 text-left"
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left transition hover:bg-white/10"
                 title={
-                  lang === "es"
-                    ? "Ir a ajustes de IA"
-                    : "Go to AI settings"
+                  lang === "es" ? "Ir a ajustes de IA" : "Go to AI settings"
                 }
               >
                 <span
                   className={cn(
-                    "h-2 w-2 shrink-0 rounded-full",
+                    "h-1.5 w-1.5 shrink-0 rounded-full",
                     aiConnected
                       ? "bg-[var(--ok)] animate-[notif-blink_1.05s_ease-in-out_infinite]"
                       : "bg-[var(--danger)] opacity-90",
@@ -3689,8 +3684,8 @@ export function MpsCrmApp() {
                 />
                 <span
                   className={cn(
-                    "truncate text-[11px] font-semibold tracking-wide",
-                    aiConnected ? "text-emerald-300" : "text-slate-400",
+                    "truncate text-xs font-medium",
+                    aiConnected ? "text-slate-200" : "text-slate-400",
                   )}
                 >
                   {aiStatusLabel}
@@ -3700,36 +3695,36 @@ export function MpsCrmApp() {
               <button
                 type="button"
                 onClick={() => setSupportOpen(true)}
-                className="flex w-full items-center justify-center gap-2 rounded-full border border-sky-400/45 bg-sky-500/12 px-3 py-2 text-sm font-semibold text-sky-100 shadow-[0_0_14px_color-mix(in_oklab,#38bdf8_28%,transparent)] transition hover:bg-sky-500/22"
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"
               >
-                <CircleHelp className="h-4 w-4" />
-                {lang === "es" ? "Soporte" : "Support"}
+                <CircleHelp className="h-4 w-4 shrink-0" />
+                <span className="truncate">
+                  {lang === "es" ? "Soporte" : "Support"}
+                </span>
               </button>
 
-              <div className="flex items-center justify-between gap-3 px-2 py-1">
-                <div className="flex min-w-0 items-center gap-2 text-xs font-semibold text-slate-200">
-                  {theme === "dark" ? (
-                    <Moon className="h-3.5 w-3.5 shrink-0" />
-                  ) : (
-                    <Sun className="h-3.5 w-3.5 shrink-0" />
-                  )}
-                  <span className="truncate">
-                    {theme === "dark" ? t(lang, "theme_dark") : t(lang, "theme_light")}
-                  </span>
-                </div>
+              <div className="flex items-center gap-2 rounded-xl px-3 py-2">
+                {theme === "dark" ? (
+                  <Moon className="h-4 w-4 shrink-0 text-slate-200" />
+                ) : (
+                  <Sun className="h-4 w-4 shrink-0 text-slate-200" />
+                )}
+                <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-200">
+                  {theme === "dark" ? t(lang, "theme_dark") : t(lang, "theme_light")}
+                </span>
                 <AppleSwitch
+                  size="sm"
                   checked={theme === "dark"}
                   label={t(lang, "theme_dark")}
                   onChange={(on) => setTheme(on ? "dark" : "light")}
                 />
               </div>
-              <div className="flex items-center justify-between gap-3 px-2 py-1">
-                <div className="flex min-w-0 items-center gap-2 text-xs font-semibold text-slate-200">
-                  <span className="truncate uppercase tracking-wide">
-                    {lang === "es" ? "ES" : "EN"} · {t(lang, "lang")}
-                  </span>
-                </div>
+              <div className="flex items-center gap-2 rounded-xl px-3 py-2">
+                <span className="min-w-0 flex-1 truncate text-sm font-medium uppercase tracking-wide text-slate-200">
+                  {lang === "es" ? "ES" : "EN"} · {t(lang, "lang")}
+                </span>
                 <AppleSwitch
+                  size="sm"
                   checked={lang === "en"}
                   label={lang === "es" ? "English" : "Español"}
                   onChange={(on) => setLang(on ? "en" : "es")}
