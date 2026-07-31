@@ -3,13 +3,13 @@
 import type { Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
+  Camera,
   CircleHelp,
   ExternalLink,
-  Facebook,
   Globe,
-  Instagram,
+  MessageCircle,
+  Play,
   Settings,
-  Youtube,
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -44,7 +44,7 @@ const SLIDES: EcosystemSlide[] = [
   {
     id: "instagram",
     image: "/deck/slides/07.jpg",
-    icon: Instagram,
+    icon: Camera,
     titleEs: "Instagram",
     titleEn: "Instagram",
     subEs: "Marca en redes · stories y pulso del día",
@@ -56,7 +56,7 @@ const SLIDES: EcosystemSlide[] = [
   {
     id: "youtube",
     image: "/deck/slides/11.jpg",
-    icon: Youtube,
+    icon: Play,
     titleEs: "YouTube",
     titleEn: "YouTube",
     subEs: "Canal oficial · contenido y rutas en vídeo",
@@ -68,7 +68,7 @@ const SLIDES: EcosystemSlide[] = [
   {
     id: "facebook",
     image: "/deck/slides/05.jpg",
-    icon: Facebook,
+    icon: MessageCircle,
     titleEs: "Facebook",
     titleEn: "Facebook",
     subEs: "Página empresa · comunidad y mensajes",

@@ -584,7 +584,7 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
               return (
                 <li
                   key={r.id}
-                  className="overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--glass)]"
+                  className="overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-strong)] shadow-sm"
                 >
                   <div className="grid gap-3 p-4 lg:grid-cols-[minmax(0,1fr)_9.5rem_8.5rem_7.5rem_9.5rem] lg:items-center lg:gap-x-4">
                     {/* Col 1 · cliente + viaje + acciones principales */}
@@ -660,8 +660,8 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
                       </select>
                     </div>
 
-                    {/* Col 3 · acciones rápidas */}
-                    <div className="flex lg:justify-center">
+                    {/* Col 3 · acciones rápidas (desktop) */}
+                    <div className="hidden lg:flex lg:justify-center">
                       <EntityActionBar
                         phone={r.clientPhone}
                         onEdit={() =>
@@ -676,8 +676,8 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
                       <Badge tone="neutral">{PAYMENT_LABEL[r.paymentChannel]}</Badge>
                     </div>
 
-                    {/* Col 5 · importes + logística */}
-                    <div className="flex flex-col items-start gap-1.5 lg:items-end">
+                    {/* Col 5 · importes + logística (+ acciones en móvil) */}
+                    <div className="flex w-full flex-col items-end gap-2">
                       <span className="whitespace-nowrap text-sm font-semibold tabular-nums text-[var(--ink)]">
                         {euro(r.depositPaid, lang)} / {euro(r.totalAmount, lang)}
                       </span>
@@ -697,6 +697,14 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
                           className={cn("h-3.5 w-3.5 transition", open && "rotate-180")}
                         />
                       </button>
+                      <EntityActionBar
+                        className="justify-end lg:hidden"
+                        phone={r.clientPhone}
+                        onEdit={() =>
+                          setModal({ mode: "edit", reservation: structuredClone(r) })
+                        }
+                        onDelete={() => void deleteReservation(r.id)}
+                      />
                     </div>
                   </div>
 
