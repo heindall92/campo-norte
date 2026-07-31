@@ -84,6 +84,7 @@ import {
 } from "@/components/OpsPanels";
 import { blankClient, ClientFormModal } from "@/components/ClientFormModal";
 import { AppearanceCard } from "@/components/AppearanceCard";
+import { AppleSwitch } from "@/components/AppleSwitch";
 import { ViewModePicker } from "@/components/ViewModePicker";
 import { ContentFactoryPanel } from "@/components/ContentFactoryPanel";
 import { ProfileModal } from "@/components/ProfileModal";
@@ -108,7 +109,6 @@ import {
   type SecuritySettings,
 } from "@/lib/security-settings";
 import {
-  Activity,
   ArrowLeft,
   ArrowRight,
   Bike,
@@ -136,7 +136,6 @@ import {
   RefreshCw,
   Save,
   Search,
-  ChevronDown,
   Settings,
   Shield,
   SlidersHorizontal,
@@ -1015,7 +1014,7 @@ function SettingsPanel({
       </div>
       <div
         role="tabpanel"
-        className="rounded-b-[1.75rem] rounded-tr-[1.75rem] border border-[var(--glass-border)] bg-[var(--panel)] p-4 shadow-[0_10px_28px_color-mix(in_oklab,var(--ink)_8%,transparent)] md:p-6"
+        className="rounded-b-[1.75rem] rounded-tr-[1.75rem] border border-[var(--glass-border)] bg-[var(--glass-strong)] p-4 shadow-[0_10px_28px_color-mix(in_oklab,var(--ink)_8%,transparent)] md:p-6"
       >
         {desktopTabPanel}
       </div>
@@ -3541,7 +3540,6 @@ export function MpsCrmApp() {
             const active = section === item.id;
             if (item.id === "ajustes") {
               const usersActive = section === "usuarios";
-              const open = settingsOpen || active || usersActive;
               return (
                 <div key={item.id} className="space-y-1">
                   <button
@@ -3549,32 +3547,22 @@ export function MpsCrmApp() {
                     title={t(lang, item.labelKey)}
                     onClick={() => {
                       setSection("ajustes");
-                      setSettingsOpen((v) => !v || section !== "ajustes");
+                      setSettingsOpen(true);
                     }}
                     className={cn(
                       "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition",
                       collapsed && "justify-center px-2",
-                      active || usersActive
+                      active
                         ? "bg-white text-slate-900"
                         : "text-slate-200 hover:bg-white/10 hover:text-white",
                     )}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
                     {!collapsed && (
-                      <>
-                        <span className="min-w-0 flex-1 truncate">{t(lang, item.labelKey)}</span>
-                        {showUsersNav && (
-                          <ChevronDown
-                            className={cn(
-                              "h-3.5 w-3.5 shrink-0 transition",
-                              open && "rotate-180",
-                            )}
-                          />
-                        )}
-                      </>
+                      <span className="min-w-0 flex-1 truncate">{t(lang, item.labelKey)}</span>
                     )}
                   </button>
-                  {showUsersNav && open && !collapsed && (
+                  {showUsersNav && !collapsed && (
                     <button
                       type="button"
                       onClick={() => setSection("usuarios")}
@@ -3587,6 +3575,21 @@ export function MpsCrmApp() {
                     >
                       <UsersRound className="h-3.5 w-3.5 shrink-0" />
                       {t(lang, "nav_users")}
+                    </button>
+                  )}
+                  {showUsersNav && collapsed && (
+                    <button
+                      type="button"
+                      title={t(lang, "nav_users")}
+                      onClick={() => setSection("usuarios")}
+                      className={cn(
+                        "flex w-full items-center justify-center rounded-xl px-2 py-2.5 transition",
+                        usersActive
+                          ? "bg-white text-slate-900"
+                          : "text-slate-200 hover:bg-white/10 hover:text-white",
+                      )}
+                    >
+                      <UsersRound className="h-4 w-4 shrink-0" />
                     </button>
                   )}
                 </div>
@@ -3613,69 +3616,52 @@ export function MpsCrmApp() {
           })}
         </nav>
 
-        <div className="space-y-2 border-t border-white/10 p-2">
-          <div className={cn("rounded-xl border border-white/15 bg-white/10 p-2", collapsed && "px-1")}>
-            {!collapsed && (
-              <p className="mb-1 px-1 text-[10px] uppercase tracking-wide text-slate-400">
-                {t(lang, "theme")}
-              </p>
-            )}
-            <div className={cn("flex gap-1", collapsed && "flex-col")}>
-              <button
-                type="button"
-                title={t(lang, "theme_light")}
-                onClick={() => setTheme("light")}
-                className={cn(
-                  "flex flex-1 items-center justify-center gap-1 rounded-lg px-2 py-1.5 text-xs font-bold",
-                  theme === "light" ? "bg-white text-slate-900" : "text-slate-300 hover:bg-white/10",
-                )}
-              >
-                <Sun className="h-3.5 w-3.5" />
-                {!collapsed && t(lang, "theme_light")}
-              </button>
-              <button
-                type="button"
-                title={t(lang, "theme_dark")}
-                onClick={() => setTheme("dark")}
-                className={cn(
-                  "flex flex-1 items-center justify-center gap-1 rounded-lg px-2 py-1.5 text-xs font-bold",
-                  theme === "dark" ? "bg-white text-slate-900" : "text-slate-300 hover:bg-white/10",
-                )}
-              >
-                <Moon className="h-3.5 w-3.5" />
-                {!collapsed && t(lang, "theme_dark")}
-              </button>
+        <div className="shrink-0 space-y-0.5 border-t border-white/10 p-2">
+          {collapsed ? (
+            <div className="flex flex-col items-center gap-2 py-1">
+              <AppleSwitch
+                checked={theme === "dark"}
+                label={t(lang, "theme_dark")}
+                onChange={(on) => setTheme(on ? "dark" : "light")}
+              />
+              <AppleSwitch
+                checked={lang === "en"}
+                label={lang === "es" ? "English" : "Español"}
+                onChange={(on) => setLang(on ? "en" : "es")}
+              />
             </div>
-          </div>
-
-          <div className={cn("rounded-xl border border-white/15 bg-white/10 p-2", collapsed && "px-1")}>
-            {!collapsed && (
-              <p className="mb-1 px-1 text-[10px] uppercase tracking-wide text-slate-400">
-                {t(lang, "lang")}
-              </p>
-            )}
-            <div className={cn("flex gap-1", collapsed && "flex-col")}>
-              {(["es", "en"] as Lang[]).map((code) => (
-                <button
-                  key={code}
-                  type="button"
-                  onClick={() => setLang(code)}
-                  className={cn(
-                    "flex-1 rounded-lg px-2 py-1.5 text-xs font-bold uppercase",
-                    lang === code ? "bg-white text-slate-900" : "text-slate-300 hover:bg-white/10",
+          ) : (
+            <>
+              <div className="flex items-center justify-between gap-3 px-2 py-1.5">
+                <div className="flex min-w-0 items-center gap-2 text-xs font-semibold text-slate-200">
+                  {theme === "dark" ? (
+                    <Moon className="h-3.5 w-3.5 shrink-0" />
+                  ) : (
+                    <Sun className="h-3.5 w-3.5 shrink-0" />
                   )}
-                >
-                  {code}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {!collapsed && (
-            <div className="rounded-xl bg-white/10 p-3 text-[11px] leading-relaxed text-slate-200">
-              <Activity className="mb-2 h-3.5 w-3.5" />
-              {GOLDEN_RULE}
-            </div>
+                  <span className="truncate">
+                    {theme === "dark" ? t(lang, "theme_dark") : t(lang, "theme_light")}
+                  </span>
+                </div>
+                <AppleSwitch
+                  checked={theme === "dark"}
+                  label={t(lang, "theme_dark")}
+                  onChange={(on) => setTheme(on ? "dark" : "light")}
+                />
+              </div>
+              <div className="flex items-center justify-between gap-3 px-2 py-1.5">
+                <div className="flex min-w-0 items-center gap-2 text-xs font-semibold text-slate-200">
+                  <span className="truncate uppercase tracking-wide">
+                    {lang === "es" ? "ES" : "EN"} · {t(lang, "lang")}
+                  </span>
+                </div>
+                <AppleSwitch
+                  checked={lang === "en"}
+                  label={lang === "es" ? "English" : "Español"}
+                  onChange={(on) => setLang(on ? "en" : "es")}
+                />
+              </div>
+            </>
           )}
         </div>
       </aside>
