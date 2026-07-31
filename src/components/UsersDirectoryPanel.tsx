@@ -13,6 +13,7 @@ import {
 import { loadUserProfile } from "@/lib/user-profile";
 import type { Lang } from "@/lib/i18n";
 import { ProfileModal } from "@/components/ProfileModal";
+import { showMobileTicket } from "@/lib/mobile-confirm";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, Plus, RefreshCw, Shield } from "lucide-react";
 import { useCallback, useState, type FormEvent } from "react";
@@ -74,6 +75,20 @@ export function UsersDirectoryPanel({ lang }: { lang: Lang }) {
       setNewRole("booking");
       refresh();
       setFlash(lang === "es" ? "Usuario creado" : "User created");
+      showMobileTicket({
+        title: lang === "es" ? "Usuario guardado" : "User saved",
+        subtitle: lang === "es" ? "Cuenta añadida al CRM" : "Account added to the CRM",
+        headline: newEmail.trim(),
+        meta: ROLE_LABEL[newRole],
+        fields: [
+          { label: "Email", value: newEmail.trim() },
+          { label: lang === "es" ? "Rol" : "Role", value: ROLE_LABEL[newRole] },
+          { label: lang === "es" ? "Estado" : "Status", value: lang === "es" ? "Activo" : "Active" },
+          { label: lang === "es" ? "Origen" : "Source", value: "CRM local" },
+        ],
+        chips: [ROLE_LABEL[newRole]],
+        primaryLabel: lang === "es" ? "Hecho" : "Done",
+      });
     } catch (err) {
       setCreateError(err instanceof Error ? err.message : String(err));
     }

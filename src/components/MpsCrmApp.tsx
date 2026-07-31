@@ -68,6 +68,9 @@ import {
 import { allowClientAiKeys } from "@/lib/runtime";
 import type { AppSection } from "@/lib/notifications";
 import { AppHeader } from "@/components/AppHeader";
+import { MobileCrmShell } from "@/components/MobileCrmShell";
+import { useIsMobile } from "@/lib/use-is-mobile";
+import { showMobileTicket } from "@/lib/mobile-confirm";
 import { Badge, Card } from "@/components/CrmChrome";
 import { EntityActionBar } from "@/components/EntityActionBar";
 import { t, type Lang } from "@/lib/i18n";
@@ -205,7 +208,7 @@ function euro(n: number, lang: Lang) {
 
 function Kpi({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-4 backdrop-blur-md">
+    <div className="rounded-[1.25rem] border border-[color-mix(in_oklab,var(--ink)_6%,transparent)] bg-[var(--glass-strong)] p-4 shadow-sm backdrop-blur-md">
       <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">{label}</p>
       <p className="mt-2 font-[family-name:var(--mps-display)] text-2xl text-[var(--ink)] md:text-3xl">
         {value}
@@ -1682,6 +1685,20 @@ function ClientsPanel({ lang }: { lang: Lang }) {
     await hub.saveClient(c);
     setOpenId(c.id);
     setModal(null);
+    showMobileTicket({
+      title: lang === "es" ? "Cliente guardado" : "Client saved",
+      subtitle: lang === "es" ? "Ficha actualizada en el CRM" : "Record updated in the CRM",
+      headline: c.name,
+      meta: c.email,
+      fields: [
+        { label: lang === "es" ? "Segmento" : "Segment", value: c.segment || "—" },
+        { label: lang === "es" ? "Teléfono" : "Phone", value: c.phone || "—" },
+        { label: "Email", value: c.email || "—" },
+        { label: "DNI", value: c.dni || "—" },
+      ],
+      chips: c.segment ? [c.segment] : undefined,
+      primaryLabel: lang === "es" ? "Hecho" : "Done",
+    });
   }
 
   async function runIntelligence(scope: "all" | "one", one?: Client) {
@@ -3069,10 +3086,29 @@ export function MpsCrmApp() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const hub = useDataHub();
+  const isMobile = useIsMobile();
   const role = user?.role ?? "guide";
   const theme = prefs.theme;
   const showUsersNav = canManageCrmUsers(role);
   const visibleNav = NAV_IDS.filter((item) => canAccessSection(role, item.id));
+
+  const sectionPanels = (
+    <>
+      {section === "hub" && <HubPanel lang={lang} />}
+      {section === "dashboard" && <DashboardPanel lang={lang} theme={theme} />}
+      {section === "leads" && <LeadsPanel lang={lang} />}
+      {section === "clientes" && <ClientsPanel lang={lang} />}
+      {section === "reservas" && <ReservationsPanel lang={lang} />}
+      {section === "facturas" && <InvoicesVerifactuPanel lang={lang} />}
+      {section === "contenido" && <ContentFactoryPanel lang={lang} />}
+      {section === "conocimiento" && <KnowledgePanel lang={lang} />}
+      {section === "automatizaciones" && <AutomationsPanel lang={lang} />}
+      {section === "propuesta" && <ProposalPanel lang={lang} />}
+      {section === "slides" && <SlidesPanel lang={lang} />}
+      {section === "ajustes" && <SettingsPanel lang={lang} onPrefsChange={setPrefs} />}
+      {section === "usuarios" && <UsersDirectoryPanel lang={lang} />}
+    </>
+  );
 
   useEffect(() => {
     const next = loadUserPrefs(user?.id);
@@ -3104,6 +3140,33 @@ export function MpsCrmApp() {
         <p className="text-sm text-[var(--ink-muted)]">
           {lang === "es" ? "Cargando base de datos…" : "Loading Data Hub…"}
         </p>
+      </div>
+    );
+  }
+
+  if (isMobile) {
+    return (
+      <div className="mps-crm mps-bg relative min-h-[100dvh]">
+        <MobileCrmShell
+          lang={lang}
+          section={section}
+          onNavigate={setSection}
+          onOpenProfile={() => setProfileOpen(true)}
+          onLangChange={setLang}
+          prefs={prefs}
+          onPrefsChange={setPrefs}
+        >
+          {sectionPanels}
+        </MobileCrmShell>
+        {user && (
+          <ProfileModal
+            open={profileOpen}
+            onClose={() => setProfileOpen(false)}
+            subject={user}
+            role={user.role}
+            lang={lang === "es" ? "es" : "en"}
+          />
+        )}
       </div>
     );
   }
@@ -3344,21 +3407,7 @@ export function MpsCrmApp() {
         />
 
         <main className="px-4 py-5 md:px-6 md:py-6">
-          {section === "hub" && <HubPanel lang={lang} />}
-          {section === "dashboard" && <DashboardPanel lang={lang} theme={theme} />}
-          {section === "leads" && <LeadsPanel lang={lang} />}
-          {section === "clientes" && <ClientsPanel lang={lang} />}
-          {section === "reservas" && <ReservationsPanel lang={lang} />}
-          {section === "facturas" && <InvoicesVerifactuPanel lang={lang} />}
-          {section === "contenido" && <ContentFactoryPanel lang={lang} />}
-          {section === "conocimiento" && <KnowledgePanel lang={lang} />}
-          {section === "automatizaciones" && <AutomationsPanel lang={lang} />}
-          {section === "propuesta" && <ProposalPanel lang={lang} />}
-          {section === "slides" && <SlidesPanel lang={lang} />}
-          {section === "ajustes" && (
-            <SettingsPanel lang={lang} onPrefsChange={setPrefs} />
-          )}
-          {section === "usuarios" && <UsersDirectoryPanel lang={lang} />}
+          {sectionPanels}
 
           <footer className="mt-8 flex flex-wrap items-center gap-2 border-t border-[var(--glass-border)] pt-4 text-xs text-[var(--ink-muted)]">
             <Lightbulb className="h-3.5 w-3.5" />

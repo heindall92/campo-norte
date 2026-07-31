@@ -2,6 +2,7 @@ import { N8nFlowBuilder } from "@/components/N8nFlowBuilder";
 import { blankReservation, ReservationFormModal } from "@/components/ReservationFormModal";
 import { EntityActionBar } from "@/components/EntityActionBar";
 import { WhatsAppSecureLink } from "@/components/WhatsAppSecureLink";
+import { showMobileTicket } from "@/lib/mobile-confirm";
 import {
   aiReady,
   providerLabel,
@@ -440,6 +441,20 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
     await hub.saveReservation(r);
     setOpenId(r.id);
     setModal(null);
+    showMobileTicket({
+      title: lang === "es" ? "Reserva confirmada" : "Booking confirmed",
+      subtitle: lang === "es" ? "Operación registrada" : "Operation recorded",
+      headline: r.tripName || r.clientName,
+      meta: r.clientName,
+      fields: [
+        { label: lang === "es" ? "Fecha" : "Date", value: r.startDate || "—" },
+        { label: lang === "es" ? "Ruta" : "Route", value: ROUTE_LABEL[r.route] || r.route },
+        { label: lang === "es" ? "Estado" : "Status", value: String(r.status || "—") },
+        { label: lang === "es" ? "Pago" : "Payment", value: String(r.paymentStatus || "—") },
+      ],
+      chips: [String(r.status), String(r.paymentStatus)].filter(Boolean),
+      primaryLabel: lang === "es" ? "Hecho" : "Done",
+    });
   }
 
   async function deleteReservation(id: string) {

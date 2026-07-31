@@ -12,9 +12,13 @@ export type AccentId =
   | "violet"
   | "cyan";
 
+export type ProfileLayoutId = "settings" | "hub";
+
 export interface UserPrefs {
   theme: UiTheme;
   accent: AccentId;
+  /** Vista del perfil móvil: lista Settings (A) o hub centrado (B). */
+  profileLayout: ProfileLayoutId;
 }
 
 const PREFS_PREFIX = "mps-user-prefs-v1:";
@@ -85,6 +89,7 @@ export const ACCENT_PALETTE: Record<
 export const DEFAULT_USER_PREFS: UserPrefs = {
   theme: "light",
   accent: "electric",
+  profileLayout: "hub",
 };
 
 function key(userId: string) {
@@ -102,7 +107,9 @@ export function loadUserPrefs(userId: string | undefined | null): UserPrefs {
       parsed.accent && parsed.accent in ACCENT_PALETTE
         ? parsed.accent
         : DEFAULT_USER_PREFS.accent;
-    return { theme, accent };
+    const profileLayout: ProfileLayoutId =
+      parsed.profileLayout === "settings" ? "settings" : "hub";
+    return { theme, accent, profileLayout };
   } catch {
     return { ...DEFAULT_USER_PREFS };
   }
