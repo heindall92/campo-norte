@@ -2,6 +2,7 @@ import { COMPANY } from "@/lib/assumptions";
 import { LOCAL_TEAM_USERS, useAuth } from "@/lib/auth";
 import { allowLocalDemoAuth, isProdBuild } from "@/lib/runtime";
 import { getSupabaseEnv } from "@/lib/supabase/client";
+import { ViewModePicker } from "@/components/ViewModePicker";
 import { Bike, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
@@ -180,6 +181,8 @@ export function LoginScreen() {
               </div>
             )}
           </form>
+
+          <ViewModePicker lang="es" variant="login" />
 
           <p className="mt-4 text-center text-xs text-white/80 sm:mt-6" style={{ color: "rgba(255,255,255,0.8)" }}>
             {COMPANY.tagline}

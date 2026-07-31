@@ -447,12 +447,18 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
       headline: r.tripName || r.clientName,
       meta: r.clientName,
       fields: [
-        { label: lang === "es" ? "Fecha" : "Date", value: r.startDate || "—" },
+        {
+          label: lang === "es" ? "Salida" : "Departure",
+          value: r.departureAt || r.bookedAt || "—",
+        },
         { label: lang === "es" ? "Ruta" : "Route", value: ROUTE_LABEL[r.route] || r.route },
         { label: lang === "es" ? "Estado" : "Status", value: String(r.status || "—") },
-        { label: lang === "es" ? "Pago" : "Payment", value: String(r.paymentStatus || "—") },
+        {
+          label: lang === "es" ? "Pago" : "Payment",
+          value: String(r.paymentChannel || "—"),
+        },
       ],
-      chips: [String(r.status), String(r.paymentStatus)].filter(Boolean),
+      chips: [String(r.status), String(r.paymentChannel), `${r.pax} pax`].filter(Boolean),
       primaryLabel: lang === "es" ? "Hecho" : "Done",
     });
   }

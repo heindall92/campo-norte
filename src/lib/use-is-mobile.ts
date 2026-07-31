@@ -1,19 +1,29 @@
 import { useEffect, useState } from "react";
+import {
+  loadViewMode,
+  resolveIsMobile,
+  VIEW_MODE_EVENT,
+  MOBILE_MQ,
+} from "@/lib/view-mode";
 
-/** Breakpoint alineado a “móvil / tablet estrecha” (CRM desktop sidebar no cabe bien). */
-export const MOBILE_MQ = "(max-width: 767px)";
+export { MOBILE_MQ } from "@/lib/view-mode";
 
+/** True cuando debe usarse el shell móvil (forzado o por breakpoint). */
 export function useIsMobile(): boolean {
   const [mobile, setMobile] = useState(() =>
-    typeof window !== "undefined" ? window.matchMedia(MOBILE_MQ).matches : false,
+    typeof window !== "undefined" ? resolveIsMobile() : false,
   );
 
   useEffect(() => {
+    const sync = () => setMobile(resolveIsMobile(loadViewMode()));
+    sync();
     const mq = window.matchMedia(MOBILE_MQ);
-    const onChange = () => setMobile(mq.matches);
-    onChange();
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
+    mq.addEventListener("change", sync);
+    window.addEventListener(VIEW_MODE_EVENT, sync);
+    return () => {
+      mq.removeEventListener("change", sync);
+      window.removeEventListener(VIEW_MODE_EVENT, sync);
+    };
   }, []);
 
   return mobile;

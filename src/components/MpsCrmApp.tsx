@@ -83,6 +83,7 @@ import {
 } from "@/components/OpsPanels";
 import { blankClient, ClientFormModal } from "@/components/ClientFormModal";
 import { AppearanceCard } from "@/components/AppearanceCard";
+import { ViewModePicker } from "@/components/ViewModePicker";
 import { ContentFactoryPanel } from "@/components/ContentFactoryPanel";
 import { ProfileModal } from "@/components/ProfileModal";
 import { SupportCard } from "@/components/SupportCard";
@@ -378,6 +379,7 @@ function SettingsPanel({
               onPrefsChange={onPrefsChange}
             />
           )}
+        <ViewModePicker lang={lang === "es" ? "es" : "en"} variant="inline" />
       </SettingsGroup>
 
       <SettingsGroup

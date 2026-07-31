@@ -8,6 +8,7 @@ import {
 import type { Lang } from "@/lib/i18n";
 import type { AppSection } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
+import { ViewModePicker } from "@/components/ViewModePicker";
 import {
   Bell,
   ChevronRight,
@@ -231,6 +232,7 @@ export function MobileProfileScreen({
           </button>
         </div>
         {layoutPicker}
+        <ViewModePicker lang={lang === "es" ? "es" : "en"} variant="inline" />
         {sharedRows}
       </div>
     );
@@ -256,6 +258,7 @@ export function MobileProfileScreen({
         </div>
       </div>
       {layoutPicker}
+      <ViewModePicker lang={lang === "es" ? "es" : "en"} variant="inline" />
       <div>
         <p className="mb-1.5 px-1 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
           {es ? "Cuenta" : "Account"}
