@@ -3,7 +3,7 @@ import { useDataHub } from "@/lib/data";
 import { useNotifications, type AppSection } from "@/lib/notifications";
 import { loadUserProfile } from "@/lib/user-profile";
 import type { UserPrefs } from "@/lib/user-prefs";
-import type { Lang } from "@/lib/i18n";
+import { t, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { showMobileSuccess } from "@/lib/mobile-confirm";
 import {
@@ -18,11 +18,16 @@ import { MobileHomeSummary } from "@/components/MobileHomeSummary";
 import { MobileClientsScreen } from "@/components/MobileClientsScreen";
 import { MobileBookingsScreen } from "@/components/MobileBookingsScreen";
 import { MobileLeadsScreen } from "@/components/MobileLeadsScreen";
+import { ClientFormModal, blankClient } from "@/components/ClientFormModal";
+import { ReservationFormModal, blankReservation } from "@/components/ReservationFormModal";
+import type { Client } from "@/lib/demo-data";
+import type { Reservation } from "@/lib/ops-data";
 import { SupportModal } from "@/components/SupportModal";
 import { UnreadDot } from "@/components/UnreadDot";
 import {
   Bell,
   BookOpen,
+  Layers,
   CalendarDays,
   ClipboardList,
   Database,
@@ -44,7 +49,7 @@ import {
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 const QUICK: {
-  id: AppSection | "more";
+  id: AppSection;
   labelEs: string;
   labelEn: string;
   icon: LucideIcon;
@@ -54,7 +59,6 @@ const QUICK: {
   { id: "reservas", labelEs: "Reservas", labelEn: "Bookings", icon: CalendarDays },
   { id: "clientes", labelEs: "Clientes", labelEn: "Clients", icon: Users },
   { id: "hub", labelEs: "Hub", labelEn: "Hub", icon: Database },
-  { id: "more", labelEs: "Más", labelEn: "More", icon: Plus },
 ];
 
 const MORE_SECTIONS: { id: AppSection; labelEs: string; labelEn: string; icon: LucideIcon }[] = [
@@ -66,6 +70,23 @@ const MORE_SECTIONS: { id: AppSection; labelEs: string; labelEn: string; icon: L
   { id: "slides", labelEs: "Presentación", labelEn: "Slides", icon: Presentation },
   { id: "ajustes", labelEs: "Ajustes", labelEn: "Settings", icon: Settings },
 ];
+
+/**
+ * Secciones cuya cabecera muestra el título: las pantallas nativas (leads,
+ * clientes, reservas) ya lo llevan dentro, y repetirlo sería redundante.
+ */
+const SECTION_TITLE_KEY: Partial<Record<AppSection, string>> = {
+  dashboard: "nav_dashboard",
+  hub: "nav_hub",
+  facturas: "nav_invoices",
+  contenido: "nav_content",
+  conocimiento: "nav_knowledge",
+  automatizaciones: "nav_automations",
+  propuesta: "nav_pitch",
+  slides: "nav_slides",
+  ajustes: "nav_settings",
+  usuarios: "nav_users",
+};
 
 type MobileTab = "home" | "clientes" | "reservas" | "cuenta";
 
@@ -98,6 +119,9 @@ export function MobileCrmShell({
   const [notifOpen, setNotifOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [createForm, setCreateForm] = useState<
+    { kind: "client"; data: Client } | { kind: "reservation"; data: Reservation } | null
+  >(null);
   const es = lang === "es";
 
   async function handleRefresh() {
@@ -120,6 +144,44 @@ export function MobileCrmShell({
       });
     } finally {
       setRefreshing(false);
+    }
+  }
+
+  async function saveNewClient(client: Client) {
+    try {
+      await hub.saveClient(client);
+      setCreateForm(null);
+      showMobileSuccess({
+        title: es ? "Cliente creado" : "Client created",
+        description: `${client.name} · ${es ? "ya está en el Hub" : "is now in the Hub"}`,
+      });
+    } catch {
+      showMobileSuccess({
+        title: es ? "No se pudo guardar" : "Could not save",
+        description: es
+          ? "Revisa la conexión o el Data Hub."
+          : "Check your connection or the Data Hub.",
+      });
+    }
+  }
+
+  async function saveNewReservation(reservation: Reservation) {
+    try {
+      await hub.saveReservation(reservation);
+      setCreateForm(null);
+      showMobileSuccess({
+        title: es ? "Reserva creada" : "Booking created",
+        description: `${reservation.clientName || reservation.id} · ${
+          es ? "ya está en el Hub" : "is now in the Hub"
+        }`,
+      });
+    } catch {
+      showMobileSuccess({
+        title: es ? "No se pudo guardar" : "Could not save",
+        description: es
+          ? "Revisa la conexión o el Data Hub."
+          : "Check your connection or the Data Hub.",
+      });
     }
   }
 
@@ -172,16 +234,12 @@ export function MobileCrmShell({
 
   const quickItems = useMemo(() => {
     if (!user) return QUICK;
-    return QUICK.filter(
-      (q) => q.id === "more" || canAccessSection(user.role, q.id as AppSection),
-    );
+    return QUICK.filter((q) => canAccessSection(user.role, q.id));
   }, [user]);
 
   const moreItems = useMemo(() => {
     if (!user) return MORE_SECTIONS;
-    const quickIds = new Set(
-      QUICK.filter((q) => q.id !== "more").map((q) => q.id as AppSection),
-    );
+    const quickIds = new Set(QUICK.map((q) => q.id));
     return MORE_SECTIONS.filter(
       (m) => !quickIds.has(m.id) && canAccessSection(user.role, m.id),
     );
@@ -196,6 +254,17 @@ export function MobileCrmShell({
   });
   const displayName = profile.fullName.trim() || user.name;
   const firstName = displayName.split(" ")[0];
+
+  const sectionTitleKey = SECTION_TITLE_KEY[section];
+  const headerTitle = cuentaOpen
+    ? es
+      ? "Cuenta"
+      : "Account"
+    : sectionTitleKey
+      ? t(lang, sectionTitleKey)
+      : "";
+  const canCreate =
+    !showHome && !cuentaOpen && (section === "clientes" || section === "reservas");
 
   // Sin pestaña marcada cuando la sección abierta no es ninguna de las cuatro
   // (leads, facturas…): marcar «Inicio» ahí mentiría sobre dónde estás.
@@ -253,6 +322,25 @@ export function MobileCrmShell({
         onClose={() => setSupportOpen(false)}
         lang={lang}
       />
+      {createForm?.kind === "client" && (
+        <ClientFormModal
+          lang={lang}
+          mode="create"
+          initial={createForm.data}
+          onClose={() => setCreateForm(null)}
+          onSave={(client) => void saveNewClient(client)}
+        />
+      )}
+      {createForm?.kind === "reservation" && (
+        <ReservationFormModal
+          lang={lang}
+          mode="create"
+          initial={createForm.data}
+          onClose={() => setCreateForm(null)}
+          onSave={(reservation) => void saveNewReservation(reservation)}
+        />
+      )}
+
       <MobileNotificationsSheet
         open={notifOpen}
         onClose={() => setNotifOpen(false)}
@@ -263,9 +351,9 @@ export function MobileCrmShell({
         }}
       />
 
-      {!cuentaOpen && (
-        <header className="sticky top-0 z-40 border-b border-[color-mix(in_oklab,var(--ink)_6%,transparent)] bg-[color-mix(in_oklab,var(--bg0)_92%,white)] px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-xl">
-          <div className="flex items-center justify-between gap-3">
+      <header className="sticky top-0 z-40 border-b border-[color-mix(in_oklab,var(--ink)_6%,transparent)] bg-[color-mix(in_oklab,var(--bg0)_92%,white)] px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-xl">
+        <div className="flex items-center justify-between gap-3">
+          {showHome ? (
             <button
               type="button"
               onClick={() => {
@@ -290,7 +378,16 @@ export function MobileCrmShell({
                 </span>
               </span>
             </button>
-            <div className="flex items-center gap-2">
+          ) : headerTitle ? (
+            <p className="min-h-11 min-w-0 flex-1 truncate py-2 font-[family-name:var(--mps-display)] text-xl text-[var(--ink)]">
+              {headerTitle}
+            </p>
+          ) : (
+            <span className="min-h-11 flex-1" aria-hidden />
+          )}
+
+          <div className="flex items-center gap-2">
+            {showHome && (
               <button
                 type="button"
                 aria-label={es ? "Recargar Hub" : "Refresh Hub"}
@@ -303,22 +400,58 @@ export function MobileCrmShell({
                   className={cn("h-5 w-5", refreshing && "animate-spin text-[var(--accent)]")}
                 />
               </button>
+            )}
+
+            {/* Alta rápida donde tiene sentido crear: cliente y reserva */}
+            {canCreate && (
               <button
                 type="button"
-                aria-label={es ? "Notificaciones" : "Notifications"}
-                onClick={openNotifications}
-                className="relative flex h-11 w-11 items-center justify-center rounded-full bg-[var(--field-bg)] text-[var(--ink)] shadow-sm"
+                aria-label={
+                  section === "clientes"
+                    ? es
+                      ? "Nuevo cliente"
+                      : "New client"
+                    : es
+                      ? "Nueva reserva"
+                      : "New booking"
+                }
+                title={
+                  section === "clientes"
+                    ? es
+                      ? "Nuevo cliente"
+                      : "New client"
+                    : es
+                      ? "Nueva reserva"
+                      : "New booking"
+                }
+                onClick={() =>
+                  setCreateForm(
+                    section === "clientes"
+                      ? { kind: "client", data: blankClient() }
+                      : { kind: "reservation", data: blankReservation() },
+                  )
+                }
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--accent)] text-white shadow-sm"
               >
-                <Bell className="h-5 w-5" />
-                {unreadCount > 0 && <UnreadDot className="right-2.5 top-2.5" />}
+                <Plus className="h-5 w-5" />
               </button>
-            </div>
+            )}
+
+            <button
+              type="button"
+              aria-label={es ? "Notificaciones" : "Notifications"}
+              onClick={openNotifications}
+              className="relative flex h-11 w-11 items-center justify-center rounded-full bg-[var(--field-bg)] text-[var(--ink)] shadow-sm"
+            >
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && <UnreadDot className="right-2.5 top-2.5" />}
+            </button>
           </div>
-        </header>
-      )}
+        </div>
+      </header>
 
       {cuentaOpen ? (
-        <div className="px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]">
+        <div className="px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-3">
           <MobileProfileScreen
             lang={lang}
             prefs={prefs}
@@ -346,18 +479,8 @@ export function MobileCrmShell({
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => {
-                    if (item.id === "more") {
-                      setMoreOpen(true);
-                      return;
-                    }
-                    openSection(item.id);
-                  }}
-                  className={cn(
-                    "flex min-h-[5.5rem] flex-col items-center justify-center gap-1.5 rounded-[1.15rem] bg-[var(--field-bg)] px-1 py-3 shadow-sm",
-                    item.id === "more" &&
-                      "outline outline-1 outline-dashed outline-[var(--accent)]",
-                  )}
+                  onClick={() => openSection(item.id)}
+                  className="flex min-h-[5.5rem] flex-col items-center justify-center gap-1.5 rounded-[1.15rem] bg-[var(--field-bg)] px-1 py-3 shadow-sm"
                 >
                   <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[color-mix(in_oklab,var(--accent)_16%,transparent)] text-[var(--accent)]">
                     <Icon className="h-5 w-5" />
@@ -476,6 +599,17 @@ export function MobileCrmShell({
             onClick={() => go("clientes")}
             icon={Users}
           />
+          {/* Acción, no pestaña: elevada y sin estado activo, para que no se
+              confunda «abrir módulos» con «estoy en esta sección». */}
+          <button
+            type="button"
+            aria-label={es ? "Módulos" : "Modules"}
+            title={es ? "Módulos" : "Modules"}
+            onClick={() => setMoreOpen(true)}
+            className="-mt-6 flex h-14 w-14 shrink-0 items-center justify-center self-center rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent-2)] text-white shadow-[0_10px_24px_color-mix(in_oklab,var(--accent)_45%,transparent)] ring-4 ring-[var(--bg0)] transition active:scale-95"
+          >
+            <Layers className="h-6 w-6" />
+          </button>
           <NavItem
             active={activeTab === "reservas"}
             label={es ? "Reservas" : "Bookings"}
