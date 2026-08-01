@@ -15,6 +15,7 @@ import type { Lang } from "@/lib/i18n";
 import { ProfileModal } from "@/components/ProfileModal";
 import { AccountUsersCard } from "@/components/AccountUsersCard";
 import { showMobileTicket } from "@/lib/mobile-confirm";
+import { useIsMobile } from "@/lib/use-is-mobile";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, Plus, RefreshCw, Shield } from "lucide-react";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
@@ -29,6 +30,7 @@ const labelCls = "block text-xs font-semibold uppercase tracking-wide text-[var(
  */
 export function UsersDirectoryPanel({ lang }: { lang: Lang }) {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const canManage = canManageCrmUsers(user?.role);
   const localMode = user?.provider === "local";
 
@@ -109,10 +111,18 @@ export function UsersDirectoryPanel({ lang }: { lang: Lang }) {
 
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="font-[family-name:var(--mps-display)] text-2xl text-[var(--ink)]">
-            {lang === "es" ? "Usuarios y roles" : "Users & roles"}
-          </h2>
-          <p className="mt-1 max-w-xl text-sm text-[var(--ink-muted)] text-pretty">
+          {/* En móvil el shell ya muestra el título de sección. */}
+          {!isMobile && (
+            <h2 className="font-[family-name:var(--mps-display)] text-2xl text-[var(--ink)]">
+              {lang === "es" ? "Usuarios y roles" : "Users & roles"}
+            </h2>
+          )}
+          <p
+            className={cn(
+              "max-w-xl text-sm text-[var(--ink-muted)] text-pretty",
+              !isMobile && "mt-1",
+            )}
+          >
             {lang === "es"
               ? "Base de sesiones del equipo. Cada rol limita el menú. El perfil personal de cada uno solo lo ve el propio usuario o Admin."
               : "Team session directory. Each role limits the menu. Personal profiles are only visible to the owner or Admin."}

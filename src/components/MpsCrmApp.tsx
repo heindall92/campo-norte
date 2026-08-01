@@ -1024,10 +1024,13 @@ function SettingsPanel({
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8">
-      <header className="space-y-1">
-        <h2 className="font-[family-name:var(--mps-display)] text-2xl text-[var(--ink)] md:text-3xl">
-          {lang === "es" ? "Ajustes" : "Settings"}
-        </h2>
+      {/* En móvil el shell ya muestra «Ajustes»: no repetir el H2. */}
+      <header className={cn("space-y-1", isMobile && "space-y-0")}>
+        {!isMobile && (
+          <h2 className="font-[family-name:var(--mps-display)] text-2xl text-[var(--ink)] md:text-3xl">
+            {lang === "es" ? "Ajustes" : "Settings"}
+          </h2>
+        )}
         <p className="max-w-3xl text-sm text-[var(--ink-muted)] text-pretty">
           {lang === "es"
             ? "Preferencias personales, seguridad, negocio e integraciones. La cuenta y los usuarios del equipo viven en Usuarios y roles."
@@ -1042,6 +1045,7 @@ function SettingsPanel({
 
 function HubPanel({ lang }: { lang: Lang }) {
   const hub = useDataHub();
+  const isMobile = useIsMobile();
   const { sorted } = computeLeadStats(hub.leads);
   const leadsFileRef = useRef<HTMLInputElement>(null);
   const clientsFileRef = useRef<HTMLInputElement>(null);
@@ -1098,7 +1102,10 @@ function HubPanel({ lang }: { lang: Lang }) {
 
   return (
     <div className="space-y-5">
-      <Card title={t(lang, "hub_title")} subtitle={t(lang, "hub_sub")}>
+      <Card
+        title={isMobile ? undefined : t(lang, "hub_title")}
+        subtitle={t(lang, "hub_sub")}
+      >
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <Badge tone={hub.mode === "supabase" ? "good" : "brand"}>
             {hub.mode === "supabase" ? (
@@ -1483,6 +1490,7 @@ function HubPanel({ lang }: { lang: Lang }) {
 
 function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
   const hub = useDataHub();
+  const isMobile = useIsMobile();
   const { leads } = hub;
   const margins = routeMargins();
   const origins = computeOriginFromLeads(leads);
@@ -1524,21 +1532,34 @@ function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
   }));
 
   return (
-    <div className="space-y-5">
-      <div className="glass-panel rounded-2xl p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--ink-muted)]">
-          {t(lang, "nav_dashboard")}
-        </p>
-        <h2 className="mt-2 font-[family-name:var(--mps-display)] text-3xl text-[var(--ink)] md:text-4xl">
+    <div className={cn("space-y-5", isMobile && "space-y-3")}>
+      <div className={cn("glass-panel rounded-2xl p-6", isMobile && "p-3.5")}>
+        {/* Shell móvil ya muestra «Cuadro de mando»: no repetir el eyebrow. */}
+        {!isMobile && (
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--ink-muted)]">
+            {t(lang, "nav_dashboard")}
+          </p>
+        )}
+        <h2
+          className={cn(
+            "font-[family-name:var(--mps-display)] text-[var(--ink)]",
+            isMobile ? "text-xl leading-tight" : "mt-2 text-3xl md:text-4xl",
+          )}
+        >
           {t(lang, "dash_title", {
             from: euro(MPS_ANNEX.revenueCurrent, lang),
             to: euro(MPS_ANNEX.revenueTarget2027, lang),
           })}
         </h2>
-        <p className="mt-2 max-w-3xl text-sm text-[var(--ink-muted)] md:text-base">
+        <p
+          className={cn(
+            "mt-2 max-w-3xl text-[var(--ink-muted)]",
+            isMobile ? "text-xs leading-snug text-pretty" : "text-sm md:text-base",
+          )}
+        >
           {t(lang, "dash_sub")}
         </p>
-        <div className="mt-4 h-3 overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--ink)_12%,transparent)]">
+        <div className={cn("mt-4 h-3 overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--ink)_12%,transparent)]", isMobile && "mt-3 h-2")}>
           <div
             className="h-full rounded-full"
             style={{
@@ -1547,11 +1568,22 @@ function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
             }}
           />
         </div>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Kpi label={t(lang, "ytd")} value={euro(progress.ytd, lang)} />
-          <Kpi label={t(lang, "pace")} value={euro(progress.pace, lang)} hint="YTD × 12/7" />
-          <Kpi label={t(lang, "gap")} value={euro(progress.gap, lang)} />
+        <div
+          className={cn(
+            "mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4",
+            isMobile && "mt-3 grid-cols-2 gap-2",
+          )}
+        >
+          <Kpi compact={isMobile} label={t(lang, "ytd")} value={euro(progress.ytd, lang)} />
           <Kpi
+            compact={isMobile}
+            label={t(lang, "pace")}
+            value={euro(progress.pace, lang)}
+            hint="YTD × 12/7"
+          />
+          <Kpi compact={isMobile} label={t(lang, "gap")} value={euro(progress.gap, lang)} />
+          <Kpi
+            compact={isMobile}
             label={t(lang, "travelers")}
             value={`${MPS_ANNEX.travelersCurrent}→${MPS_ANNEX.travelersTarget} · ${MPS_ANNEX.departuresCurrent}→${MPS_ANNEX.departuresTarget}`}
           />

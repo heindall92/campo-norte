@@ -9,12 +9,11 @@ import {
   type UserPrefs,
 } from "@/lib/user-prefs";
 import type { Lang } from "@/lib/i18n";
-import { useNotifications, type AppSection } from "@/lib/notifications";
+import type { AppSection } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
 import { AppleSwitch } from "@/components/AppleSwitch";
 import { ViewModePicker } from "@/components/ViewModePicker";
 import { SupportModal } from "@/components/SupportModal";
-import { UnreadDot } from "@/components/UnreadDot";
 import {
   Bell,
   ChevronDown,
@@ -96,7 +95,6 @@ export function MobileProfileScreen({
   onLangChange: (l: Lang) => void;
 }) {
   const { user, signOut } = useAuth();
-  const { unreadCount } = useNotifications();
   const [layout, setLayout] = useState<ProfileLayoutId>(prefs.profileLayout);
   const [themeOpen, setThemeOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
@@ -170,151 +168,135 @@ export function MobileProfileScreen({
     ? layout
     : "settings";
 
-  const sharedRows = (
-    <>
-      <Card title={es ? "Ajustes" : "Settings"}>
-        <Row
-          icon={Globe}
-          label={es ? "Idioma" : "Language"}
-          value={lang === "es" ? "Español" : "English"}
-          onClick={toggleLang}
-        />
-        <div>
-          <button
-            type="button"
-            onClick={() => setThemeOpen((o) => !o)}
-            className="flex w-full items-center gap-3 px-4 py-3.5 text-left text-[var(--ink)] active:bg-[var(--field-bg)]"
-            aria-expanded={themeOpen}
-          >
-            <Palette className="h-5 w-5 shrink-0 text-[var(--ink)]" strokeWidth={1.75} />
-            <span className="min-w-0 flex-1 text-sm font-semibold">
-              {es ? "Tema" : "Theme"}
-            </span>
-            <span className="shrink-0 text-sm text-[var(--ink-muted)]">
-              {prefs.theme === "light" ? (es ? "Claro" : "Light") : es ? "Oscuro" : "Dark"}
-            </span>
-            <ChevronDown
-              className={cn(
-                "h-4 w-4 shrink-0 text-[var(--ink-muted)] transition-transform duration-200",
-                themeOpen && "rotate-180",
-              )}
-            />
-          </button>
-          {themeOpen && (
-            <div className="space-y-4 border-t border-[color-mix(in_oklab,var(--ink)_8%,transparent)] bg-[color-mix(in_oklab,var(--ink)_2%,transparent)] px-4 py-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold text-[var(--ink)]">
-                    {es ? "Modo oscuro" : "Dark mode"}
-                  </p>
-                  <p className="text-xs text-[var(--ink-muted)]">
-                    {prefs.theme === "dark"
-                      ? es
-                        ? "Oscuro activo"
-                        : "Dark on"
-                      : es
-                        ? "Claro activo"
-                        : "Light on"}
-                  </p>
-                </div>
-                <AppleSwitch
-                  checked={prefs.theme === "dark"}
-                  label={es ? "Modo oscuro" : "Dark mode"}
-                  onChange={(on) => persistPrefs({ theme: on ? "dark" : "light" })}
-                />
-              </div>
+  const preferencesCard = (
+    <Card>
+      <Row
+        icon={Globe}
+        label={es ? "Idioma" : "Language"}
+        value={lang === "es" ? "Español" : "English"}
+        onClick={toggleLang}
+      />
+      <div>
+        <button
+          type="button"
+          onClick={() => setThemeOpen((o) => !o)}
+          className="flex w-full items-center gap-3 px-4 py-3.5 text-left text-[var(--ink)] active:bg-[var(--field-bg)]"
+          aria-expanded={themeOpen}
+        >
+          <Palette className="h-5 w-5 shrink-0 text-[var(--ink)]" strokeWidth={1.75} />
+          <span className="min-w-0 flex-1 text-sm font-semibold">
+            {es ? "Tema" : "Theme"}
+          </span>
+          <span className="shrink-0 text-sm text-[var(--ink-muted)]">
+            {prefs.theme === "light" ? (es ? "Claro" : "Light") : es ? "Oscuro" : "Dark"}
+          </span>
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 shrink-0 text-[var(--ink-muted)] transition-transform duration-200",
+              themeOpen && "rotate-180",
+            )}
+          />
+        </button>
+        {themeOpen && (
+          <div className="space-y-4 border-t border-[color-mix(in_oklab,var(--ink)_8%,transparent)] bg-[color-mix(in_oklab,var(--ink)_2%,transparent)] px-4 py-4">
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
-                  {es ? "Color de acento" : "Accent color"}
+                <p className="text-sm font-semibold text-[var(--ink)]">
+                  {es ? "Modo oscuro" : "Dark mode"}
                 </p>
-                <div className="grid grid-cols-4 gap-3">
-                  {(Object.keys(ACCENT_PALETTE) as AccentId[]).map((id) => {
-                    const pal = ACCENT_PALETTE[id];
-                    const swatch = prefs.theme === "light" ? pal.light : pal.dark;
-                    const active = prefs.accent === id;
-                    return (
-                      <button
-                        key={id}
-                        type="button"
-                        title={pal.label}
-                        onClick={() => persistPrefs({ accent: id })}
-                        className="flex flex-col items-center gap-1"
-                      >
-                        <span
-                          className={cn(
-                            "h-9 w-9 rounded-full transition",
-                            active &&
-                              "ring-2 ring-[var(--ink)] ring-offset-2 ring-offset-[var(--glass-strong)]",
-                          )}
-                          style={{
-                            background: swatch,
-                            boxShadow: active
-                              ? `0 0 14px ${swatch}`
-                              : `0 0 8px color-mix(in srgb, ${swatch} 50%, transparent)`,
-                          }}
-                        />
-                        <span className="text-[10px] font-semibold leading-tight text-[var(--ink-muted)]">
-                          {pal.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
+                <p className="text-xs text-[var(--ink-muted)]">
+                  {prefs.theme === "dark"
+                    ? es
+                      ? "Oscuro activo"
+                      : "Dark on"
+                    : es
+                      ? "Claro activo"
+                      : "Light on"}
+                </p>
+              </div>
+              <AppleSwitch
+                checked={prefs.theme === "dark"}
+                label={es ? "Modo oscuro" : "Dark mode"}
+                onChange={(on) => persistPrefs({ theme: on ? "dark" : "light" })}
+              />
+            </div>
+            <div>
+              <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+                {es ? "Color de acento" : "Accent color"}
+              </p>
+              <div className="grid grid-cols-4 gap-3">
+                {(Object.keys(ACCENT_PALETTE) as AccentId[]).map((id) => {
+                  const pal = ACCENT_PALETTE[id];
+                  const swatch = prefs.theme === "light" ? pal.light : pal.dark;
+                  const active = prefs.accent === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      title={pal.label}
+                      onClick={() => persistPrefs({ accent: id })}
+                      className="flex flex-col items-center gap-1"
+                    >
+                      <span
+                        className={cn(
+                          "h-9 w-9 rounded-full transition",
+                          active &&
+                            "ring-2 ring-[var(--ink)] ring-offset-2 ring-offset-[var(--glass-strong)]",
+                        )}
+                        style={{
+                          background: swatch,
+                          boxShadow: active
+                            ? `0 0 14px ${swatch}`
+                            : `0 0 8px color-mix(in srgb, ${swatch} 50%, transparent)`,
+                        }}
+                      />
+                      <span className="text-[10px] font-semibold leading-tight text-[var(--ink-muted)]">
+                        {pal.label}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          )}
-        </div>
-        <Row
-          icon={Bell}
-          label={es ? "Notificaciones" : "Notifications"}
-          value={es ? "Activas" : "On"}
-          onClick={() => onOpenNotifications?.()}
-        />
-        <Row
-          icon={CircleHelp}
-          label={es ? "Soporte" : "Support"}
-          onClick={() => setSupportOpen(true)}
-        />
-        <Row
-          icon={Settings}
-          label={es ? "Ajustes del negocio" : "Business settings"}
-          onClick={() => onNavigate("ajustes")}
-        />
-        {showUsers && (
-          <Row
-            icon={UsersRound}
-            label={es ? "Usuarios y roles" : "Users & roles"}
-            onClick={() => onNavigate("usuarios")}
-          />
+          </div>
         )}
-      </Card>
-      <Card>
+      </div>
+      <Row
+        icon={Bell}
+        label={es ? "Notificaciones" : "Notifications"}
+        value={es ? "Activas" : "On"}
+        onClick={() => onOpenNotifications?.()}
+      />
+      <Row
+        icon={CircleHelp}
+        label={es ? "Soporte" : "Support"}
+        onClick={() => setSupportOpen(true)}
+      />
+      <Row
+        icon={Settings}
+        label={es ? "Ajustes del negocio" : "Business settings"}
+        onClick={() => onNavigate("ajustes")}
+      />
+      {showUsers && (
         <Row
-          icon={Shield}
-          label={es ? "Contraseña y seguridad" : "Password & security"}
-          value={es ? "Próximamente" : "Soon"}
-          disabled
+          icon={UsersRound}
+          label={es ? "Usuarios y roles" : "Users & roles"}
+          onClick={() => onNavigate("usuarios")}
         />
-        <Row
-          icon={LogOut}
-          label={es ? "Cerrar sesión" : "Sign out"}
-          danger
-          onClick={() => void signOut()}
-        />
-      </Card>
-    </>
+      )}
+    </Card>
   );
 
-  const notifBtn = (
-    <button
-      type="button"
-      aria-label={es ? "Notificaciones" : "Notifications"}
-      onClick={() => onOpenNotifications?.()}
-      className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--field-bg)] text-[var(--ink)] shadow-sm"
-    >
-      <Bell className="h-5 w-5" />
-      {unreadCount > 0 && <UnreadDot className="right-2.5 top-2.5 ring-white dark:ring-[var(--glass-strong)]" />}
-    </button>
+  /** Tarjeta aparte (con hueco) para no pegarla a Preferencias. */
+  const sessionCard = (
+    <Card>
+      <Row
+        icon={LogOut}
+        label={es ? "Cerrar sesión" : "Sign out"}
+        danger
+        onClick={() => void signOut()}
+      />
+    </Card>
   );
 
   // Layout B — hub centrado (conservado; oculto salvo PROFILE_LAYOUT_B_ENABLED)
@@ -323,7 +305,6 @@ export function MobileProfileScreen({
       <>
         <div className="space-y-4 pb-2">
           <div className="relative flex flex-col items-center pt-2 text-center">
-            <div className="absolute right-0 top-0">{notifBtn}</div>
             <span className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-[var(--accent)] text-xl font-bold text-white shadow-md">
               {profile.avatarDataUrl ? (
                 <img src={profile.avatarDataUrl} alt="" className="h-full w-full object-cover" />
@@ -343,20 +324,21 @@ export function MobileProfileScreen({
           </div>
           {layoutPicker}
           <ViewModePicker lang={lang === "es" ? "es" : "en"} variant="inline" />
-          {sharedRows}
+          <div className="space-y-4">
+            {preferencesCard}
+            {sessionCard}
+          </div>
         </div>
         <SupportModal open={supportOpen} onClose={() => setSupportOpen(false)} lang={lang} />
       </>
     );
   }
 
-  // Layout A — lista tipo Settings (activa en móvil)
+  // Layout A — lista tipo Settings (activa en móvil).
+  // Título «Cuenta» y campana viven en el shell: no repetir «Perfil» ni otra campana.
   return (
     <>
       <div className="space-y-4 pb-2">
-        <h1 className="text-center text-lg font-bold text-[var(--ink)]">
-          {es ? "Perfil" : "Profile"}
-        </h1>
         <div className="flex items-center gap-3 rounded-[1.25rem] bg-white p-4 shadow-sm dark:bg-[var(--glass-strong)]">
           <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent)] text-base font-bold text-white">
             {profile.avatarDataUrl ? (
@@ -369,7 +351,6 @@ export function MobileProfileScreen({
             <p className="truncate font-bold text-[var(--ink)]">{displayName}</p>
             <p className="truncate text-sm text-[var(--ink-muted)]">{user.email}</p>
           </div>
-          {notifBtn}
         </div>
         {layoutPicker}
         <ViewModePicker lang={lang === "es" ? "es" : "en"} variant="inline" />
@@ -391,7 +372,13 @@ export function MobileProfileScreen({
           <p className="mb-1.5 px-1 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
             {es ? "Preferencias" : "Preferences"}
           </p>
-          {sharedRows}
+          {preferencesCard}
+        </div>
+        <div>
+          <p className="mb-1.5 px-1 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+            {es ? "Sesión" : "Session"}
+          </p>
+          {sessionCard}
         </div>
       </div>
       <SupportModal open={supportOpen} onClose={() => setSupportOpen(false)} lang={lang} />

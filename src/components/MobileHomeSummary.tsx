@@ -190,15 +190,17 @@ function KpiCard({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-[6.5rem] flex-col gap-1.5 rounded-[1.25rem] border border-[color-mix(in_oklab,var(--ink)_8%,transparent)] bg-[var(--glass-strong)] p-3.5 shadow-sm">
-      <p className="text-[11px] font-semibold text-[var(--ink-muted)]">{label}</p>
-      <p className="flex items-baseline gap-0.5 text-[1.6rem] font-bold leading-none tracking-tight text-[var(--ink)] tabular-nums">
+    <div className="flex min-h-[6.25rem] flex-col gap-1 rounded-[1.25rem] border border-[color-mix(in_oklab,var(--ink)_8%,transparent)] bg-[var(--glass-strong)] p-3 shadow-sm">
+      <p className="text-[10.5px] font-semibold leading-snug text-[var(--ink-muted)] text-pretty">
+        {label}
+      </p>
+      <p className="flex items-baseline gap-0.5 text-[1.55rem] font-bold leading-none tracking-tight text-[var(--ink)] tabular-nums">
         {value}
         {unit && (
           <span className="text-sm font-semibold text-[var(--ink-muted)]">{unit}</span>
         )}
       </p>
-      <div className="mt-auto flex flex-col gap-1.5">{children}</div>
+      <div className="mt-auto flex w-full min-w-0 flex-col gap-1.5">{children}</div>
     </div>
   );
 }
@@ -226,14 +228,14 @@ function KpiFoot({
   return (
     <span
       className={cn(
-        "flex items-start gap-1 text-[11px] font-semibold leading-tight",
+        "flex w-full min-w-0 items-start gap-1 text-[10.5px] font-semibold leading-snug",
         tone === "ok" && "text-[var(--ok)]",
         tone === "warn" && "text-[var(--warn-ink)]",
         tone === "muted" && "text-[var(--ink-muted)]",
       )}
     >
-      <Icon className="mt-px h-3 w-3 shrink-0" />
-      <span className="min-w-0">{children}</span>
+      <Icon className="mt-0.5 h-3 w-3 shrink-0" />
+      <span className="min-w-0 flex-1 text-pretty [overflow-wrap:anywhere]">{children}</span>
     </span>
   );
 }
@@ -412,9 +414,19 @@ export function MobileHomeSummary({
           value={String(summary.leadsThisWeek)}
         >
           <KpiFoot icon={TrendingUp} tone={summary.leadsThisWeek > 0 ? "ok" : "muted"}>
-            {es
-              ? `${summary.leadsTotal} en cola · origen conocido ${summary.originPct} %`
-              : `${summary.leadsTotal} in queue · ${summary.originPct}% with source`}
+            {es ? (
+              <>
+                <span className="whitespace-nowrap">{summary.leadsTotal} en cola</span>
+                <span aria-hidden> · </span>
+                <span className="whitespace-nowrap">origen {summary.originPct}%</span>
+              </>
+            ) : (
+              <>
+                <span className="whitespace-nowrap">{summary.leadsTotal} in queue</span>
+                <span aria-hidden> · </span>
+                <span className="whitespace-nowrap">source {summary.originPct}%</span>
+              </>
+            )}
           </KpiFoot>
         </KpiCard>
 
