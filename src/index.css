@@ -173,6 +173,26 @@ html[data-theme="dark"] .glass-panel {
   color: var(--ink-muted);
 }
 
+/* Hoja inferior móvil: entra desde abajo con muelle suave */
+@keyframes mps-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mps-mobile *,
+  .mps-mobile *::before,
+  .mps-mobile *::after,
+  [role="dialog"] {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
 @keyframes notif-blink {
   0%,
   100% {

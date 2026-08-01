@@ -15,6 +15,9 @@ import { MobileConfirmHost } from "@/components/MobileConfirmHost";
 import { MobileNotificationsSheet } from "@/components/MobileNotificationsSheet";
 import { MobileEcosystemCarousel } from "@/components/MobileEcosystemCarousel";
 import { MobileHomeSummary } from "@/components/MobileHomeSummary";
+import { MobileClientsScreen } from "@/components/MobileClientsScreen";
+import { MobileBookingsScreen } from "@/components/MobileBookingsScreen";
+import { MobileLeadsScreen } from "@/components/MobileLeadsScreen";
 import { SupportModal } from "@/components/SupportModal";
 import { UnreadDot } from "@/components/UnreadDot";
 import {
@@ -194,11 +197,13 @@ export function MobileCrmShell({
   const displayName = profile.fullName.trim() || user.name;
   const firstName = displayName.split(" ")[0];
 
-  let activeTab: MobileTab = "home";
+  // Sin pestaña marcada cuando la sección abierta no es ninguna de las cuatro
+  // (leads, facturas…): marcar «Inicio» ahí mentiría sobre dónde estás.
+  let activeTab: MobileTab | null = null;
   if (cuentaOpen) activeTab = "cuenta";
-  else if (!showHome && section === "clientes") activeTab = "clientes";
-  else if (!showHome && section === "reservas") activeTab = "reservas";
   else if (showHome) activeTab = "home";
+  else if (section === "clientes") activeTab = "clientes";
+  else if (section === "reservas") activeTab = "reservas";
 
   function go(tab: MobileTab) {
     setMoreOpen(false);
@@ -371,6 +376,18 @@ export function MobileCrmShell({
             onOpenSettings={() => openSection("ajustes")}
           />
         </div>
+      ) : section === "clientes" ? (
+        <main className="px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-2">
+          <MobileClientsScreen lang={lang} />
+        </main>
+      ) : section === "reservas" ? (
+        <main className="px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-2">
+          <MobileBookingsScreen lang={lang} />
+        </main>
+      ) : section === "leads" ? (
+        <main className="px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-2">
+          <MobileLeadsScreen lang={lang} />
+        </main>
       ) : (
         <main className="px-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-3">
           <div className="overflow-x-auto overflow-y-visible rounded-[1.25rem] border border-[color-mix(in_oklab,var(--ink)_8%,transparent)] bg-[var(--glass-strong)] p-2 shadow-sm sm:p-3">
