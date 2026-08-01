@@ -116,13 +116,13 @@ export interface BusinessKpiSnapshot {
   display: string;
 }
 
-function avgOccupancyPct(expeditions: Expedition[]): number {
+export function avgOccupancyPct(expeditions: Expedition[]): number {
   if (!expeditions.length) return 0;
   const sum = expeditions.reduce((s, e) => s + (e.seats ? e.booked / e.seats : 0), 0);
   return Math.round((sum / expeditions.length) * 100);
 }
 
-function avgMarginPct(expeditions: Expedition[]): number {
+export function avgMarginPct(expeditions: Expedition[]): number {
   if (!expeditions.length) return 0;
   const sum = expeditions.reduce((s, e) => {
     if (!e.revenue) return s;

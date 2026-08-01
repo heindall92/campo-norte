@@ -14,10 +14,10 @@ import { MobileProfileScreen } from "@/components/MobileProfileScreen";
 import { MobileConfirmHost } from "@/components/MobileConfirmHost";
 import { MobileNotificationsSheet } from "@/components/MobileNotificationsSheet";
 import { MobileEcosystemCarousel } from "@/components/MobileEcosystemCarousel";
+import { MobileHomeSummary } from "@/components/MobileHomeSummary";
 import { SupportModal } from "@/components/SupportModal";
 import { UnreadDot } from "@/components/UnreadDot";
 import {
-  ArrowRight,
   Bell,
   BookOpen,
   CalendarDays,
@@ -329,24 +329,7 @@ export function MobileCrmShell({
         </div>
       ) : showHome ? (
         <div className="px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-3">
-          <div className="relative overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-[var(--accent)] to-[var(--accent-2)] p-5 text-white shadow-lg">
-            <p className="text-lg font-bold leading-tight">
-              {es ? "¿Listo para gestionar el día?" : "Ready to run the day?"}
-            </p>
-            <p className="mt-1 max-w-[90%] text-sm text-white/90 text-pretty">
-              {es
-                ? "Accesos rápidos a lo que más usas en campo."
-                : "Quick access to what you use most in the field."}
-            </p>
-            <button
-              type="button"
-              onClick={() => openSection("reservas")}
-              className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-bold text-[var(--accent)]"
-            >
-              {es ? "Ver reservas" : "View bookings"}
-              <ArrowRight className="h-3.5 w-3.5" />
-            </button>
-          </div>
+          <MobileHomeSummary lang={lang} onNavigate={openSection} />
 
           <p className="mb-2 mt-5 text-sm font-bold text-[var(--ink)]">
             {es ? "Accesos rápidos" : "Quick access"}
@@ -371,7 +354,7 @@ export function MobileCrmShell({
                       "outline outline-1 outline-dashed outline-[var(--accent)]",
                   )}
                 >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[color-mix(in_oklab,var(--accent)_14%,white)] text-[var(--accent)]">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[color-mix(in_oklab,var(--accent)_16%,transparent)] text-[var(--accent)]">
                     <Icon className="h-5 w-5" />
                   </span>
                   <span className="text-[10px] font-semibold text-[var(--ink)]">

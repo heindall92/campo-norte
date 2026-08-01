@@ -16,7 +16,9 @@ import { useEffect, useRef, useState } from "react";
 
 type EcosystemSlide = {
   id: string;
-  image: string;
+  /** Lámina de color: degradado + trama de líneas, sin imágenes remotas. */
+  from: string;
+  to: string;
   icon: LucideIcon;
   titleEs: string;
   titleEn: string;
@@ -31,9 +33,8 @@ type EcosystemSlide = {
 const SLIDES: EcosystemSlide[] = [
   {
     id: "web",
-    // Portátil / sitio web
-    image:
-      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80",
+    from: "var(--accent)",
+    to: "var(--accent-2)",
     icon: Globe,
     titleEs: "Web oficial",
     titleEn: "Official website",
@@ -45,9 +46,8 @@ const SLIDES: EcosystemSlide[] = [
   },
   {
     id: "instagram",
-    // Logo 3D Instagram (Alexander Shatov)
-    image:
-      "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&w=1200&q=80",
+    from: "#a02cbb",
+    to: "#f77737",
     icon: Camera,
     titleEs: "Instagram",
     titleEn: "Instagram",
@@ -59,9 +59,8 @@ const SLIDES: EcosystemSlide[] = [
   },
   {
     id: "youtube",
-    // Logo 3D YouTube
-    image:
-      "https://images.unsplash.com/photo-1611162616475-46b635cb6868?auto=format&fit=crop&w=1200&q=80",
+    from: "#b91c1c",
+    to: "#f97316",
     icon: Play,
     titleEs: "YouTube",
     titleEn: "YouTube",
@@ -73,9 +72,8 @@ const SLIDES: EcosystemSlide[] = [
   },
   {
     id: "facebook",
-    // Logo 3D Facebook
-    image:
-      "https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?auto=format&fit=crop&w=1200&q=80",
+    from: "#1877f2",
+    to: "#4f9cf9",
     icon: MessageCircle,
     titleEs: "Facebook",
     titleEn: "Facebook",
@@ -87,9 +85,8 @@ const SLIDES: EcosystemSlide[] = [
   },
   {
     id: "support",
-    // Documentación / ayuda
-    image:
-      "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1200&q=80",
+    from: "#0f766e",
+    to: "#22c55e",
     icon: CircleHelp,
     titleEs: "Soporte y licencia",
     titleEn: "Support & license",
@@ -101,9 +98,8 @@ const SLIDES: EcosystemSlide[] = [
   },
   {
     id: "settings",
-    // Oficina / configuración de negocio
-    image:
-      "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1200&q=80",
+    from: "#334155",
+    to: "#64748b",
     icon: Settings,
     titleEs: "Ajustes del negocio",
     titleEn: "Business settings",
@@ -221,17 +217,23 @@ export function MobileEcosystemCarousel({
               onClick={() => activate(slide)}
               className="relative h-[15rem] w-[88%] max-w-[24rem] shrink-0 snap-center overflow-hidden rounded-[1.5rem] text-left shadow-[0_12px_32px_color-mix(in_oklab,var(--ink)_18%,transparent)]"
             >
-              <img
-                src={slide.image}
-                alt=""
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-              {/* Blur suave solo en el pie · estilo foggy del dark card */}
-              <div
+              <span
                 aria-hidden
-                className="pointer-events-none absolute inset-x-0 bottom-0 h-[48%] backdrop-blur-[2.5px] [mask-image:linear-gradient(to_top,black_40%,transparent)] [-webkit-mask-image:linear-gradient(to_top,black_40%,transparent)]"
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `linear-gradient(140deg, ${slide.from}, ${slide.to})`,
+                }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+              {/* Trama diagonal: da textura sin depender de imágenes externas */}
+              <span
+                aria-hidden
+                className="absolute inset-0 opacity-55"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(115deg, rgba(255,255,255,.20) 0 1px, transparent 1px 13px)",
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
               <div className="relative flex h-full flex-col justify-between p-4 text-white">
                 <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/18 backdrop-blur-md">
                   <Icon className="h-6 w-6" strokeWidth={2} />
@@ -243,7 +245,9 @@ export function MobileEcosystemCarousel({
                   <p className="mt-1.5 text-xs leading-snug text-white/90 text-pretty">
                     {es ? slide.subEs : slide.subEn}
                   </p>
-                  <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-[11px] font-bold text-[var(--ink)]">
+                  {/* La píldora vive sobre la lámina de color: tinta fija, no `--ink`
+                      (en tema oscuro sería blanco sobre blanco). */}
+                  <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-[11px] font-bold text-[#0f172a]">
                     {es ? slide.ctaEs : slide.ctaEn}
                     {slide.href && <ExternalLink className="h-3.5 w-3.5" />}
                   </span>
