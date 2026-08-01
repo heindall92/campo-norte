@@ -14,6 +14,9 @@ import type { Reservation } from "@/lib/ops-data";
 import type { Lang } from "@/lib/i18n";
 import type { AppSection } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
+import { MobileBookingSheet } from "@/components/MobileBookingsScreen";
+import { MobileClientSheet } from "@/components/MobileClientsScreen";
+import { MobileLeadSheet } from "@/components/MobileLeadsScreen";
 import {
   ArrowRight,
   Bike,
@@ -27,7 +30,7 @@ import {
   Truck,
   type LucideIcon,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 const DAY_MS = 86_400_000;
 
@@ -90,13 +93,16 @@ function pendingBalance(reservations: Reservation[]) {
   return { total, count };
 }
 
+type PriorityKind = "client" | "lead" | "reservation";
+
 type Priority = {
   id: string;
+  kind: PriorityKind;
+  entityId: string;
   icon: LucideIcon;
   tone: "danger" | "accent" | "warn";
   title: string;
   detail: string;
-  section: AppSection;
 };
 
 function buildPriorities(
@@ -114,11 +120,12 @@ function buildPriorities(
   if (call) {
     list.push({
       id: `client-${call.id}`,
+      kind: "client",
+      entityId: call.id,
       icon: PhoneCall,
       tone: "danger",
       title: es ? `Llamar a ${call.name}` : `Call ${call.name}`,
       detail: call.reactivationWhy,
-      section: "clientes",
     });
   }
 
@@ -129,13 +136,14 @@ function buildPriorities(
     const route = hotLead.interestRoute ? ROUTE_LABEL[hotLead.interestRoute] : null;
     list.push({
       id: `lead-${hotLead.id}`,
+      kind: "lead",
+      entityId: hotLead.id,
       icon: Flame,
       tone: "accent",
       title: es
         ? `${hotLead.name} entra con ${hotLead.score}`
         : `${hotLead.name} lands at ${hotLead.score}`,
       detail: [route, hotLead.owner].filter(Boolean).join(" · "),
-      section: "leads",
     });
   }
 
@@ -146,6 +154,8 @@ function buildPriorities(
     const left = daysUntil(docs.departureAt, today);
     list.push({
       id: `res-${docs.id}`,
+      kind: "reservation",
+      entityId: docs.id,
       icon: FileWarning,
       tone: "warn",
       title: es
@@ -154,7 +164,6 @@ function buildPriorities(
       detail: es
         ? `${ROUTE_LABEL[docs.route]} · sale en ${left} días`
         : `${ROUTE_LABEL[docs.route]} · departs in ${left} days`,
-      section: "reservas",
     });
   }
 
@@ -238,6 +247,12 @@ export function MobileHomeSummary({
 }) {
   const hub = useDataHub();
   const es = lang === "es";
+  const [sheet, setSheet] = useState<{ kind: PriorityKind; id: string } | null>(null);
+
+  const openClient = hub.clients.find((c) => sheet?.kind === "client" && c.id === sheet.id) ?? null;
+  const openLead = hub.leads.find((l) => sheet?.kind === "lead" && l.id === sheet.id) ?? null;
+  const openReservation =
+    hub.reservations.find((r) => sheet?.kind === "reservation" && r.id === sheet.id) ?? null;
 
   const summary = useMemo(() => {
     const today = startOfDay(new Date());
@@ -349,7 +364,9 @@ export function MobileHomeSummary({
             <div className="relative mt-4 flex flex-wrap items-center gap-3">
               <button
                 type="button"
-                onClick={() => onNavigate("reservas")}
+                onClick={() =>
+                  setSheet({ kind: "reservation", id: next.reservation.id })
+                }
                 className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-bold text-[var(--accent)]"
               >
                 {es ? "Ver reserva" : "Open booking"}
@@ -462,7 +479,7 @@ export function MobileHomeSummary({
                 <button
                   key={p.id}
                   type="button"
-                  onClick={() => onNavigate(p.section)}
+                  onClick={() => setSheet({ kind: p.kind, id: p.entityId })}
                   className="flex w-full min-h-14 items-center gap-3 px-3.5 py-3 text-left"
                 >
                   <span
@@ -488,6 +505,18 @@ export function MobileHomeSummary({
           </div>
         </section>
       )}
+
+      <MobileClientSheet
+        client={openClient}
+        lang={lang}
+        onClose={() => setSheet(null)}
+      />
+      <MobileLeadSheet lead={openLead} lang={lang} onClose={() => setSheet(null)} />
+      <MobileBookingSheet
+        reservation={openReservation}
+        lang={lang}
+        onClose={() => setSheet(null)}
+      />
     </div>
   );
 }

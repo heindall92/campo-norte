@@ -61,11 +61,9 @@ function daysAgo(iso: string, es: boolean): string {
 
 export function MobileLeadsScreen({ lang }: { lang: Lang }) {
   const hub = useDataHub();
-  const { push } = useNotifications();
   const es = lang === "es";
   const [filter, setFilter] = useState<LeadFilter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
-  const [scoring, setScoring] = useState(false);
 
   const list = useMemo(
     () =>
@@ -84,45 +82,6 @@ export function MobileLeadsScreen({ lang }: { lang: Lang }) {
   ];
 
   const open = hub.leads.find((l) => l.id === openId) ?? null;
-
-  async function changeStatus(lead: Lead, status: LeadStatus) {
-    if (lead.status === status) return;
-    await hub.saveLead({
-      ...lead,
-      status,
-      lastTouchAt: new Date().toISOString().slice(0, 10),
-    });
-  }
-
-  /** Mismo camino que el escritorio: scoring del repo (Ollama si está, si no heurística). */
-  async function runScore(lead: Lead) {
-    if (scoring) return;
-    setScoring(true);
-    try {
-      const linked =
-        hub.clients.find((c) => c.email.toLowerCase() === lead.email.toLowerCase()) ?? null;
-      const result = await scoreLead(lead, linked);
-      await hub.saveLead(applyScoreToLead(lead, result));
-      push({
-        kind: "lead",
-        tone: result.score >= 80 ? "ok" : "info",
-        actor: lead.name,
-        statusLabel: es ? "SCORE IA" : "AI SCORE",
-        body: `Lead score ${result.score}/100 · ${priorityLabel(result.priority, lang)}`,
-        detail: result.reasons.slice(0, 3).join(" · "),
-        section: "leads",
-        entityId: lead.id,
-      });
-      showMobileSuccess({
-        title: es ? "Scoring actualizado" : "Scoring updated",
-        description: `${lead.name} · ${result.score}/100 · ${
-          es ? "nadie ha sido contactado" : "nobody was contacted"
-        }`,
-      });
-    } finally {
-      setScoring(false);
-    }
-  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -205,125 +164,183 @@ export function MobileLeadsScreen({ lang }: { lang: Lang }) {
         </p>
       </div>
 
-      <MobileSheet
-        open={Boolean(open)}
-        title={es ? "Ficha de lead" : "Lead profile"}
-        onClose={() => setOpenId(null)}
-      >
-        {open && (
-          <>
-            <MobileCard className="flex items-center gap-3.5 p-4">
-              <MobileRing
-                value={open.score}
-                tone={scoreTone(open.score)}
-                size={62}
-                label={`Score ${open.score}`}
-              />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-lg font-bold tracking-tight text-[var(--ink)]">
-                  {open.name}
-                </span>
-                <span className="block truncate text-xs text-[var(--ink-muted)]">
-                  {open.id} · {es ? "Resp." : "Owner"} {open.owner}
-                </span>
-                <span className="mt-2 flex flex-wrap gap-1.5">
-                  <MobileChip tone={STATUS_LABEL[open.status].tone}>
-                    {es ? STATUS_LABEL[open.status].es : STATUS_LABEL[open.status].en}
-                  </MobileChip>
-                  <MobileChip tone={scoreTone(open.score)}>
-                    {priorityLabel(priorityFromScore(open.score), lang)}
-                  </MobileChip>
-                </span>
+      <MobileLeadSheet lead={open} lang={lang} onClose={() => setOpenId(null)} />
+    </div>
+  );
+}
+
+export function MobileLeadSheet({
+  lead,
+  lang,
+  onClose,
+}: {
+  lead: Lead | null;
+  lang: Lang;
+  onClose: () => void;
+}) {
+  const hub = useDataHub();
+  const { push } = useNotifications();
+  const es = lang === "es";
+  const [scoring, setScoring] = useState(false);
+
+  async function changeStatus(current: Lead, status: LeadStatus) {
+    if (current.status === status) return;
+    await hub.saveLead({
+      ...current,
+      status,
+      lastTouchAt: new Date().toISOString().slice(0, 10),
+    });
+  }
+
+  async function runScore(current: Lead) {
+    if (scoring) return;
+    setScoring(true);
+    try {
+      const linked =
+        hub.clients.find((c) => c.email.toLowerCase() === current.email.toLowerCase()) ??
+        null;
+      const result = await scoreLead(current, linked);
+      await hub.saveLead(applyScoreToLead(current, result));
+      push({
+        kind: "lead",
+        tone: result.score >= 80 ? "ok" : "info",
+        actor: current.name,
+        statusLabel: es ? "SCORE IA" : "AI SCORE",
+        body: `Lead score ${result.score}/100 · ${priorityLabel(result.priority, lang)}`,
+        detail: result.reasons.slice(0, 3).join(" · "),
+        section: "leads",
+        entityId: current.id,
+      });
+      showMobileSuccess({
+        title: es ? "Scoring actualizado" : "Scoring updated",
+        description: `${current.name} · ${result.score}/100 · ${
+          es ? "nadie ha sido contactado" : "nobody was contacted"
+        }`,
+      });
+    } finally {
+      setScoring(false);
+    }
+  }
+
+  return (
+    <MobileSheet
+      open={Boolean(lead)}
+      title={es ? "Ficha de lead" : "Lead profile"}
+      onClose={onClose}
+    >
+      {lead && (
+        <>
+          <MobileCard className="flex items-center gap-3.5 p-4">
+            <MobileRing
+              value={lead.score}
+              tone={scoreTone(lead.score)}
+              size={62}
+              label={`Score ${lead.score}`}
+            />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-lg font-bold tracking-tight text-[var(--ink)]">
+                {lead.name}
               </span>
-            </MobileCard>
+              <span className="block truncate text-xs text-[var(--ink-muted)]">
+                {lead.id} · {es ? "Resp." : "Owner"} {lead.owner}
+              </span>
+              <span className="mt-2 flex flex-wrap gap-1.5">
+                <MobileChip tone={STATUS_LABEL[lead.status].tone}>
+                  {es ? STATUS_LABEL[lead.status].es : STATUS_LABEL[lead.status].en}
+                </MobileChip>
+                <MobileChip tone={scoreTone(lead.score)}>
+                  {priorityLabel(priorityFromScore(lead.score), lang)}
+                </MobileChip>
+              </span>
+            </span>
+          </MobileCard>
 
-            <div className="grid grid-cols-2 gap-2.5">
-              <button
-                type="button"
-                disabled={scoring}
-                onClick={() => void runScore(open)}
-                className="flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] text-sm font-bold text-white shadow-[0_8px_20px_color-mix(in_oklab,var(--accent)_34%,transparent)] disabled:opacity-60"
-              >
-                {scoring ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Sparkles className="h-4 w-4" />
-                )}
-                {es ? "Clasificar con IA" : "Score with AI"}
-              </button>
-              <a
-                href={`mailto:${open.email}`}
-                className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-[color-mix(in_oklab,var(--ink)_10%,transparent)] bg-[var(--glass-strong)] text-sm font-bold text-[var(--ink)]"
-              >
-                <Mail className="h-4 w-4" />
-                Email
-              </a>
-            </div>
+          <div className="grid grid-cols-2 gap-2.5">
+            <button
+              type="button"
+              disabled={scoring}
+              onClick={() => void runScore(lead)}
+              className="flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] text-sm font-bold text-white shadow-[0_8px_20px_color-mix(in_oklab,var(--accent)_34%,transparent)] disabled:opacity-60"
+            >
+              {scoring ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+              {es ? "Clasificar con IA" : "Score with AI"}
+            </button>
+            <a
+              href={`mailto:${lead.email}`}
+              className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-[color-mix(in_oklab,var(--ink)_10%,transparent)] bg-[var(--glass-strong)] text-sm font-bold text-[var(--ink)]"
+            >
+              <Mail className="h-4 w-4" />
+              Email
+            </a>
+          </div>
 
-            <MobileCard className="divide-y divide-[color-mix(in_oklab,var(--ink)_8%,transparent)]">
-              <MobileKv
-                label={es ? "Ruta de interés" : "Route of interest"}
-                value={open.interestRoute ? ROUTE_LABEL[open.interestRoute] : "—"}
-              />
-              <MobileKv
-                label={es ? "Vehículo" : "Vehicle"}
-                value={open.vehicle ? (open.vehicle === "moto" ? "Moto" : "4x4") : "—"}
-              />
-              <MobileKv label={es ? "Origen" : "Source"} value={ORIGIN_LABEL[open.origin]} />
-              <MobileKv label={es ? "Campaña" : "Campaign"} value={open.campaign ?? "—"} />
-              <MobileKv label="Email" value={open.email} />
-              <MobileKv label={es ? "Entró" : "Created"} value={open.createdAt} />
-              <MobileKv
-                label={es ? "Último contacto" : "Last touch"}
-                value={open.lastTouchAt || "—"}
-              />
-            </MobileCard>
+          <MobileCard className="divide-y divide-[color-mix(in_oklab,var(--ink)_8%,transparent)]">
+            <MobileKv
+              label={es ? "Ruta de interés" : "Route of interest"}
+              value={lead.interestRoute ? ROUTE_LABEL[lead.interestRoute] : "—"}
+            />
+            <MobileKv
+              label={es ? "Vehículo" : "Vehicle"}
+              value={lead.vehicle ? (lead.vehicle === "moto" ? "Moto" : "4x4") : "—"}
+            />
+            <MobileKv label={es ? "Origen" : "Source"} value={ORIGIN_LABEL[lead.origin]} />
+            <MobileKv label={es ? "Campaña" : "Campaign"} value={lead.campaign ?? "—"} />
+            <MobileKv label="Email" value={lead.email} />
+            <MobileKv label={es ? "Entró" : "Created"} value={lead.createdAt} />
+            <MobileKv
+              label={es ? "Último contacto" : "Last touch"}
+              value={lead.lastTouchAt || "—"}
+            />
+          </MobileCard>
 
-            {open.scoreReasons.length > 0 && (
-              <section className="flex flex-col gap-2">
-                <h3 className="px-1 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--ink-muted)]">
-                  {es ? "Por qué esta puntuación" : "Why this score"}
-                </h3>
-                <MobileCard className="flex flex-col gap-2.5 p-4">
-                  {open.scoreReasons.map((reason) => (
-                    <p
-                      key={reason}
-                      className="flex gap-2.5 text-[13px] leading-snug text-[var(--ink)]"
-                    >
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]" />
-                      {reason}
-                    </p>
-                  ))}
-                </MobileCard>
-              </section>
-            )}
-
+          {lead.scoreReasons.length > 0 && (
             <section className="flex flex-col gap-2">
               <h3 className="px-1 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--ink-muted)]">
-                {es ? "Estado del lead" : "Lead status"}
+                {es ? "Por qué esta puntuación" : "Why this score"}
               </h3>
-              <div className="flex flex-wrap gap-2">
-                {STATUS_ORDER.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    aria-pressed={open.status === s}
-                    onClick={() => void changeStatus(open, s)}
-                    className={cn(
-                      "min-h-10 rounded-full border px-3.5 text-[12.5px] font-semibold transition",
-                      open.status === s
-                        ? "border-[var(--accent)] bg-[var(--accent)] text-white"
-                        : "border-[color-mix(in_oklab,var(--ink)_10%,transparent)] bg-[var(--glass-strong)] text-[var(--ink)]",
-                    )}
+              <MobileCard className="flex flex-col gap-2.5 p-4">
+                {lead.scoreReasons.map((reason) => (
+                  <p
+                    key={reason}
+                    className="flex gap-2.5 text-[13px] leading-snug text-[var(--ink)]"
                   >
-                    {es ? STATUS_LABEL[s].es : STATUS_LABEL[s].en}
-                  </button>
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]" />
+                    {reason}
+                  </p>
                 ))}
-              </div>
+              </MobileCard>
             </section>
-          </>
-        )}
-      </MobileSheet>
-    </div>
+          )}
+
+          <section className="flex flex-col gap-2">
+            <h3 className="px-1 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--ink-muted)]">
+              {es ? "Estado del lead" : "Lead status"}
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {STATUS_ORDER.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  aria-pressed={lead.status === s}
+                  onClick={() => void changeStatus(lead, s)}
+                  className={cn(
+                    "min-h-10 rounded-full border px-3.5 text-[12.5px] font-semibold transition",
+                    lead.status === s
+                      ? "border-[var(--accent)] bg-[var(--accent)] text-white"
+                      : "border-[color-mix(in_oklab,var(--ink)_10%,transparent)] bg-[var(--glass-strong)] text-[var(--ink)]",
+                  )}
+                >
+                  {es ? STATUS_LABEL[s].es : STATUS_LABEL[s].en}
+                </button>
+              ))}
+            </div>
+          </section>
+        </>
+      )}
+    </MobileSheet>
   );
 }
