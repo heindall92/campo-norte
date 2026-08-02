@@ -209,27 +209,30 @@ export function MobileClientsScreen({ lang }: { lang: Lang }) {
         )}
       </MobileCard>
 
-      <ClientSheet
+      <MobileClientSheet
         client={open}
         lang={lang}
-        money={money}
         onClose={() => setOpenId(null)}
       />
     </div>
   );
 }
 
-function ClientSheet({
+export function MobileClientSheet({
   client,
   lang,
-  money,
   onClose,
 }: {
   client: Client | null;
   lang: Lang;
-  money: (value: number) => string;
   onClose: () => void;
 }) {
+  const money = (value: number) =>
+    value.toLocaleString(lang === "es" ? "es-ES" : "en-GB", {
+      style: "currency",
+      currency: "EUR",
+      maximumFractionDigits: 0,
+    });
   const es = lang === "es";
 
   return (

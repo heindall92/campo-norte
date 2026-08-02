@@ -74,12 +74,6 @@ export function MobileBookingsScreen({ lang }: { lang: Lang }) {
 
   const open = hub.reservations.find((r) => r.id === openId) ?? null;
 
-  /** El chip activo refleja el cambio al instante: sin diálogo que tapar. */
-  async function changeStatus(reservation: Reservation, status: ReservationStatus) {
-    if (reservation.status === status) return;
-    await hub.saveReservation({ ...reservation, status });
-  }
-
   return (
     <div className="flex flex-col gap-4">
       <MobileScreenTitle
@@ -175,32 +169,38 @@ export function MobileBookingsScreen({ lang }: { lang: Lang }) {
         )}
       </div>
 
-      <BookingSheet
+      <MobileBookingSheet
         reservation={open}
         lang={lang}
-        money={money}
         onClose={() => setOpenId(null)}
-        onChangeStatus={changeStatus}
       />
     </div>
   );
 }
 
-function BookingSheet({
+export function MobileBookingSheet({
   reservation,
   lang,
-  money,
   onClose,
-  onChangeStatus,
 }: {
   reservation: Reservation | null;
   lang: Lang;
-  money: (value: number) => string;
   onClose: () => void;
-  onChangeStatus: (r: Reservation, status: ReservationStatus) => void;
 }) {
+  const hub = useDataHub();
   const es = lang === "es";
   const statuses = Object.keys(RESERVATION_STATUS_LABEL) as ReservationStatus[];
+  const money = (value: number) =>
+    value.toLocaleString(es ? "es-ES" : "en-GB", {
+      style: "currency",
+      currency: "EUR",
+      maximumFractionDigits: 0,
+    });
+
+  function onChangeStatus(r: Reservation, status: ReservationStatus) {
+    if (r.status === status) return;
+    void hub.saveReservation({ ...r, status });
+  }
 
   return (
     <MobileSheet

@@ -15,6 +15,9 @@ import type { Reservation } from "@/lib/ops-data";
 import type { Lang } from "@/lib/i18n";
 import type { AppSection } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
+import { MobileBookingSheet } from "@/components/MobileBookingsScreen";
+import { MobileClientSheet } from "@/components/MobileClientsScreen";
+import { MobileLeadSheet } from "@/components/MobileLeadsScreen";
 import {
   ArrowRight,
   Bike,
@@ -28,7 +31,7 @@ import {
   Truck,
   type LucideIcon,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 const DAY_MS = 86_400_000;
 
@@ -91,13 +94,16 @@ function pendingBalance(reservations: Reservation[]) {
   return { total, count };
 }
 
+type PriorityKind = "client" | "lead" | "reservation";
+
 type Priority = {
   id: string;
+  kind: PriorityKind;
+  entityId: string;
   icon: LucideIcon;
   tone: "danger" | "accent" | "warn";
   title: string;
   detail: string;
-  section: AppSection;
 };
 
 function buildPriorities(
@@ -115,11 +121,12 @@ function buildPriorities(
   if (call) {
     list.push({
       id: `client-${call.id}`,
+      kind: "client",
+      entityId: call.id,
       icon: PhoneCall,
       tone: "danger",
       title: es ? `Llamar a ${call.name}` : `Call ${call.name}`,
       detail: call.reactivationWhy,
-      section: "clientes",
     });
   }
 
@@ -135,7 +142,11 @@ function buildPriorities(
     const route = lead.interestRoute ? ROUTE_LABEL[lead.interestRoute] : null;
     const cooled = decay.base - decay.effective >= 5;
     list.push({
+      // Estructura de main (abre la ficha in-place) + el score enfriado, que es
+      // la prioridad real: un 94 de hace tres semanas ya no es la llamada de hoy.
       id: `lead-${lead.id}`,
+      kind: "lead",
+      entityId: lead.id,
       icon: Flame,
       tone: "accent",
       title: es
@@ -152,7 +163,6 @@ function buildPriorities(
       ]
         .filter(Boolean)
         .join(" · "),
-      section: "leads",
     });
   }
 
@@ -163,6 +173,8 @@ function buildPriorities(
     const left = daysUntil(docs.departureAt, today);
     list.push({
       id: `res-${docs.id}`,
+      kind: "reservation",
+      entityId: docs.id,
       icon: FileWarning,
       tone: "warn",
       title: es
@@ -171,7 +183,6 @@ function buildPriorities(
       detail: es
         ? `${ROUTE_LABEL[docs.route]} · sale en ${left} días`
         : `${ROUTE_LABEL[docs.route]} · departs in ${left} days`,
-      section: "reservas",
     });
   }
 
@@ -198,15 +209,17 @@ function KpiCard({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-[6.5rem] flex-col gap-1.5 rounded-[1.25rem] border border-[color-mix(in_oklab,var(--ink)_8%,transparent)] bg-[var(--glass-strong)] p-3.5 shadow-sm">
-      <p className="text-[11px] font-semibold text-[var(--ink-muted)]">{label}</p>
-      <p className="flex items-baseline gap-0.5 text-[1.6rem] font-bold leading-none tracking-tight text-[var(--ink)] tabular-nums">
+    <div className="flex min-h-[6.25rem] flex-col gap-1 rounded-[1.25rem] border border-[color-mix(in_oklab,var(--ink)_8%,transparent)] bg-[var(--glass-strong)] p-3 shadow-sm">
+      <p className="text-[10.5px] font-semibold leading-snug text-[var(--ink-muted)] text-pretty">
+        {label}
+      </p>
+      <p className="flex items-baseline gap-0.5 text-[1.55rem] font-bold leading-none tracking-tight text-[var(--ink)] tabular-nums">
         {value}
         {unit && (
           <span className="text-sm font-semibold text-[var(--ink-muted)]">{unit}</span>
         )}
       </p>
-      <div className="mt-auto flex flex-col gap-1.5">{children}</div>
+      <div className="mt-auto flex w-full min-w-0 flex-col gap-1.5">{children}</div>
     </div>
   );
 }
@@ -234,14 +247,14 @@ function KpiFoot({
   return (
     <span
       className={cn(
-        "flex items-start gap-1 text-[11px] font-semibold leading-tight",
+        "flex w-full min-w-0 items-start gap-1 text-[10.5px] font-semibold leading-snug",
         tone === "ok" && "text-[var(--ok)]",
         tone === "warn" && "text-[var(--warn-ink)]",
         tone === "muted" && "text-[var(--ink-muted)]",
       )}
     >
-      <Icon className="mt-px h-3 w-3 shrink-0" />
-      <span className="min-w-0">{children}</span>
+      <Icon className="mt-0.5 h-3 w-3 shrink-0" />
+      <span className="min-w-0 flex-1 text-pretty [overflow-wrap:anywhere]">{children}</span>
     </span>
   );
 }
@@ -255,6 +268,12 @@ export function MobileHomeSummary({
 }) {
   const hub = useDataHub();
   const es = lang === "es";
+  const [sheet, setSheet] = useState<{ kind: PriorityKind; id: string } | null>(null);
+
+  const openClient = hub.clients.find((c) => sheet?.kind === "client" && c.id === sheet.id) ?? null;
+  const openLead = hub.leads.find((l) => sheet?.kind === "lead" && l.id === sheet.id) ?? null;
+  const openReservation =
+    hub.reservations.find((r) => sheet?.kind === "reservation" && r.id === sheet.id) ?? null;
 
   const summary = useMemo(() => {
     const today = startOfDay(new Date());
@@ -366,7 +385,9 @@ export function MobileHomeSummary({
             <div className="relative mt-4 flex flex-wrap items-center gap-3">
               <button
                 type="button"
-                onClick={() => onNavigate("reservas")}
+                onClick={() =>
+                  setSheet({ kind: "reservation", id: next.reservation.id })
+                }
                 className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-bold text-[var(--accent)]"
               >
                 {es ? "Ver reserva" : "Open booking"}
@@ -412,9 +433,19 @@ export function MobileHomeSummary({
           value={String(summary.leadsThisWeek)}
         >
           <KpiFoot icon={TrendingUp} tone={summary.leadsThisWeek > 0 ? "ok" : "muted"}>
-            {es
-              ? `${summary.leadsTotal} en cola · origen conocido ${summary.originPct} %`
-              : `${summary.leadsTotal} in queue · ${summary.originPct}% with source`}
+            {es ? (
+              <>
+                <span className="whitespace-nowrap">{summary.leadsTotal} en cola</span>
+                <span aria-hidden> · </span>
+                <span className="whitespace-nowrap">origen {summary.originPct}%</span>
+              </>
+            ) : (
+              <>
+                <span className="whitespace-nowrap">{summary.leadsTotal} in queue</span>
+                <span aria-hidden> · </span>
+                <span className="whitespace-nowrap">source {summary.originPct}%</span>
+              </>
+            )}
           </KpiFoot>
         </KpiCard>
 
@@ -479,7 +510,7 @@ export function MobileHomeSummary({
                 <button
                   key={p.id}
                   type="button"
-                  onClick={() => onNavigate(p.section)}
+                  onClick={() => setSheet({ kind: p.kind, id: p.entityId })}
                   className="flex w-full min-h-14 items-center gap-3 px-3.5 py-3 text-left"
                 >
                   <span
@@ -505,6 +536,18 @@ export function MobileHomeSummary({
           </div>
         </section>
       )}
+
+      <MobileClientSheet
+        client={openClient}
+        lang={lang}
+        onClose={() => setSheet(null)}
+      />
+      <MobileLeadSheet lead={openLead} lang={lang} onClose={() => setSheet(null)} />
+      <MobileBookingSheet
+        reservation={openReservation}
+        lang={lang}
+        onClose={() => setSheet(null)}
+      />
     </div>
   );
 }
