@@ -5,7 +5,7 @@
 > memoria. El chat no es memoria: este archivo sí. Si el chat y el repo se
 > contradicen, **manda el repo**.
 
-**Última actualización:** 2026-08-01 · por Claude Code · commit `473416e`
+**Última actualización:** 2026-08-02 · por Cursor · tip de rama `bfec0a9` (+ corrección de tips)
 
 ---
 
@@ -13,23 +13,24 @@
 
 | Rama | Commit | Qué contiene |
 |---|---|---|
-| `main` | `c31b394` | Producción. **No tiene** nada de lo de abajo. |
-| `claude/mobile-30mps-demo-1pxs98` | `473416e` | Todo el trabajo nuevo: vista móvil + lazo de leads. |
+| `main` | `645bda2` | Producción. Ya incluye la vista móvil base (hasta `0ed3f94`) + pulidos de Cuenta/títulos/fichas desde Prioridad (`c5ed4d9`, `645bda2`). **No** tiene el lazo de leads ni este `ESTADO.md`. |
+| `claude/mobile-30mps-demo-1pxs98` | `bfec0a9` | Lazo de leads (`473416e`) + este handoff. Parte del móvil ya está en `main`; lo que aporta esta rama frente a `main` es el lazo + docs. |
 
-La rama de trabajo tiene 8 commits por delante de `main`:
+Commits de esta rama que **aún no** están en `main`:
 
 ```
+bfec0a9  docs/ESTADO.md — handoff entre agentes
 473416e  lazo de leads: ingesta real, scoring en servidor, cron diario
-0ed3f94  módulos en el centro de la barra + alta desde la cabecera
-bc72248  pantallas móviles nativas de Clientes, Reservas y Leads
-c519d58  inicio móvil con números reales del Hub + ecosistema
-44b3d12  brief de implementación de la demo móvil
-9685295  arreglo de altura de la demo en iframe
-8ff0d51  versión desplegable de la demo móvil
-7760135  demo interactiva de la vista móvil
 ```
 
-`main` sigue intacto a propósito: nada se mergea hasta que el dueño lo pida.
+Commits en `main` que **esta rama aún no** tiene (habrá que integrar al mergear el PR):
+
+```
+645bda2  Cuenta: separar Preferencias/Sesión; títulos únicos; dashboard compacto
+c5ed4d9  Prioridad de hoy y próxima salida abren ficha in-place
+```
+
+Nadie mergea a `main` sin PR y sin que el dueño lo pida.
 
 ---
 
@@ -125,14 +126,13 @@ los tres sitios donde es fácil pisarse.
 
 ## 6 · Siguiente tarea (UNA)
 
-> **Encender Supabase y verificar el lazo en el preview de Vercel.**
-> Es configuración, no código: seguir [`docs/LAZO-LEADS.md`](./LAZO-LEADS.md)
-> (crear proyecto gratis, ejecutar `supabase/schema.sql`, pegar las variables en
-> Vercel, redesplegar) y comprobar con el `curl` de ingesta y con `/captura`
-> desde el móvil que el lead entra, se puntúa y aparece en el CRM.
+> **1) Revisar y mergear el PR** de esta rama → `main` (integra lazo + pulidos de Cuenta).
+> **2) Después:** encender Supabase y verificar el lazo en el preview/producción
+> siguiendo [`docs/LAZO-LEADS.md`](./LAZO-LEADS.md) (proyecto, `schema.sql`, variables
+> Vercel, `/captura` + curl de ingesta).
 
-Cuando eso esté verde, la siguiente será el **selector de 4 modos** de la
-sección 3.
+Cuando el lazo esté verde en un entorno con Supabase, la siguiente será el
+**selector de 4 modos** de la sección 3.
 
 ---
 
