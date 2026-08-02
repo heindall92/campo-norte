@@ -1,9 +1,9 @@
 /**
  * Flags de entorno para demo vs producción.
  *
- * Principio: el atajo de demo y los datos reales nunca pueden coexistir.
- * En cuanto hay Supabase configurado (= hay datos de verdad detrás), el login
- * demo se apaga solo, sin depender de que nadie se acuerde de poner un flag.
+ * Principio (pitch): las cuentas demo del equipo siguen disponibles aunque
+ * haya Supabase. En producción real, cierra la puerta con
+ * VITE_STRICT_AUTH=true o VITE_ALLOW_DEMO_AUTH=false.
  */
 
 /** Build de producción (Vite). */
@@ -29,31 +29,40 @@ export function allowClientAiKeys(): boolean {
 }
 
 /**
- * ¿Login demo con usuarios embebidos (sin Supabase)?
+ * ¿Login demo con usuarios embebidos (miguel@ / 30mps2026…)?
  *
  * Orden de decisión:
- *  1. `VITE_STRICT_AUTH=true`  → nunca. Interruptor duro.
+ *  1. `VITE_STRICT_AUTH=true`  → nunca.
  *  2. `VITE_ALLOW_DEMO_AUTH=false` → nunca.
- *  3. Supabase configurado → nunca. Si hay auth real y datos reales,
- *     no puede quedar una puerta con contraseña embebida en el bundle.
- *  4. Resto (pitch sin backend, datos semilla) → sí.
- *
- * Antes esta función devolvía `true` por defecto en todos los casos, también
- * con Supabase activo: la puerta de demo seguía abierta sobre datos reales.
+ *  3. Resto → sí (también con Supabase: fallback a Hub local semilla).
  */
 export function allowLocalDemoAuth(): boolean {
   if (import.meta.env.VITE_STRICT_AUTH === "true") return false;
   if (import.meta.env.VITE_ALLOW_DEMO_AUTH === "false") return false;
-  if (supabaseConfigured()) return false;
-  if (import.meta.env.VITE_ALLOW_DEMO_AUTH === "true") return true;
-  // Pitch sin backend: solo datos semilla, ningún dato real que proteger.
   return true;
 }
 
-/**
- * ¿El despliegue actual es una demo pública sin backend?
- * Útil para avisar en pantalla y para no indexar.
- */
+/** ¿El despliegue actual es una demo pública sin backend? */
 export function isPublicDemo(): boolean {
   return isProdBuild() && !supabaseConfigured();
+}
+
+/** Fuerza Data Hub local tras login demo (aunque haya Supabase). */
+export const FORCE_LOCAL_HUB_KEY = "mps-force-local-hub-v1";
+
+export function forceLocalHub(): boolean {
+  try {
+    return localStorage.getItem(FORCE_LOCAL_HUB_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function setForceLocalHub(on: boolean): void {
+  try {
+    if (on) localStorage.setItem(FORCE_LOCAL_HUB_KEY, "1");
+    else localStorage.removeItem(FORCE_LOCAL_HUB_KEY);
+  } catch {
+    /* ignore */
+  }
 }

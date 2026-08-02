@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { getSupabase, getSupabaseEnv } from "@/lib/supabase/client";
-import { allowLocalDemoAuth } from "@/lib/runtime";
+import { allowLocalDemoAuth, setForceLocalHub } from "@/lib/runtime";
 import {
   LOCAL_AUTH_KEY,
   ROLE_LABEL,
@@ -44,6 +44,23 @@ function userFromLocalStorage(): AppUser | null {
   }
 }
 
+function signInLocalDemo(normalized: string, password: string): AppUser {
+  if (!allowLocalDemoAuth()) {
+    throw new Error(
+      "Login demo desactivado. Usa un usuario de Supabase Auth o pide VITE_ALLOW_DEMO_AUTH=true.",
+    );
+  }
+  const match = findCrmUser(normalized, password);
+  if (!match) {
+    throw new Error(
+      "Email o contraseña incorrectos. Demo: miguel@30mps.com / 30mps2026",
+    );
+  }
+  localStorage.setItem(LOCAL_AUTH_KEY, JSON.stringify(match));
+  setForceLocalHub(true);
+  return match;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [user, setUser] = useState<AppUser | null>(null);
@@ -54,11 +71,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const sb = getSupabase();
 
     async function boot() {
+      // Sesión demo local (prioridad si el operador entró con cuenta equipo)
+      if (allowLocalDemoAuth()) {
+        const local = userFromLocalStorage();
+        if (local?.provider === "local") {
+          setForceLocalHub(true);
+          setUser(local);
+          setReady(true);
+          return;
+        }
+      }
+
       if (sb) {
         const { data } = await sb.auth.getSession();
         if (cancelled) return;
         const session = data.session;
         if (session?.user) {
+          setForceLocalHub(false);
           const meta = session.user.user_metadata ?? {};
           const name =
             (meta.full_name as string) ||
@@ -81,9 +110,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const { data: sub } = sb.auth.onAuthStateChange((_event, next) => {
           if (!next?.user) {
+            // No borrar sesión demo local
+            const local = allowLocalDemoAuth() ? userFromLocalStorage() : null;
+            if (local?.provider === "local") {
+              setUser(local);
+              return;
+            }
             setUser(null);
             return;
           }
+          localStorage.removeItem(LOCAL_AUTH_KEY);
+          setForceLocalHub(false);
           const meta = next.user.user_metadata ?? {};
           const name =
             (meta.full_name as string) ||
@@ -106,7 +143,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => sub.subscription.unsubscribe();
       }
 
-      // Sin Supabase: sesión local del equipo (solo demo / no-producción)
       if (!cancelled) {
         if (!allowLocalDemoAuth()) {
           setUser(null);
@@ -132,21 +168,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: normalized,
         password,
       });
-      if (error) throw new Error(error.message);
-      return;
+      if (!error) {
+        localStorage.removeItem(LOCAL_AUTH_KEY);
+        setForceLocalHub(false);
+        return;
+      }
+      // Fallback pitch: cuentas demo del equipo → Hub local (semilla)
+      if (allowLocalDemoAuth()) {
+        try {
+          const match = signInLocalDemo(normalized, password);
+          setUser(match);
+          window.location.reload();
+          return;
+        } catch {
+          throw new Error(
+            `${error.message} · Demo equipo: miguel@30mps.com / 30mps2026`,
+          );
+        }
+      }
+      throw new Error(error.message);
     }
 
-    if (!allowLocalDemoAuth()) {
-      throw new Error(
-        "Login demo desactivado en producción. Configura Supabase Auth (VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY).",
-      );
-    }
-
-    const match = findCrmUser(normalized, password);
-    if (!match) {
-      throw new Error("Email o contraseña incorrectos");
-    }
-    localStorage.setItem(LOCAL_AUTH_KEY, JSON.stringify(match));
+    const match = signInLocalDemo(normalized, password);
     setUser(match);
   }, []);
 
@@ -156,6 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await sb.auth.signOut();
     }
     localStorage.removeItem(LOCAL_AUTH_KEY);
+    setForceLocalHub(false);
     clearLastActivity();
     setUser(null);
   }, []);
