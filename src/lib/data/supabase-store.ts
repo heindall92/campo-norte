@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getSupabase, getSupabaseEnv } from "@/lib/supabase/client";
+import { forceLocalHub } from "@/lib/runtime";
 import { buildSeedSnapshot } from "./seed";
 import {
   HUB_VERSION,
@@ -18,6 +19,8 @@ export function supabaseConfigured(): boolean {
 export function preferredDataMode(): "local" | "supabase" {
   const forced = (import.meta.env.VITE_DATA_MODE as string | undefined)?.trim();
   if (forced === "local") return "local";
+  // Login demo local fuerza Hub semilla aunque haya Supabase en el entorno
+  if (forceLocalHub()) return "local";
   if (forced === "supabase" || supabaseConfigured()) return "supabase";
   return "local";
 }

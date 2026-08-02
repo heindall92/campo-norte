@@ -10,8 +10,8 @@ const LOGIN_VIDEO_SRC = "/media/login-home.mp4"; // Hero Login (comprimido)
 
 export function LoginScreen() {
   const { signIn, supabaseReady } = useAuth();
-  const demoAuth = allowLocalDemoAuth() && !supabaseReady;
-  const [email, setEmail] = useState(LOCAL_TEAM_USERS[0]?.email ?? "");
+  const demoAuth = allowLocalDemoAuth();
+  const [email, setEmail] = useState(LOCAL_TEAM_USERS[0]?.email ?? "miguel@30mps.com");
   const [password, setPassword] = useState(demoAuth ? "30mps2026" : "");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,7 +87,11 @@ export function LoginScreen() {
             <p className="mb-5 flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:mb-6 sm:text-xs">
               <Bike className="h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
               <span className="truncate">
-                {supabaseReady ? "Acceso seguro" : "Demo · equipo 30 MPS"}
+                {supabaseReady
+                  ? demoAuth
+                    ? "Supabase + demo equipo"
+                    : "Acceso seguro (Supabase)"
+                  : "Demo · equipo 30 MPS"}
               </span>
             </p>
 
@@ -96,6 +100,20 @@ export function LoginScreen() {
                 El acceso no está disponible en este momento. Contacta con el administrador del
                 sistema.
               </p>
+            )}
+
+            {demoAuth && (
+              <div className="mb-5 rounded-xl border border-[color-mix(in_oklab,var(--accent)_35%,transparent)] bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] px-3 py-2.5 text-xs leading-snug text-[var(--ink)] sm:mb-6 sm:text-sm">
+                <p className="font-semibold text-[var(--accent)]">Acceso demo del equipo</p>
+                <p className="mt-1 text-[var(--ink-muted)]">
+                  Email: <code className="text-[var(--accent)]">miguel@30mps.com</code>
+                  {" · "}
+                  Pass: <code className="text-[var(--accent)]">30mps2026</code>
+                </p>
+                <p className="mt-1 text-[11px] text-[var(--ink-muted)]">
+                  También: laura@ · david@ · ramon@30mps.com (misma contraseña)
+                </p>
+              </div>
             )}
 
             <label className="mb-5 block text-sm font-semibold text-[var(--ink)]">
@@ -152,9 +170,9 @@ export function LoginScreen() {
               {loading ? "Entrando…" : "Entrar al Growth OS"}
             </button>
 
-            {demoAuth && !isProdBuild() && (
+            {demoAuth && (
               <div className="mt-3 max-h-[min(28vh,11rem)] overflow-y-auto rounded-xl border border-[var(--glass-border)] bg-white/65 p-3 text-xs text-[var(--ink-muted)] sm:mt-4">
-                <p className="font-semibold text-[var(--ink)]">Cuentas demo (solo local)</p>
+                <p className="font-semibold text-[var(--ink)]">Rellenar cuenta demo</p>
                 <ul className="mt-1 space-y-0.5">
                   {LOCAL_TEAM_USERS.map((u) => (
                     <li key={u.id}>
@@ -173,10 +191,13 @@ export function LoginScreen() {
                 </ul>
                 <p className="mt-2">
                   Password: <code className="text-[var(--accent)]">30mps2026</code>
-                </p>
-                <p className="mt-1">
-                  BD: configura <code>VITE_SUPABASE_*</code> en <code>.env.local</code> (
-                  {getSupabaseEnv().configured ? "OK" : "pendiente"}).
+                  {!isProdBuild() && (
+                    <>
+                      {" · "}
+                      BD: <code>VITE_SUPABASE_*</code> (
+                      {getSupabaseEnv().configured ? "OK" : "pendiente"})
+                    </>
+                  )}
                 </p>
               </div>
             )}
