@@ -1,6 +1,7 @@
 "use client";
 
 import { applyScoreToLead, priorityFromScore, priorityLabel, scoreLead } from "@/lib/ai";
+import { decayedScore } from "@/lib/ai/lead-scoring-core";
 import { useDataHub } from "@/lib/data";
 import {
   ORIGIN_LABEL,
@@ -65,13 +66,15 @@ export function MobileLeadsScreen({ lang }: { lang: Lang }) {
   const [filter, setFilter] = useState<LeadFilter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
 
-  const list = useMemo(
-    () =>
-      hub.leads
-        .filter((l) => filter === "all" || l.status === filter)
-        .sort((a, b) => b.score - a.score),
-    [hub.leads, filter],
-  );
+  // La cola se ordena por score efectivo (enfriado por el tiempo). El score
+  // guardado sigue siendo el que se ve y el que se puede auditar.
+  const list = useMemo(() => {
+    const now = new Date();
+    return hub.leads
+      .filter((l) => filter === "all" || l.status === filter)
+      .map((lead) => ({ lead, decay: decayedScore(lead, now) }))
+      .sort((a, b) => b.decay.effective - a.decay.effective || b.lead.score - a.lead.score);
+  }, [hub.leads, filter]);
 
   const filters: { id: LeadFilter; label: string }[] = [
     { id: "all", label: es ? "Todos" : "All" },
@@ -104,8 +107,9 @@ export function MobileLeadsScreen({ lang }: { lang: Lang }) {
             </p>
           </MobileCard>
         ) : (
-          list.map((lead) => {
+          list.map(({ lead, decay }) => {
             const status = STATUS_LABEL[lead.status];
+            const cooled = decay.base - decay.effective >= 5;
             return (
               <button
                 key={lead.id}
@@ -133,6 +137,11 @@ export function MobileLeadsScreen({ lang }: { lang: Lang }) {
                   <span className="mt-1.5 flex flex-wrap gap-1.5">
                     <MobileChip tone={status.tone}>{es ? status.es : status.en}</MobileChip>
                     <MobileChip>{ORIGIN_LABEL[lead.origin]}</MobileChip>
+                    {cooled && (
+                      <MobileChip tone="warn">
+                        {es ? `enfriado a ${decay.effective}` : `cooled to ${decay.effective}`}
+                      </MobileChip>
+                    )}
                   </span>
                 </span>
                 <span className="flex shrink-0 items-center gap-1.5">

@@ -1,24 +1,17 @@
-import type { Lead, LeadOrigin, RouteCode, VehicleMode } from "@/lib/demo-data";
+import type { Client, Lead } from "@/lib/demo-data";
 import { ORIGIN_LABEL, ROUTE_LABEL } from "@/lib/demo-data";
 import { blankLead } from "@/lib/data/seed";
+import {
+  campaignFromPayload,
+  inferOriginFromForm,
+  pickOwner,
+  type WebFormLeadPayload,
+} from "@/lib/leads/ingest-core";
 import { applyScoreToLead, scoreLead } from "./lead-scoring";
 import { aiReady, providerLabel } from "./settings";
 
-/** Payload típico de formulario web / webhook Make·n8n */
-export interface WebFormLeadPayload {
-  name: string;
-  email: string;
-  phone?: string;
-  /** utm_source / canal */
-  utmSource?: string;
-  utmCampaign?: string;
-  utmMedium?: string;
-  interestRoute?: RouteCode | null;
-  vehicle?: VehicleMode | null;
-  message?: string;
-  /** ISO o vacío — si viene vacío se infiere */
-  origin?: LeadOrigin;
-}
+export type { WebFormLeadPayload };
+export { campaignFromPayload, inferOriginFromForm, pickOwner };
 
 export type PipelineStepId =
   | "ingest"
@@ -62,22 +55,7 @@ function step(
   return { id, label, status, detail, at: new Date().toISOString() };
 }
 
-/** Mapea UTM / canal a origen CRM */
-export function inferOriginFromForm(payload: WebFormLeadPayload): LeadOrigin {
-  if (payload.origin) return payload.origin;
-  const raw = `${payload.utmSource ?? ""} ${payload.utmMedium ?? ""}`.toLowerCase();
-  if (/refer|amigo|cliente/.test(raw)) return "referral";
-  if (/instagram|ig|meta|facebook|fb/.test(raw)) return "instagram";
-  if (/brevo|newsletter|email|nl/.test(raw)) return "brevo_click";
-  if (/feria|stand|evento/.test(raw)) return "feria";
-  if (/google|web|landing|organic|cpc|form/.test(raw) || payload.utmSource) return "web_form";
-  return "unknown";
-}
 
-function pickOwner(origin: LeadOrigin, score: number): string {
-  if (origin === "referral" || score >= 85) return "Miguel";
-  return "Laura";
-}
 
 function followUpIso(hoursFromNow = 24): string {
   const d = new Date();
@@ -94,7 +72,7 @@ function followUpIso(hoursFromNow = 24): string {
 export async function runLeadCapturePipeline(
   payload: WebFormLeadPayload,
   existingLeads: Lead[],
-  options?: { forceHeuristic?: boolean },
+  options?: { forceHeuristic?: boolean; clients?: Client[] },
 ): Promise<LeadPipelineResult> {
   const steps: PipelineStepLog[] = [];
   const email = payload.email.trim().toLowerCase();
@@ -114,9 +92,7 @@ export async function runLeadCapturePipeline(
   }
 
   const origin = inferOriginFromForm(payload);
-  const campaign =
-    payload.utmCampaign?.trim() ||
-    (payload.utmSource ? `utm:${payload.utmSource}` : null);
+  const campaign = campaignFromPayload(payload);
 
   const dup = existingLeads.find((l) => l.email.toLowerCase() === email);
   let lead: Lead;
@@ -183,7 +159,14 @@ export async function runLeadCapturePipeline(
     ),
   );
 
-  const scoreResult = await scoreLead(lead, null, {
+  // Cruce con la cartera: si quien rellena el formulario ya es cliente, su
+  // historial entra en el score. Sin esto un repetidor puntuaba como extraño.
+  const linkedClient =
+    (options?.clients ?? []).find(
+      (c) => c.email.trim().toLowerCase() === lead.email.trim().toLowerCase(),
+    ) ?? null;
+
+  const scoreResult = await scoreLead(lead, linkedClient, {
     forceHeuristic: options?.forceHeuristic,
   });
   lead = applyScoreToLead(lead, scoreResult);

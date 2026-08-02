@@ -1,4 +1,4 @@
-import { MPS_ANNEX } from "./assumptions";
+import { MPS_ANNEX } from "./assumptions.js";
 
 export type LeadOrigin =
   | "web_form"

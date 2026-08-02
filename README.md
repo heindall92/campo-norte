@@ -163,6 +163,8 @@ Añade en Vercel:
 | [`PROPUESTA.md`](./PROPUESTA.md) | Versión ejecutiva |
 | [`PROPUESTA-EXTENDIDA.md`](./PROPUESTA-EXTENDIDA.md) | Informe completo |
 | [`supabase/schema.sql`](./supabase/schema.sql) | Schema Data Hub |
+| [`docs/ESTADO.md`](./docs/ESTADO.md) | **Empieza por aquí si eres un agente** · estado, decisiones y siguiente tarea |
+| [`docs/LAZO-LEADS.md`](./docs/LAZO-LEADS.md) | Ingesta, scoring en servidor y cron: qué es real y cómo encenderlo |
 | [`docs/mobile-demo/`](./docs/mobile-demo/) | Demo interactiva de la vista móvil (iOS / Android) · `npm run demo:mobile` la publica en `/mobile-demo/` |
 
 ---
