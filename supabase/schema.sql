@@ -371,3 +371,39 @@ create policy "mps lead outcomes write" on public.mps_lead_outcomes
 drop policy if exists "mps run log read" on public.mps_run_log;
 create policy "mps run log read" on public.mps_run_log
   for select to authenticated using (public.mps_is_team());
+
+-- ---------------------------------------------------------------------------
+-- Analítica propia de accesos (alternativa gratis a Vercel Analytics)
+--
+-- Quién entró, a qué hora, desde qué IP real (cabecera de Vercel) y si abrió
+-- la propuesta / el producto. La escribe solo el servidor con service_role.
+-- ---------------------------------------------------------------------------
+
+create table if not exists public.mps_access_log (
+  id uuid primary key default gen_random_uuid(),
+  event text not null
+    check (event in ('login', 'view_proposal', 'view_product', 'session')),
+  email text not null,
+  name text not null default '',
+  user_id text not null default '',
+  provider text not null default 'unknown',
+  section text,
+  ip text not null default 'unknown',
+  user_agent text not null default '',
+  org_tag text not null default 'Externo',
+  created_at timestamptz not null default now()
+);
+
+create index if not exists mps_access_log_created_idx
+  on public.mps_access_log (created_at desc);
+create index if not exists mps_access_log_email_idx
+  on public.mps_access_log (email, created_at desc);
+create index if not exists mps_access_log_event_idx
+  on public.mps_access_log (event, created_at desc);
+
+alter table public.mps_access_log enable row level security;
+
+drop policy if exists "mps access log read" on public.mps_access_log;
+create policy "mps access log read" on public.mps_access_log
+  for select to authenticated using (public.mps_is_team());
+-- Sin políticas de insert/update para authenticated: solo service_role.

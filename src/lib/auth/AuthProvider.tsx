@@ -9,6 +9,7 @@ import {
 } from "react";
 import { getSupabase, getSupabaseEnv } from "@/lib/supabase/client";
 import { allowLocalDemoAuth, setForceLocalHub } from "@/lib/runtime";
+import { trackAccess } from "@/lib/access-log";
 import {
   LOCAL_AUTH_KEY,
   ROLE_LABEL,
@@ -58,6 +59,7 @@ function signInLocalDemo(normalized: string, password: string): AppUser {
   }
   localStorage.setItem(LOCAL_AUTH_KEY, JSON.stringify(match));
   setForceLocalHub(true);
+  void trackAccess("login", match);
   return match;
 }
 
@@ -171,6 +173,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!error) {
         localStorage.removeItem(LOCAL_AUTH_KEY);
         setForceLocalHub(false);
+        // El onAuthStateChange / getSession rellenará user; trackeamos por email
+        void trackAccess("login", {
+          id: normalized,
+          email: normalized,
+          name: normalized.split("@")[0] || "Usuario",
+          provider: "supabase",
+        });
         return;
       }
       // Fallback pitch: cuentas demo del equipo → Hub local (semilla)
@@ -205,6 +214,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useIdleSessionTimeout(Boolean(user) && ready, signOut);
+
+  // Sesión ya abierta (reload / pestaña): 1 ping/día para saber que volvieron
+  useEffect(() => {
+    if (!ready || !user) return;
+    void trackAccess("session", user);
+  }, [ready, user]);
 
   const value = useMemo(
     () => ({ ready, user, supabaseReady, signIn, signOut }),

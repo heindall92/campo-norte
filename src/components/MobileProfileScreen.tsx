@@ -14,7 +14,9 @@ import { cn } from "@/lib/utils";
 import { AppleSwitch } from "@/components/AppleSwitch";
 import { ViewModePicker } from "@/components/ViewModePicker";
 import { SupportModal } from "@/components/SupportModal";
+import { MobileAccessLogSheet } from "@/components/MobileAccessLogSheet";
 import {
+  Activity,
   Bell,
   ChevronDown,
   ChevronRight,
@@ -98,6 +100,7 @@ export function MobileProfileScreen({
   const [layout, setLayout] = useState<ProfileLayoutId>(prefs.profileLayout);
   const [themeOpen, setThemeOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
+  const [accessLogOpen, setAccessLogOpen] = useState(false);
 
   useEffect(() => {
     setLayout(prefs.profileLayout);
@@ -291,6 +294,12 @@ export function MobileProfileScreen({
   const sessionCard = (
     <Card>
       <Row
+        icon={Activity}
+        label={es ? "Quién se ha conectado" : "Who logged in"}
+        value={es ? "Analítica" : "Analytics"}
+        onClick={() => setAccessLogOpen(true)}
+      />
+      <Row
         icon={LogOut}
         label={es ? "Cerrar sesión" : "Sign out"}
         danger
@@ -330,6 +339,11 @@ export function MobileProfileScreen({
           </div>
         </div>
         <SupportModal open={supportOpen} onClose={() => setSupportOpen(false)} lang={lang} />
+        <MobileAccessLogSheet
+          open={accessLogOpen}
+          onClose={() => setAccessLogOpen(false)}
+          lang={lang === "es" ? "es" : "en"}
+        />
       </>
     );
   }
@@ -382,6 +396,11 @@ export function MobileProfileScreen({
         </div>
       </div>
       <SupportModal open={supportOpen} onClose={() => setSupportOpen(false)} lang={lang} />
+      <MobileAccessLogSheet
+        open={accessLogOpen}
+        onClose={() => setAccessLogOpen(false)}
+        lang={lang === "es" ? "es" : "en"}
+      />
     </>
   );
 }

@@ -66,6 +66,7 @@ import {
   useAuth,
 } from "@/lib/auth";
 import { allowClientAiKeys } from "@/lib/runtime";
+import { sectionToAccessEvent, trackAccess } from "@/lib/access-log";
 import type { AppSection } from "@/lib/notifications";
 import { AppHeader } from "@/components/AppHeader";
 import { MobileCrmShell } from "@/components/MobileCrmShell";
@@ -3514,6 +3515,13 @@ export function MpsCrmApp() {
       setSection("dashboard");
     }
   }, [role, section]);
+
+  useEffect(() => {
+    if (!user) return;
+    const kind = sectionToAccessEvent(section);
+    if (!kind) return;
+    void trackAccess(kind, user, section);
+  }, [section, user]);
 
   useEffect(() => {
     function onNavigateEvent(e: Event) {
