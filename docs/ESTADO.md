@@ -5,7 +5,7 @@
 > memoria. El chat no es memoria: este archivo sí. Si el chat y el repo se
 > contradicen, **manda el repo**.
 
-**Última actualización:** 2026-08-02 · por Cursor · tip de rama `bfec0a9` (+ corrección de tips)
+**Última actualización:** 2026-08-02 · por Claude Code · tip de rama `2ca1d6d`
 
 ---
 
@@ -14,7 +14,7 @@
 | Rama | Commit | Qué contiene |
 |---|---|---|
 | `main` | `645bda2` | Producción. Ya incluye la vista móvil base (hasta `0ed3f94`) + pulidos de Cuenta/títulos/fichas desde Prioridad (`c5ed4d9`, `645bda2`). **No** tiene el lazo de leads ni este `ESTADO.md`. |
-| `claude/mobile-30mps-demo-1pxs98` | `bfec0a9` | Lazo de leads (`473416e`) + este handoff. Parte del móvil ya está en `main`; lo que aporta esta rama frente a `main` es el lazo + docs. |
+| `claude/mobile-30mps-demo-1pxs98` | `2ca1d6d` | Lazo de leads (`473416e`) + este handoff + **`main` ya integrado**: el PR entra sin conflictos. |
 
 Commits de esta rama que **aún no** están en `main`:
 
@@ -23,12 +23,11 @@ bfec0a9  docs/ESTADO.md — handoff entre agentes
 473416e  lazo de leads: ingesta real, scoring en servidor, cron diario
 ```
 
-Commits en `main` que **esta rama aún no** tiene (habrá que integrar al mergear el PR):
-
-```
-645bda2  Cuenta: separar Preferencias/Sesión; títulos únicos; dashboard compacto
-c5ed4d9  Prioridad de hoy y próxima salida abren ficha in-place
-```
+`main` ya está integrado en esta rama (merge `2ca1d6d`). Hubo un conflicto real
+en `MobileHomeSummary.tsx` — `main` reestructuró la fila de prioridad para abrir
+la ficha in-place y esta rama cambió lo que dice (score enfriado) — y se resolvió
+**conservando las dos cosas**. Verificado tras la fusión: lint, 43 tests, build y
+comprobación en navegador.
 
 Nadie mergea a `main` sin PR y sin que el dueño lo pida.
 
@@ -126,7 +125,7 @@ los tres sitios donde es fácil pisarse.
 
 ## 6 · Siguiente tarea (UNA)
 
-> **1) Revisar y mergear el PR** de esta rama → `main` (integra lazo + pulidos de Cuenta).
+> **1) Revisar y mergear el PR** de esta rama → `main`. Ya no tiene conflictos.
 > **2) Después:** encender Supabase y verificar el lazo en el preview/producción
 > siguiendo [`docs/LAZO-LEADS.md`](./LAZO-LEADS.md) (proyecto, `schema.sql`, variables
 > Vercel, `/captura` + curl de ingesta).
