@@ -97,6 +97,9 @@ import {
   saveUserPrefs,
   type UserPrefs,
 } from "@/lib/user-prefs";
+import { LeadPriorityModeSelect } from "@/components/LeadPriorityModeSelect";
+import { useLeadPriorityMode } from "@/lib/use-lead-priority-mode";
+import { leadPriorityModeLabel } from "@/lib/ai/lead-priority";
 import {
   loadBusinessSettings,
   saveBusinessSettings,
@@ -1046,7 +1049,12 @@ function SettingsPanel({
 function HubPanel({ lang }: { lang: Lang }) {
   const hub = useDataHub();
   const isMobile = useIsMobile();
-  const { sorted } = computeLeadStats(hub.leads);
+  const { mode } = useLeadPriorityMode();
+  const { sorted } = computeLeadStats(hub.leads, new Date(), {
+    mode,
+    clients: hub.clients,
+    lang,
+  });
   const leadsFileRef = useRef<HTMLInputElement>(null);
   const clientsFileRef = useRef<HTMLInputElement>(null);
   const snapshotFileRef = useRef<HTMLInputElement>(null);
@@ -1743,7 +1751,13 @@ function LeadsPanel({ lang }: { lang: Lang }) {
   const hub = useDataHub();
   const { push } = useNotifications();
   const isMobile = useIsMobile();
-  const { sorted, unknown, avg, total } = computeLeadStats(hub.leads);
+  const { mode, setLeadPriorityMode } = useLeadPriorityMode();
+  const { sorted, ranked, unknown, avg, total } = computeLeadStats(hub.leads, new Date(), {
+    mode,
+    clients: hub.clients,
+    lang,
+  });
+  const whyById = new Map(ranked.map((r) => [r.lead.id, r.why]));
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = sorted.find((l) => l.id === selectedId) ?? (isMobile ? null : sorted[0]) ?? null;
   const [scoring, setScoring] = useState(false);
@@ -1809,7 +1823,7 @@ function LeadsPanel({ lang }: { lang: Lang }) {
         <Kpi compact={isMobile} label={t(lang, "score_avg")} value={String(avg)} />
         <Kpi compact={isMobile} label={t(lang, "without_origin")} value={String(unknown)} />
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-end gap-3">
         <button
           type="button"
           onClick={async () => {
@@ -1825,14 +1839,16 @@ function LeadsPanel({ lang }: { lang: Lang }) {
           <Plus className="h-4 w-4" />
           {lang === "es" ? "Añadir lead" : "Add lead"}
         </button>
+        <LeadPriorityModeSelect
+          value={mode}
+          onChange={setLeadPriorityMode}
+          lang={lang}
+          className="min-w-[16rem] flex-1"
+        />
         <span className="self-center text-xs text-[var(--ink-muted)]">
-          {aiReady()
-            ? lang === "es"
-              ? `${providerLabel()} activo · score vía API`
-              : `${providerLabel()} on · API scoring`
-            : lang === "es"
-              ? "Sin IA · score heurístico"
-              : "No AI · heuristic score"}
+          {lang === "es"
+            ? `Modo ${leadPriorityModeLabel(mode, "es")} · el score no se reescribe`
+            : `${leadPriorityModeLabel(mode, "en")} mode · score is never rewritten`}
         </span>
       </div>
       <div className="grid gap-5 lg:grid-cols-5">
@@ -1860,7 +1876,7 @@ function LeadsPanel({ lang }: { lang: Lang }) {
                       <span className="font-normal text-[var(--ink-muted)]">{lead.id}</span>
                     </p>
                     <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--ink-muted)]">
-                      {ORIGIN_LABEL[lead.origin]}
+                      {whyById.get(lead.id) ?? ORIGIN_LABEL[lead.origin]}
                       <VehicleBadge vehicle={lead.vehicle} />
                     </p>
                   </div>

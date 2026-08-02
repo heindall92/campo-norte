@@ -52,6 +52,17 @@ export {
   type LeadScoreSource,
 } from "./lead-scoring";
 export {
+  DEFAULT_LEAD_PRIORITY_MODE,
+  LEAD_PRIORITY_MODES,
+  isLeadPriorityMode,
+  leadPriorityModeHint,
+  leadPriorityModeLabel,
+  rankLeads,
+  sortLeadsByMode,
+  type LeadPriorityMode,
+  type RankedLead,
+} from "./lead-priority";
+export {
   deleteKnowledgeDoc,
   KNOWLEDGE_DOCS_KEY,
   KNOWLEDGE_KIND_LABEL,

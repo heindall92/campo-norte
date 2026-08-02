@@ -1,26 +1,54 @@
-import type { Lead, LeadOrigin } from "@/lib/demo-data";
+import type { Client, Lead, LeadOrigin } from "@/lib/demo-data";
 import { ORIGIN_LABEL } from "@/lib/demo-data";
 import { decayedScore } from "@/lib/ai/lead-scoring-core";
+import {
+  DEFAULT_LEAD_PRIORITY_MODE,
+  rankLeads,
+  type LeadPriorityMode,
+  type RankedLead,
+} from "@/lib/ai/lead-priority";
+import type { Lang } from "@/lib/i18n";
 
 /**
- * Prioridad real de llamada: el score guardado enfriado por el tiempo que lleva
- * sin tocarse. El número auditable no cambia; cambia el orden de la cola, que es
- * lo que de verdad decide a quién se llama hoy.
+ * Prioridad real de llamada en modo Urgencia: score enfriado por tiempo.
+ * En otros modos la cola usa `rankLeads`; este helper sigue sirviendo a tests
+ * y a cualquier sitio que solo necesite el efectivo.
  */
 export function effectiveScore(lead: Lead, now: Date = new Date()): number {
   return decayedScore(lead, now).effective;
 }
 
-export function computeLeadStats(leads: Lead[], now: Date = new Date()) {
+export function computeLeadStats(
+  leads: Lead[],
+  now: Date = new Date(),
+  opts?: {
+    mode?: LeadPriorityMode;
+    clients?: Client[];
+    lang?: Lang;
+  },
+) {
   if (!leads.length) {
-    return { sorted: [] as Lead[], unknown: 0, avg: 0, total: 0 };
+    return {
+      sorted: [] as Lead[],
+      ranked: [] as RankedLead[],
+      unknown: 0,
+      avg: 0,
+      total: 0,
+      mode: opts?.mode ?? DEFAULT_LEAD_PRIORITY_MODE,
+    };
   }
-  const sorted = [...leads].sort(
-    (a, b) => effectiveScore(b, now) - effectiveScore(a, now) || b.score - a.score,
-  );
+  const mode = opts?.mode ?? DEFAULT_LEAD_PRIORITY_MODE;
+  const ranked = rankLeads({
+    leads,
+    clients: opts?.clients ?? [],
+    mode,
+    now,
+    lang: opts?.lang ?? "es",
+  });
+  const sorted = ranked.map((r) => r.lead);
   const unknown = leads.filter((l) => l.origin === "unknown").length;
   const avg = Math.round(leads.reduce((s, l) => s + l.score, 0) / leads.length);
-  return { sorted, unknown, avg, total: leads.length };
+  return { sorted, ranked, unknown, avg, total: leads.length, mode };
 }
 
 /** Atribución desde leads reales del Hub (Fase 1), no solo mix de expediciones demo */

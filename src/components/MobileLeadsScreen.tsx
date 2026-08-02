@@ -1,7 +1,8 @@
 "use client";
 
 import { applyScoreToLead, priorityFromScore, priorityLabel, scoreLead } from "@/lib/ai";
-import { decayedScore } from "@/lib/ai/lead-scoring-core";
+import { rankLeads } from "@/lib/ai/lead-priority";
+import { LeadPriorityModeSelect } from "@/components/LeadPriorityModeSelect";
 import { useDataHub } from "@/lib/data";
 import {
   ORIGIN_LABEL,
@@ -12,6 +13,7 @@ import {
 import type { Lang } from "@/lib/i18n";
 import { useNotifications } from "@/lib/notifications";
 import { showMobileSuccess } from "@/lib/mobile-confirm";
+import { useLeadPriorityMode } from "@/lib/use-lead-priority-mode";
 import { cn } from "@/lib/utils";
 import {
   MobileCard,
@@ -63,18 +65,20 @@ function daysAgo(iso: string, es: boolean): string {
 export function MobileLeadsScreen({ lang }: { lang: Lang }) {
   const hub = useDataHub();
   const es = lang === "es";
+  const { mode, setLeadPriorityMode } = useLeadPriorityMode();
   const [filter, setFilter] = useState<LeadFilter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
 
-  // La cola se ordena por score efectivo (enfriado por el tiempo). El score
-  // guardado sigue siendo el que se ve y el que se puede auditar.
+  // El modo solo reordena. El score del anillo sigue siendo el auditable.
   const list = useMemo(() => {
-    const now = new Date();
-    return hub.leads
-      .filter((l) => filter === "all" || l.status === filter)
-      .map((lead) => ({ lead, decay: decayedScore(lead, now) }))
-      .sort((a, b) => b.decay.effective - a.decay.effective || b.lead.score - a.lead.score);
-  }, [hub.leads, filter]);
+    const filtered = hub.leads.filter((l) => filter === "all" || l.status === filter);
+    return rankLeads({
+      leads: filtered,
+      clients: hub.clients,
+      mode,
+      lang,
+    });
+  }, [hub.leads, hub.clients, filter, mode, lang]);
 
   const filters: { id: LeadFilter; label: string }[] = [
     { id: "all", label: es ? "Todos" : "All" },
@@ -92,9 +96,16 @@ export function MobileLeadsScreen({ lang }: { lang: Lang }) {
         title="Leads"
         subtitle={
           es
-            ? "Cola priorizada por scoring. Tú decides quién recibe la llamada."
-            : "Queue ranked by scoring. You decide who gets the call."
+            ? "Cola priorizada por negocio. Tú decides quién recibe la llamada."
+            : "Queue ranked by business mode. You decide who gets the call."
         }
+      />
+
+      <LeadPriorityModeSelect
+        value={mode}
+        onChange={setLeadPriorityMode}
+        lang={lang}
+        compact
       />
 
       <MobileFilterRow options={filters} value={filter} onChange={setFilter} />
@@ -107,9 +118,9 @@ export function MobileLeadsScreen({ lang }: { lang: Lang }) {
             </p>
           </MobileCard>
         ) : (
-          list.map(({ lead, decay }) => {
+          list.map(({ lead, effective, base, why }) => {
             const status = STATUS_LABEL[lead.status];
-            const cooled = decay.base - decay.effective >= 5;
+            const cooled = base - effective >= 5;
             return (
               <button
                 key={lead.id}
@@ -128,18 +139,14 @@ export function MobileLeadsScreen({ lang }: { lang: Lang }) {
                     {lead.name}
                   </span>
                   <span className="block truncate text-xs text-[var(--ink-muted)]">
-                    {lead.interestRoute
-                      ? ROUTE_LABEL[lead.interestRoute]
-                      : es
-                        ? "Ruta por definir"
-                        : "Route to define"}
+                    {why}
                   </span>
                   <span className="mt-1.5 flex flex-wrap gap-1.5">
                     <MobileChip tone={status.tone}>{es ? status.es : status.en}</MobileChip>
                     <MobileChip>{ORIGIN_LABEL[lead.origin]}</MobileChip>
                     {cooled && (
                       <MobileChip tone="warn">
-                        {es ? `enfriado a ${decay.effective}` : `cooled to ${decay.effective}`}
+                        {es ? `enfriado a ${effective}` : `cooled to ${effective}`}
                       </MobileChip>
                     )}
                   </span>

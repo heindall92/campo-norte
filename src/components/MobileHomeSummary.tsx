@@ -2,7 +2,11 @@
 
 import { useDataHub } from "@/lib/data";
 import { avgMarginPct, avgOccupancyPct } from "@/lib/business-kpis";
-import { decayedScore } from "@/lib/ai/lead-scoring-core";
+import {
+  leadPriorityModeLabel,
+  rankLeads,
+  type LeadPriorityMode,
+} from "@/lib/ai/lead-priority";
 import { MPS_ANNEX } from "@/lib/assumptions";
 import {
   EXPEDITIONS,
@@ -14,6 +18,7 @@ import {
 import type { Reservation } from "@/lib/ops-data";
 import type { Lang } from "@/lib/i18n";
 import type { AppSection } from "@/lib/notifications";
+import { useLeadPriorityMode } from "@/lib/use-lead-priority-mode";
 import { cn } from "@/lib/utils";
 import { MobileBookingSheet } from "@/components/MobileBookingsScreen";
 import { MobileClientSheet } from "@/components/MobileClientsScreen";
@@ -112,8 +117,10 @@ function buildPriorities(
   leads: Lead[],
   clients: Client[],
   reservations: Reservation[],
+  mode: LeadPriorityMode,
 ): Priority[] {
   const list: Priority[] = [];
+  const lang = es ? "es" : "en";
 
   const call = clients
     .filter((c) => c.contactThisMonth || c.reactivationPriority >= 80)
@@ -130,37 +137,27 @@ function buildPriorities(
     });
   }
 
-  // Orden por score enfriado: un 90 de hace tres semanas ya no es la llamada
-  // más urgente, y la pantalla de inicio tiene que decir la verdad sobre eso.
+  // Respeta el modo de priorización del usuario; el score guardado no se toca.
   const now = new Date(today);
-  const hotLead = leads
-    .filter((l) => l.status !== "descartado" && l.status !== "reservado")
-    .map((l) => ({ lead: l, decay: decayedScore(l, now) }))
-    .sort((a, b) => b.decay.effective - a.decay.effective)[0];
-  if (hotLead) {
-    const { lead, decay } = hotLead;
-    const route = lead.interestRoute ? ROUTE_LABEL[lead.interestRoute] : null;
-    const cooled = decay.base - decay.effective >= 5;
+  const hot = rankLeads({
+    leads: leads.filter((l) => l.status !== "descartado" && l.status !== "reservado"),
+    clients,
+    mode,
+    now,
+    lang,
+  })[0];
+  if (hot) {
+    const { lead, why, effective } = hot;
     list.push({
-      // Estructura de main (abre la ficha in-place) + el score enfriado, que es
-      // la prioridad real: un 94 de hace tres semanas ya no es la llamada de hoy.
       id: `lead-${lead.id}`,
       kind: "lead",
       entityId: lead.id,
       icon: Flame,
       tone: "accent",
       title: es
-        ? `${lead.name} lidera con ${decay.effective}`
-        : `${lead.name} leads at ${decay.effective}`,
-      detail: [
-        route,
-        lead.owner,
-        cooled
-          ? es
-            ? `${decay.base} enfriado a ${decay.effective} · ${decay.days} días sin tocar`
-            : `${decay.base} cooled to ${decay.effective} · ${decay.days} days untouched`
-          : null,
-      ]
+        ? `${lead.name} · ${leadPriorityModeLabel(mode, "es")}`
+        : `${lead.name} · ${leadPriorityModeLabel(mode, "en")}`,
+      detail: [why, lead.owner, es ? `score ${lead.score} · efectivo ${effective}` : `score ${lead.score} · effective ${effective}`]
         .filter(Boolean)
         .join(" · "),
     });
@@ -268,6 +265,7 @@ export function MobileHomeSummary({
 }) {
   const hub = useDataHub();
   const es = lang === "es";
+  const { mode } = useLeadPriorityMode();
   const [sheet, setSheet] = useState<{ kind: PriorityKind; id: string } | null>(null);
 
   const openClient = hub.clients.find((c) => sheet?.kind === "client" && c.id === sheet.id) ?? null;
@@ -297,9 +295,9 @@ export function MobileHomeSummary({
       ),
       pending: pendingBalance(hub.reservations),
       margin: avgMarginPct(future),
-      priorities: buildPriorities(es, today, hub.leads, hub.clients, hub.reservations),
+      priorities: buildPriorities(es, today, hub.leads, hub.clients, hub.reservations, mode),
     };
-  }, [es, hub.leads, hub.clients, hub.reservations]);
+  }, [es, mode, hub.leads, hub.clients, hub.reservations]);
 
   const money = (value: number) =>
     new Intl.NumberFormat(es ? "es-ES" : "en-GB", {

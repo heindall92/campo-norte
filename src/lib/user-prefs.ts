@@ -1,5 +1,11 @@
 /** Preferencias visuales por usuario (tema + acento). Aisladas por userId. */
 
+import {
+  DEFAULT_LEAD_PRIORITY_MODE,
+  isLeadPriorityMode,
+  type LeadPriorityMode,
+} from "@/lib/ai/lead-priority";
+
 export type UiTheme = "light" | "dark";
 
 export type AccentId =
@@ -14,6 +20,8 @@ export type AccentId =
 
 export type ProfileLayoutId = "settings" | "hub";
 
+export type { LeadPriorityMode };
+
 /**
  * Layout B (hub centrado) se conserva en código y en `profileLayout`,
  * pero está oculto en UI. Activar a `true` si se vuelve a pedir en móvil.
@@ -25,6 +33,11 @@ export interface UserPrefs {
   accent: AccentId;
   /** Vista del perfil móvil: lista Settings (A) o hub centrado (B). */
   profileLayout: ProfileLayoutId;
+  /**
+   * Cómo ordenar la cola de leads. Solo reordena; no reescribe el score.
+   * Preferencia por usuario (mismo patrón que el timeout de inactividad).
+   */
+  leadPriorityMode: LeadPriorityMode;
 }
 
 const PREFS_PREFIX = "mps-user-prefs-v1:";
@@ -96,6 +109,7 @@ export const DEFAULT_USER_PREFS: UserPrefs = {
   theme: "light",
   accent: "electric",
   profileLayout: "settings",
+  leadPriorityMode: DEFAULT_LEAD_PRIORITY_MODE,
 };
 
 function key(userId: string) {
@@ -116,7 +130,10 @@ export function loadUserPrefs(userId: string | undefined | null): UserPrefs {
     // Conservamos "hub" en storage por si se reactiva PROFILE_LAYOUT_B_ENABLED.
     const profileLayout: ProfileLayoutId =
       parsed.profileLayout === "hub" ? "hub" : "settings";
-    return { theme, accent, profileLayout };
+    const leadPriorityMode = isLeadPriorityMode(parsed.leadPriorityMode)
+      ? parsed.leadPriorityMode
+      : DEFAULT_USER_PREFS.leadPriorityMode;
+    return { theme, accent, profileLayout, leadPriorityMode };
   } catch {
     return { ...DEFAULT_USER_PREFS };
   }
