@@ -2,6 +2,7 @@
 
 import { useDataHub } from "@/lib/data";
 import { avgMarginPct, avgOccupancyPct } from "@/lib/business-kpis";
+import { decayedScore } from "@/lib/ai/lead-scoring-core";
 import { MPS_ANNEX } from "@/lib/assumptions";
 import {
   EXPEDITIONS,
@@ -122,19 +123,35 @@ function buildPriorities(
     });
   }
 
+  // Orden por score enfriado: un 90 de hace tres semanas ya no es la llamada
+  // más urgente, y la pantalla de inicio tiene que decir la verdad sobre eso.
+  const now = new Date(today);
   const hotLead = leads
     .filter((l) => l.status !== "descartado" && l.status !== "reservado")
-    .sort((a, b) => b.score - a.score)[0];
+    .map((l) => ({ lead: l, decay: decayedScore(l, now) }))
+    .sort((a, b) => b.decay.effective - a.decay.effective)[0];
   if (hotLead) {
-    const route = hotLead.interestRoute ? ROUTE_LABEL[hotLead.interestRoute] : null;
+    const { lead, decay } = hotLead;
+    const route = lead.interestRoute ? ROUTE_LABEL[lead.interestRoute] : null;
+    const cooled = decay.base - decay.effective >= 5;
     list.push({
-      id: `lead-${hotLead.id}`,
+      id: `lead-${lead.id}`,
       icon: Flame,
       tone: "accent",
       title: es
-        ? `${hotLead.name} entra con ${hotLead.score}`
-        : `${hotLead.name} lands at ${hotLead.score}`,
-      detail: [route, hotLead.owner].filter(Boolean).join(" · "),
+        ? `${lead.name} lidera con ${decay.effective}`
+        : `${lead.name} leads at ${decay.effective}`,
+      detail: [
+        route,
+        lead.owner,
+        cooled
+          ? es
+            ? `${decay.base} enfriado a ${decay.effective} · ${decay.days} días sin tocar`
+            : `${decay.base} cooled to ${decay.effective} · ${decay.days} days untouched`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" · "),
       section: "leads",
     });
   }

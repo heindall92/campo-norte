@@ -1,0 +1,196 @@
+/**
+ * Núcleo de scoring — sin dependencias de navegador.
+ *
+ * Vive aparte de `lead-scoring.ts` a propósito: ese archivo habla con Ollama y
+ * arrastra `import.meta.env`, que no existe en Node. Este solo hace cuentas, así
+ * que lo pueden importar tanto la app como las funciones de `api/`, y el score
+ * que ve Miguel en pantalla es exactamente el que calcula el servidor.
+ *
+ * Importes relativos con extensión `.js` (no el alias `@/`) porque el
+ * typecheck de `api/` usa resolución de Node, donde el alias no existe.
+ */
+
+import { ORIGIN_LABEL, ROUTE_LABEL } from "../demo-data.js";
+import type { Client, Lead, LeadOrigin } from "../demo-data.js";
+
+export type LeadScoreSource = "heuristic" | "ollama";
+
+export type LeadPriority = "muy_alta" | "alta" | "media" | "baja";
+
+export interface LeadScoreResult {
+  score: number;
+  priority: LeadPriority;
+  reasons: string[];
+  source: LeadScoreSource;
+}
+
+/** Puntos por canal de entrada. Expuesto para poder explicarlo en la UI. */
+export const ORIGIN_WEIGHT: Record<LeadOrigin, number> = {
+  referral: 22,
+  web_form: 14,
+  brevo_click: 12,
+  feria: 8,
+  instagram: 6,
+  unknown: 0,
+};
+
+export function priorityFromScore(score: number): LeadPriority {
+  if (score >= 85) return "muy_alta";
+  if (score >= 70) return "alta";
+  if (score >= 50) return "media";
+  return "baja";
+}
+
+export function priorityLabel(p: LeadPriority, lang: "es" | "en" = "es"): string {
+  const es: Record<LeadPriority, string> = {
+    muy_alta: "Muy alta prioridad",
+    alta: "Alta prioridad",
+    media: "Prioridad media",
+    baja: "Baja prioridad",
+  };
+  const en: Record<LeadPriority, string> = {
+    muy_alta: "Very high priority",
+    alta: "High priority",
+    media: "Medium priority",
+    baja: "Low priority",
+  };
+  return lang === "es" ? es[p] : en[p];
+}
+
+export function clampScore(n: number): number {
+  return Math.max(0, Math.min(100, Math.round(n)));
+}
+
+/** Scoring determinístico. Solo clasifica: nunca escribe al viajero. */
+export function scoreLeadHeuristic(lead: Lead, linked?: Client | null): LeadScoreResult {
+  const reasons: string[] = [];
+  let score = 35;
+
+  const boost = ORIGIN_WEIGHT[lead.origin] ?? 0;
+  if (boost) {
+    score += boost;
+    reasons.push(`Canal: ${ORIGIN_LABEL[lead.origin]}`);
+  } else {
+    reasons.push("Sin origen claro");
+  }
+
+  if (lead.interestRoute) {
+    score += 12;
+    reasons.push(`Destino: ${ROUTE_LABEL[lead.interestRoute]}`);
+  }
+  if (lead.vehicle) {
+    score += 4;
+    reasons.push(`Vehículo: ${lead.vehicle}`);
+  }
+  if (lead.campaign) {
+    score += 6;
+    reasons.push(`Campaña: ${lead.campaign}`);
+  }
+
+  if (linked) {
+    if (linked.trips > 0) {
+      score += 18;
+      reasons.push(
+        linked.trips === 1
+          ? "Cliente con viaje previo"
+          : `Cliente repetidor (${linked.trips} viajes)`,
+      );
+    }
+    if (linked.ltv >= 10_000) {
+      score += 12;
+      reasons.push("Alto poder adquisitivo (LTV)");
+    }
+    if (linked.brevoOpens >= 5) {
+      score += 8;
+      reasons.push(`Ha abierto ${linked.brevoOpens} emails (Brevo)`);
+    }
+    const mongoliaVisits = linked.history.filter((h) => h.route === "MONGOLIA").length;
+    if (mongoliaVisits >= 1) {
+      score += 6;
+      reasons.push(
+        mongoliaVisits >= 2
+          ? `Visitó Mongolia ${mongoliaVisits} veces`
+          : "Interés / historial Mongolia",
+      );
+    }
+  }
+
+  if (lead.status === "cualificado") score += 8;
+  if (lead.status === "reservado") score += 15;
+
+  score = clampScore(score);
+  if (score >= 80) reasons.push("Probabilidad de compra alta");
+
+  return {
+    score,
+    priority: priorityFromScore(score),
+    reasons: reasons.slice(0, 8),
+    source: "heuristic",
+  };
+}
+
+export function applyScoreToLead(lead: Lead, result: LeadScoreResult): Lead {
+  return {
+    ...lead,
+    score: result.score,
+    scoreReasons: result.reasons,
+    lastTouchAt: new Date().toISOString().slice(0, 10),
+  };
+}
+
+/* ------------------------------------------------------------------ *
+ * Decaimiento temporal
+ * ------------------------------------------------------------------ */
+
+/** A los 14 días un lead sin tocar vale la mitad; a los 28, la cuarta parte. */
+export const DEFAULT_HALF_LIFE_DAYS = 14;
+
+export interface DecayedScore {
+  /** Score guardado, sin tocar. */
+  base: number;
+  /** Score una vez enfriado por el tiempo — es el que ordena la cola. */
+  effective: number;
+  /** Días desde el último contacto. */
+  days: number;
+  /** Multiplicador aplicado (1 = recién entrado). */
+  factor: number;
+}
+
+export function decayFactor(days: number, halfLifeDays = DEFAULT_HALF_LIFE_DAYS): number {
+  if (!Number.isFinite(days) || days <= 0) return 1;
+  if (halfLifeDays <= 0) return 1;
+  return Math.exp(-(Math.LN2 / halfLifeDays) * days);
+}
+
+/**
+ * Días completos desde la fecha dada. Enteros a propósito: `lastTouchAt` es una
+ * fecha sin hora, y contar fracciones haría que el mismo lead se enfriase a lo
+ * largo del día sin que hubiera pasado nada.
+ */
+export function daysSince(iso: string | null | undefined, now: Date = new Date()): number {
+  if (!iso) return 0;
+  const then = new Date(`${iso}T00:00:00`).getTime();
+  if (Number.isNaN(then)) return 0;
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  return Math.max(0, Math.floor((start.getTime() - then) / 86_400_000));
+}
+
+/**
+ * Enfría el score según lo que lleva sin tocarse. No reescribe nada: el score
+ * guardado sigue siendo el auditable, esto solo cambia el orden de la cola.
+ */
+export function decayedScore(
+  lead: Pick<Lead, "score" | "lastTouchAt" | "createdAt">,
+  now: Date = new Date(),
+  halfLifeDays = DEFAULT_HALF_LIFE_DAYS,
+): DecayedScore {
+  const days = daysSince(lead.lastTouchAt || lead.createdAt, now);
+  const factor = decayFactor(days, halfLifeDays);
+  return {
+    base: lead.score,
+    effective: clampScore(lead.score * factor),
+    days,
+    factor,
+  };
+}

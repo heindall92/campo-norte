@@ -160,7 +160,9 @@ export function AutomationsEcosystemPanel({ lang }: { lang: Lang }) {
     setError(null);
     setResult(null);
     try {
-      const pipeline = await runLeadCapturePipeline(form, hub.leads);
+      const pipeline = await runLeadCapturePipeline(form, hub.leads, {
+        clients: hub.clients,
+      });
       await hub.saveLead(pipeline.lead);
       push({
         kind: "lead",

@@ -313,3 +313,61 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.mps_handle_new_user();
+
+-- ---------------------------------------------------------------------------
+-- Libro de resultados y bitácora de ejecuciones
+--
+-- Estas dos tablas son las que convierten el CRM en un sistema que se puede
+-- auditar y cobrar por resultado:
+--
+--   mps_lead_outcomes → qué pasó de verdad con cada lead. Sin esta columna no
+--     se puede medir si el scoring acierta ni decir "de 40 leads, 5 reservaron".
+--   mps_run_log       → qué ha ejecutado el sistema y cuándo. Es la prueba de
+--     vida: si la ingesta lleva 24 h muda, aquí se ve.
+--
+-- Las escriben las funciones de servidor con la service role key (que se salta
+-- la RLS a propósito). El equipo solo lee.
+-- ---------------------------------------------------------------------------
+
+create table if not exists public.mps_lead_outcomes (
+  id uuid primary key default gen_random_uuid(),
+  lead_id text not null,
+  outcome text not null
+    check (outcome in ('reservado', 'perdido', 'sin_respuesta', 'descartado')),
+  reservation_id text,
+  amount numeric,
+  note text,
+  decided_by text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists mps_lead_outcomes_lead_idx
+  on public.mps_lead_outcomes (lead_id);
+create index if not exists mps_lead_outcomes_created_idx
+  on public.mps_lead_outcomes (created_at desc);
+
+create table if not exists public.mps_run_log (
+  id uuid primary key default gen_random_uuid(),
+  job text not null,
+  status text not null check (status in ('ok', 'warn', 'error')),
+  detail jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists mps_run_log_job_idx
+  on public.mps_run_log (job, created_at desc);
+
+alter table public.mps_lead_outcomes enable row level security;
+alter table public.mps_run_log enable row level security;
+
+drop policy if exists "mps lead outcomes read" on public.mps_lead_outcomes;
+create policy "mps lead outcomes read" on public.mps_lead_outcomes
+  for select to authenticated using (public.mps_is_team());
+drop policy if exists "mps lead outcomes write" on public.mps_lead_outcomes;
+create policy "mps lead outcomes write" on public.mps_lead_outcomes
+  for insert to authenticated with check (public.mps_can_write());
+
+-- La bitácora es solo de lectura para el equipo: la escribe el servidor.
+drop policy if exists "mps run log read" on public.mps_run_log;
+create policy "mps run log read" on public.mps_run_log
+  for select to authenticated using (public.mps_is_team());
