@@ -5,8 +5,7 @@
 > memoria. El chat no es memoria: este archivo sí. Si el chat y el repo se
 > contradicen, **manda el repo**.
 
-**Última actualización:** 2026-08-02 · por Cursor · tip `main` `3bffb3b` (cambios
-locales del selector de 4 modos **sin commit** aún)
+**Última actualización:** 2026-08-02 · por Cursor · tip `main` `da16ff5`
 
 ---
 
@@ -14,10 +13,9 @@ locales del selector de 4 modos **sin commit** aún)
 
 | Rama | Commit | Qué contiene |
 |---|---|---|
-| `main` | `3bffb3b` | Producción desplegada. Móvil + lazo de leads. |
+| `main` | `da16ff5` | Producción. Móvil + lazo + **selector 4 modos**. |
 | Producción | — | https://30mps.vercel.app |
 | Supabase | `gkskudxjuafsidqiiqpg` | **30mps** (eu-west-1). Lazo verificado. |
-| Working tree | (sin commit) | Selector de 4 modos de priorización. |
 
 ---
 
@@ -76,8 +74,8 @@ locales del selector de 4 modos **sin commit** aún)
 
 ## 6 · Siguiente tarea (UNA)
 
-> **Commit + redeploy** del selector de 4 modos (cuando el dueño lo pida), o
-> endurecer Auth Supabase (signup off + primer admin).
+> **Endurecer Auth Supabase:** desactivar alta pública y promover el primer
+> admin en `mps_profiles` (cuando exista usuario de equipo).
 
 ---
 
