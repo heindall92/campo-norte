@@ -207,3 +207,45 @@ describe("summarizeAttention", () => {
     expect(s.amountAtStake).toBe(4000 + 5000 + 1210);
   });
 });
+
+describe("umbrales configurables", () => {
+  it("por defecto señala a los 2 días, alineado con «responder en el día»", () => {
+    const dos = buildAttentionQueue({ leads: [lead({ lastTouchAt: daysAgo(2) })], now: NOW });
+    const uno = buildAttentionQueue({ leads: [lead({ lastTouchAt: daysAgo(1) })], now: NOW });
+    expect(dos).toHaveLength(1);
+    expect(uno).toHaveLength(0);
+  });
+
+  it("se puede relajar el umbral sin tocar el módulo", () => {
+    const items = buildAttentionQueue({
+      leads: [lead({ lastTouchAt: daysAgo(3) })],
+      now: NOW,
+      thresholds: { leadStaleDays: 10 },
+    });
+    expect(items).toEqual([]);
+  });
+
+  it("un override no arrastra al resto de umbrales", () => {
+    const items = buildAttentionQueue({
+      invoices: [invoice({ amountCollected: 0, issueDate: daysAgo(45) })],
+      now: NOW,
+      thresholds: { leadStaleDays: 30 },
+    });
+    expect(items).toHaveLength(1);
+    expect(items[0]!.source).toBe("factura");
+  });
+
+  it("permite endurecer el plazo de cobro", () => {
+    const laxo = buildAttentionQueue({
+      invoices: [invoice({ amountCollected: 0, issueDate: daysAgo(20) })],
+      now: NOW,
+    });
+    const estricto = buildAttentionQueue({
+      invoices: [invoice({ amountCollected: 0, issueDate: daysAgo(20) })],
+      now: NOW,
+      thresholds: { invoiceDueDays: 15 },
+    });
+    expect(laxo).toHaveLength(0);
+    expect(estricto).toHaveLength(1);
+  });
+});

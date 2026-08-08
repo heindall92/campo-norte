@@ -48,14 +48,41 @@ export interface BuildAttentionInput {
   lang?: Lang;
   /** Ticket medio para estimar el valor de un lead sin ruta asignada. */
   avgTicket?: number;
+  /** Sobreescribe umbrales concretos; el resto mantiene el valor por defecto. */
+  thresholds?: Partial<AttentionThresholds>;
 }
 
-/** Score por debajo del cual un lead deja de merecer una llamada urgente. */
-const LEAD_ATTENTION_FLOOR = 55;
-/** Días sin tocar a partir de los cuales un lead caliente es una excepción. */
-const LEAD_STALE_DAYS = 5;
-/** Días antes de la salida en que faltar documentación pasa a ser urgente. */
-const DOCS_URGENT_DAYS = 21;
+/**
+ * Umbrales de la cola.
+ *
+ * Son decisiones de NEGOCIO, no constantes técnicas: por eso salen del módulo
+ * y se pueden sobreescribir por llamada.
+ *
+ * `leadStaleDays: 2` no es arbitrario. El principio de marca es «responder en
+ * el día»; a los dos días ya has incumplido tu propia promesa, así que ese es
+ * el punto en que un lead debe aparecer en la cola. Antes estaba en 5, que
+ * señalaba tarde.
+ */
+export interface AttentionThresholds {
+  /** Score por debajo del cual un lead no merece llamada urgente. */
+  leadFloor: number;
+  /** Días sin contacto que convierten un lead caliente en excepción. */
+  leadStaleDays: number;
+  /** Días antes de la salida en que faltar documentación es urgente. */
+  docsUrgentDays: number;
+  /** Días antes de la salida en que el saldo pendiente es urgente. */
+  balanceDays: number;
+  /** Días desde emisión tras los que una factura se reclama. */
+  invoiceDueDays: number;
+}
+
+export const DEFAULT_ATTENTION_THRESHOLDS: AttentionThresholds = {
+  leadFloor: 55,
+  leadStaleDays: 2,
+  docsUrgentDays: 21,
+  balanceDays: 30,
+  invoiceDueDays: 30,
+};
 
 const SEVERITY_WEIGHT: Record<AttentionSeverity, number> = {
   vencido: 0,
@@ -73,7 +100,13 @@ function severityFor(daysToDue: number): AttentionSeverity {
  * Colectores — uno por fuente
  * ------------------------------------------------------------------ */
 
-function fromLeads(leads: Lead[], now: Date, lang: Lang, avgTicket: number): AttentionItem[] {
+function fromLeads(
+  leads: Lead[],
+  now: Date,
+  lang: Lang,
+  avgTicket: number,
+  th: AttentionThresholds,
+): AttentionItem[] {
   const items: AttentionItem[] = [];
 
   for (const lead of leads) {
@@ -84,12 +117,12 @@ function fromLeads(leads: Lead[], now: Date, lang: Lang, avgTicket: number): Att
     const effective = Math.round(lead.score * factor);
 
     // Solo son excepción los leads que valían la pena y se están enfriando.
-    if (lead.score < LEAD_ATTENTION_FLOOR) continue;
-    if (days < LEAD_STALE_DAYS) continue;
+    if (lead.score < th.leadFloor) continue;
+    if (days < th.leadStaleDays) continue;
 
     const lost = lead.score - effective;
     // El "vencimiento" de un lead es el día en que cruza el suelo de atención.
-    const daysToDue = LEAD_STALE_DAYS - days;
+    const daysToDue = th.leadStaleDays - days;
 
     items.push({
       id: `lead:${lead.id}`,
@@ -111,7 +144,12 @@ function fromLeads(leads: Lead[], now: Date, lang: Lang, avgTicket: number): Att
   return items;
 }
 
-function fromReservations(reservations: Reservation[], now: Date, lang: Lang): AttentionItem[] {
+function fromReservations(
+  reservations: Reservation[],
+  now: Date,
+  lang: Lang,
+  th: AttentionThresholds,
+): AttentionItem[] {
   const items: AttentionItem[] = [];
 
   for (const r of reservations) {
@@ -120,7 +158,7 @@ function fromReservations(reservations: Reservation[], now: Date, lang: Lang): A
     const daysToDeparture = -daysBetween(r.departureAt, now);
 
     // Documentación incompleta cerca de la salida.
-    if (r.status === "docs_pendientes" && daysToDeparture <= DOCS_URGENT_DAYS) {
+    if (r.status === "docs_pendientes" && daysToDeparture <= th.docsUrgentDays) {
       items.push({
         id: `reserva-docs:${r.id}`,
         source: "reserva",
@@ -140,7 +178,7 @@ function fromReservations(reservations: Reservation[], now: Date, lang: Lang): A
 
     // Saldo pendiente con la salida encima.
     const pending = r.totalAmount - r.depositPaid;
-    if (pending > 0 && daysToDeparture <= 30) {
+    if (pending > 0 && daysToDeparture <= th.balanceDays) {
       items.push({
         id: `reserva-saldo:${r.id}`,
         source: "reserva",
@@ -162,7 +200,12 @@ function fromReservations(reservations: Reservation[], now: Date, lang: Lang): A
   return items;
 }
 
-function fromInvoices(invoices: Invoice[], now: Date, lang: Lang): AttentionItem[] {
+function fromInvoices(
+  invoices: Invoice[],
+  now: Date,
+  lang: Lang,
+  th: AttentionThresholds,
+): AttentionItem[] {
   const items: AttentionItem[] = [];
 
   for (const inv of invoices) {
@@ -192,7 +235,7 @@ function fromInvoices(invoices: Invoice[], now: Date, lang: Lang): AttentionItem
     const outstanding = inv.total - inv.amountCollected;
     if (inv.status !== "borrador" && outstanding > 0) {
       const age = daysBetween(inv.issueDate, now);
-      const daysToDue = 30 - age;
+      const daysToDue = th.invoiceDueDays - age;
       if (daysToDue > 7) continue;
 
       items.push({
@@ -230,11 +273,12 @@ export function buildAttentionQueue(input: BuildAttentionInput): AttentionItem[]
   const now = input.now ?? new Date();
   const lang = input.lang ?? "es";
   const avgTicket = input.avgTicket ?? 0;
+  const th = { ...DEFAULT_ATTENTION_THRESHOLDS, ...input.thresholds };
 
   const items = [
-    ...fromLeads(input.leads ?? [], now, lang, avgTicket),
-    ...fromReservations(input.reservations ?? [], now, lang),
-    ...fromInvoices(input.invoices ?? [], now, lang),
+    ...fromLeads(input.leads ?? [], now, lang, avgTicket, th),
+    ...fromReservations(input.reservations ?? [], now, lang, th),
+    ...fromInvoices(input.invoices ?? [], now, lang, th),
   ];
 
   return items.sort((a, b) => {
