@@ -5,7 +5,7 @@
 > memoria. El chat no es memoria: este archivo sí. Si el chat y el repo se
 > contradicen, **manda el repo**.
 
-**Última actualización:** 2026-08-08 · por Cursor · tip `cursor/aurora-patterns-2ebf` · fases 1–12
+**Última actualización:** 2026-08-08 · por Cursor · tip `cursor/aurora-patterns-2ebf` · fases 1–12 · memoria fuera-de-núcleo
 
 ---
 
@@ -19,6 +19,7 @@
 | Producción | — | https://30mps.vercel.app |
 | Preview Aurora | — | https://30mps-git-feat-aurora-patterns-heindall92.vercel.app |
 | Supabase | `gkskudxjuafsidqiiqpg` | **30mps** (eu-west-1). Lazo verificado. |
+| **Fuera de núcleo** | `docs/FUERA-DE-NUCLEO.md` | RRHH/equity, contabilidad, alquileres, OCR, multi-org y otras modalidades — archivo para reutilizar enlaces luego. |
 
 ### Acceso al preview (móvil / pitch)
 
@@ -76,9 +77,10 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 **Verificación automática:** lint, `npm test` (**105**), `npm run build` — limpios.
 
 **Decisiones de alcance (no son olvidos):**
+- **Núcleo = viajes + leads.** Todo lo demás deliberado → `docs/FUERA-DE-NUCLEO.md`.
 - Runway/burn rate de empresa fuera: sin gasto bancario real. El “por pagar” operativo sí existe: coste de equipo estimado.
 - Modelos 111 y 200 sin importe: dependen de nóminas/contabilidad que no hay.
-- Laboral RRHH genérico / equity fuera: en su lugar, **Equipo** = tour leader ↔ expedición ↔ dieta×días.
+- Laboral RRHH genérico / equity / alquileres / OCR facturas / multi-org / contabilidad de asientos: **fuera**. En su lugar, **Equipo** = tour leader ↔ expedición ↔ dieta×días.
 - Aprobar en la bandeja cambia estado (localStorage); no publica al viajero (regla de oro).
 - Marca/assets de la demo Aurora: no se copian. Solo estructura, colores semánticos de gráficas y conexiones.
 - Integraciones: catálogo con estado local/env; no OAuth real de terceros en esta fase.
@@ -112,6 +114,7 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 2. Regla de oro — nada escribe al viajero solo.
 3. `SUPABASE_SERVICE_ROLE_KEY` jamás en `VITE_` / navegador / repo.
 4. Un solo motor de scoring: `lead-scoring-core.ts`.
+5. Ampliar el CRM hacia RRHH, equity, contabilidad completa, alquileres, OCR o multi-org — ver `docs/FUERA-DE-NUCLEO.md` (archivo para más adelante, no backlog activo).
 
 ---
 
@@ -136,6 +139,7 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 | **Aurora — integraciones/uso** | `src/lib/integrations.ts`, `IntegrationsPanel.tsx`, pestaña Uso en Ajustes |
 | **Aurora — caja/alertas** | `upcoming-cash.ts`, `UpcomingCashPanel.tsx`, `invoice-alerts.ts` |
 | **Aurora — IA threads** | `src/lib/ai/threads.ts`, `AiContextDrawer.tsx`, KnowledgePanel |
+| **Fuera de núcleo (memoria)** | `docs/FUERA-DE-NUCLEO.md` |
 
 ---
 
