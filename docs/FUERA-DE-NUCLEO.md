@@ -70,7 +70,8 @@ Se guardan como *anatomía reutilizable*, no como backlog de 30 MPS.
 
 ## 3 · Qué SÍ tomamos de esas anatomías (sin traer la modalidad)
 
-Para no reabrir debates: lo aprovechado ya está en la rama Aurora 1–12.
+Para no reabrir debates: lo aprovechado ya está en la rama Aurora 1–13b.
+Detalle canónico: `docs/AURORA-CONOCIMIENTO.md`.
 
 | Anatomía | Aplicación en 30 MPS | Archivos |
 |---|---|---|
@@ -84,6 +85,10 @@ Para no reabrir debates: lo aprovechado ya está en la rama Aurora 1–12.
 | Uso / tokens IA | Contador local + tope salida | `token-budget.ts` |
 | Threads HOY / SEMANA | Historial local asistente | `threads.ts` |
 | Alertas de facturas | Duplicada / rectificativa / atrasada | `invoice-alerts.ts` |
+| IA contextual global + streaming | Drawer app-level + Conocimiento | `AiAssistantHost`, `askKnowledgeStream` |
+| Decay en fecha | «se enfría el 14 ago» | `coldByDate` / `coldByLabel` |
+| EN ESTA VISTA + detalle score | Leads / reservas / clientes | `ViewTotals`, toggle LeadsPanel |
+| FAB arrastrable | Glow 2 capas + posición persistida | `DraggableAiFab` |
 
 ---
 
