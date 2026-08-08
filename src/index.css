@@ -446,6 +446,10 @@ html[data-theme="dark"] .glass-panel {
   background: var(--info-soft);
 }
 
+.mps-ai-fab.is-alive {
+  animation: mps-ai-breathe 2.8s ease-in-out infinite;
+}
+
 @keyframes mps-ai-breathe {
   0%,
   100% {

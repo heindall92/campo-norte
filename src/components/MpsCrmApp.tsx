@@ -105,6 +105,8 @@ import {
   requestAsk,
 } from "@/lib/ai/ask-bus";
 import { TreasuryPanel } from "@/components/TreasuryPanel";
+import { PnLPanel } from "@/components/PnLPanel";
+import { estimateTokens, formatTokenK, loadAiUsage, recordAiUsage } from "@/lib/ai/token-budget";
 import { TeamOpsPanel } from "@/components/TeamOpsPanel";
 import { CashFlowChart } from "@/components/ui/CashFlowChart";
 import { ClosingProjection } from "@/components/ui/ClosingProjection";
@@ -785,6 +787,34 @@ function SettingsPanel({
               </label>
             </>
           )}
+
+          <label className={labelCls}>
+            {lang === "es" ? "Máx. tokens de salida" : "Max output tokens"}
+            <input
+              type="number"
+              min={128}
+              max={4000}
+              step={50}
+              className={fieldCls}
+              value={ai.maxOutputTokens}
+              onChange={(e) =>
+                setAi({
+                  ...ai,
+                  maxOutputTokens: Math.min(4000, Math.max(128, Number(e.target.value) || 600)),
+                })
+              }
+            />
+          </label>
+          <label className="flex items-center gap-2 text-sm font-semibold text-[var(--ink)] sm:col-span-2">
+            <input
+              type="checkbox"
+              checked={ai.conciseMode}
+              onChange={(e) => setAi({ ...ai, conciseMode: e.target.checked })}
+            />
+            {lang === "es"
+              ? "Respuestas cortas (tablas + lectura rápida) · ahorra API"
+              : "Concise replies (tables + quick read) · saves API"}
+          </label>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -819,10 +849,29 @@ function SettingsPanel({
           </a>
         </div>
         {aiFlash && <p className="text-sm text-[var(--accent)]">{aiFlash}</p>}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {(() => {
+            const u = loadAiUsage();
+            const cells = [
+              [lang === "es" ? "Mensajes" : "Messages", String(u.messages)],
+              [lang === "es" ? "Conversaciones" : "Chats", String(u.conversations)],
+              ["Tokens in", formatTokenK(u.inputTokens)],
+              ["Tokens out", formatTokenK(u.outputTokens)],
+            ] as const;
+            return cells.map(([label, value]) => (
+              <div key={label} className="mps-settings-tile rounded-lg px-3 py-2">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+                  {label}
+                </p>
+                <p className="mt-0.5 text-lg font-semibold tabular-nums text-[var(--ink)]">{value}</p>
+              </div>
+            ));
+          })()}
+        </div>
         <p className="text-xs text-[var(--ink-muted)] text-pretty">
           {lang === "es"
-            ? "«Configuración lista» ≠ API verificada. Pulsa «Probar conexión API» para llamar de verdad al proveedor."
-            : "“Config ready” ≠ verified API. Hit “Test API connection” for a live call."}
+            ? "«Configuración lista» ≠ API verificada. Pulsa «Probar conexión API» para llamar de verdad al proveedor. El tope de tokens limita cada respuesta."
+            : "“Config ready” ≠ verified API. Hit “Test API connection” for a live call. Token cap limits each reply."}
         </p>
       </div>
     </Card>
@@ -1544,7 +1593,14 @@ function TreasurySection({ lang }: { lang: Lang }) {
         reservations={hub.reservations}
         lang={lang}
         onAsk={(topic) => requestAsk(askAboutTopic(topic))}
+        onOpen={(m) => {
+          const target = m.category.includes("factura") || m.concept.includes("factura")
+            ? "facturas"
+            : "reservas";
+          window.dispatchEvent(new CustomEvent("mps-navigate", { detail: target }));
+        }}
       />
+      <PnLPanel invoices={hub.invoices} reservations={hub.reservations} lang={lang} />
       <FiscalCalendarPanel invoices={hub.invoices} lang={lang} />
     </div>
   );
@@ -2733,6 +2789,8 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
   );
   const [asking, setAsking] = useState(false);
   const [result, setResult] = useState<KnowledgeAskResult | null>(null);
+  const [lastTokens, setLastTokens] = useState<{ out: number; max: number } | null>(null);
+  const [usage, setUsage] = useState(() => loadAiUsage());
   const [docs, setDocs] = useState<KnowledgeDoc[]>(() => loadKnowledgeDocs());
   const [docForm, setDocForm] = useState({
     title: "",
@@ -2830,6 +2888,10 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
         faq: KNOWLEDGE_ANSWERS,
       });
       setResult(res);
+      const settings = loadAiSettings();
+      const out = estimateTokens(res.answer);
+      setLastTokens({ out, max: settings.maxOutputTokens });
+      setUsage(recordAiUsage({ prompt: text, reply: res.answer }));
     } finally {
       setAsking(false);
     }
@@ -2956,22 +3018,41 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
             className="lg:col-span-3"
           >
             {!result ? (
-              <p className="text-sm text-[var(--ink-muted)]">
-                {lang === "es"
-                  ? "Haz una pregunta. Primero se buscan docs + Hub; con IA activa se resume; sin IA se muestra el mejor fragmento."
-                  : "Ask a question. Docs + Hub are searched first; with AI on they are summarized; without AI you get the best chunk."}
-              </p>
+              <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
+                <span className="mps-ai-fab is-alive" aria-hidden>
+                  <Sparkles className="h-5 w-5" />
+                </span>
+                <p className="text-sm font-semibold text-[var(--ink)]">
+                  {lang === "es" ? "¿En qué te ayudo con la operación?" : "How can I help with ops?"}
+                </p>
+                <p className="max-w-sm text-sm text-[var(--ink-muted)]">
+                  {lang === "es"
+                    ? "Docs + Hub primero; IA resume si está activa. Respuestas cortas para ahorrar tokens."
+                    : "Docs + Hub first; AI summarizes if enabled. Short answers to save tokens."}
+                </p>
+                <p className="text-[11px] tabular-nums text-[var(--ink-muted)]">
+                  {lang === "es" ? "Uso" : "Usage"} · {formatTokenK(usage.inputTokens)} in /{" "}
+                  {formatTokenK(usage.outputTokens)} out · {usage.messages} msg
+                </p>
+              </div>
             ) : (
               <>
-                <Badge tone={result.engine === "ai" ? "good" : "neutral"}>
-                  {result.engine === "ai"
-                    ? lang === "es"
-                      ? `Modo IA · ${result.provider ?? providerLabel()}`
-                      : `AI mode · ${result.provider ?? providerLabel()}`
-                    : lang === "es"
-                      ? "Modo heurística / retrieval"
-                      : "Heuristic / retrieval mode"}
-                </Badge>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone={result.engine === "ai" ? "good" : "neutral"}>
+                    {result.engine === "ai"
+                      ? lang === "es"
+                        ? `Modo IA · ${result.provider ?? providerLabel()}`
+                        : `AI mode · ${result.provider ?? providerLabel()}`
+                      : lang === "es"
+                        ? "Modo heurística / retrieval"
+                        : "Heuristic / retrieval mode"}
+                  </Badge>
+                  {lastTokens ? (
+                    <span className="text-[11px] tabular-nums text-[var(--ink-muted)]">
+                      {lastTokens.out}/{lastTokens.max} tokens
+                    </span>
+                  ) : null}
+                </div>
                 <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[var(--ink)]">
                   {result.answer}
                 </p>
@@ -3753,6 +3834,17 @@ export function MpsCrmApp() {
           onPrefsChange={setPrefs}
         >
           {sectionPanels}
+          <button
+            type="button"
+            className="mps-ai-fab is-alive fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-4 z-40 md:bottom-6 md:right-6"
+            aria-label={lang === "es" ? "Abrir asistente" : "Open assistant"}
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent("mps-navigate", { detail: "conocimiento" }))
+            }
+          >
+            <Sparkles className="h-5 w-5" />
+          </button>
+
         </MobileCrmShell>
         {user && (
           <ProfileModal
@@ -4040,6 +4132,17 @@ export function MpsCrmApp() {
 
         <main className="px-4 py-5 md:px-6 md:py-6">
           {sectionPanels}
+          <button
+            type="button"
+            className="mps-ai-fab is-alive fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-4 z-40 md:bottom-6 md:right-6"
+            aria-label={lang === "es" ? "Abrir asistente" : "Open assistant"}
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent("mps-navigate", { detail: "conocimiento" }))
+            }
+          >
+            <Sparkles className="h-5 w-5" />
+          </button>
+
 
           <footer className="mt-8 flex flex-wrap items-center gap-2 border-t border-[var(--glass-border)] pt-4 text-xs text-[var(--ink-muted)]">
             <Lightbulb className="h-3.5 w-3.5" />

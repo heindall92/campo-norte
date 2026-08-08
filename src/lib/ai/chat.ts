@@ -6,6 +6,7 @@ import {
   type AiSettings,
 } from "./settings";
 import { allowClientAiKeys } from "@/lib/runtime";
+import { conciseSystemPrompt } from "./token-budget";
 
 export interface AiChatMessage {
   role: "system" | "user" | "assistant";
@@ -16,6 +17,9 @@ export interface AiChatResult {
   content: string;
   model: string;
   provider: AiProvider;
+  /** Estimación local de tokens de la respuesta. */
+  outputTokensEst?: number;
+  maxOutputTokens?: number;
 }
 
 export type AiChatFormat = "json" | Record<string, unknown>;
@@ -65,6 +69,7 @@ async function chatOllama(
           model,
           messages,
           stream: false,
+          options: { num_predict: settings.maxOutputTokens },
           ...(format ? { format } : {}),
         }
       : {
@@ -73,6 +78,7 @@ async function chatOllama(
           messages,
           format: format ?? null,
           apiKey: key,
+          maxTokens: settings.maxOutputTokens,
         };
 
   const res = await fetch(endpoint, {
@@ -92,7 +98,12 @@ async function chatOllama(
   };
   const content = data.content ?? data.message?.content ?? data.response ?? "";
   if (!content.trim()) throw new Error("Ollama devolvió respuesta vacía");
-  return { content, model: data.model ?? model, provider: "ollama" };
+  return {
+    content,
+    model: data.model ?? model,
+    provider: "ollama",
+    maxOutputTokens: settings.maxOutputTokens,
+  };
 }
 
 async function chatViaProxy(
@@ -116,6 +127,7 @@ async function chatViaProxy(
       model,
       messages: withFormat(messages, provider === "ollama" ? undefined : format),
       format: format ?? null,
+      maxTokens: settings.maxOutputTokens,
       ...(sendClientKey && apiKey ? { apiKey } : {}),
       ollamaMode: settings.ollamaMode,
       ollamaBaseUrl: settings.ollamaBaseUrl,
@@ -135,6 +147,7 @@ async function chatViaProxy(
     content,
     model: data.model ?? model,
     provider: settings.provider,
+    maxOutputTokens: settings.maxOutputTokens,
   };
 }
 
@@ -152,13 +165,16 @@ export async function aiChat(
   }
 
   const format = options?.format;
-
-  if (settings.provider === "ollama" && settings.ollamaMode === "local") {
-    return chatOllama(settings, messages, format);
+  let msgs = messages.map((m) => ({ ...m }));
+  if (settings.conciseMode && !msgs.some((m) => m.role === "system")) {
+    msgs = [{ role: "system", content: conciseSystemPrompt(settings.maxOutputTokens) }, ...msgs];
   }
 
-  // Cloud Ollama + OpenAI + Claude + Gemini → proxy (CORS + key)
-  return chatViaProxy(settings.provider, settings, messages, format);
+  if (settings.provider === "ollama" && settings.ollamaMode === "local") {
+    return chatOllama(settings, msgs, format);
+  }
+
+  return chatViaProxy(settings.provider, settings, msgs, format);
 }
 
 /** @deprecated usar aiChat */

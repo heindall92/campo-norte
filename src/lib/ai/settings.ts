@@ -17,6 +17,13 @@ export interface AiSettings {
   ollamaBaseUrl: string;
   apiKeys: Record<AiProvider, string>;
   models: Record<AiProvider, string>;
+  /**
+   * Tope de tokens de salida por respuesta (ahorro de API).
+   * La demo de referencia muestra el consumo; aquí además lo limitamos.
+   */
+  maxOutputTokens: number;
+  /** Inyecta system prompt de respuestas cortas (tablas + lectura rápida). */
+  conciseMode: boolean;
 }
 
 export const AI_SETTINGS_KEY = "mps-ai-settings-v1";
@@ -51,6 +58,8 @@ export const DEFAULT_AI_SETTINGS: AiSettings = {
   ollamaBaseUrl: "https://ollama.com",
   apiKeys: { ollama: "", openai: "", claude: "", gemini: "" },
   models: { ...DEFAULT_AI_MODELS },
+  maxOutputTokens: 600,
+  conciseMode: true,
 };
 
 /** Compat: mismos campos que el antiguo OllamaSettings */
@@ -157,6 +166,11 @@ export function loadAiSettings(): AiSettings {
         fromEnv.ollamaBaseUrl ||
         DEFAULT_AI_SETTINGS.ollamaBaseUrl
       ).replace(/\/$/, ""),
+      maxOutputTokens: Math.min(
+        4000,
+        Math.max(128, Number(parsed.maxOutputTokens) || DEFAULT_AI_SETTINGS.maxOutputTokens),
+      ),
+      conciseMode: parsed.conciseMode !== false,
       apiKeys: {
         ...DEFAULT_AI_SETTINGS.apiKeys,
         ...fromEnv.apiKeys,
@@ -182,6 +196,8 @@ export function saveAiSettings(settings: AiSettings): void {
   const clean: AiSettings = {
     ...settings,
     ollamaBaseUrl: settings.ollamaBaseUrl.replace(/\/$/, ""),
+    maxOutputTokens: Math.min(4000, Math.max(128, Number(settings.maxOutputTokens) || 600)),
+    conciseMode: settings.conciseMode !== false,
     apiKeys: {
       ollama: settings.apiKeys.ollama.trim(),
       openai: settings.apiKeys.openai.trim(),

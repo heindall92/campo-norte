@@ -5,7 +5,7 @@
 > memoria. El chat no es memoria: este archivo sí. Si el chat y el repo se
 > contradicen, **manda el repo**.
 
-**Última actualización:** 2026-08-08 · por Cursor · tip `feat/aurora-patterns` (= `cursor/aurora-patterns-2ebf`) · fase 10 económica/equipo
+**Última actualización:** 2026-08-08 · por Cursor · tip `feat/aurora-patterns` · fases 1–11
 
 ---
 
@@ -69,9 +69,10 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 | 7 | **Bandeja de Aprobaciones** (regla de oro hecha interfaz) | `src/lib/approvals.ts`, `ApprovalsPanel.tsx` |
 | 8 | Calendario fiscal AEAT (303/111/390/200) con importe estimado | `src/lib/fiscal-calendar.ts`, `FiscalCalendarPanel.tsx` |
 | 9 | Heurística: ruta genérica (sin Mongolia hardcode), cap relación + cola estricta, umbral lead 2 días | `lead-scoring-core.ts`, `attention.ts` |
-| 10 | Dashboard/tesorería económicos + conexiones equipo (estructura Aurora, estética 30mps) | `ClosingProjection`, `CashFlowChart`, `team-ops.ts`, `TeamOpsPanel` |
+| 10 | Dashboard/tesorería económicos + conexiones equipo | `ClosingProjection`, `CashFlowChart`, `team-ops.ts` |
+| 11 | Tablas facturas + P&G operativo + IA con tope de tokens/FAB | `OpsPanels`, `pnl.ts`, `token-budget.ts`, `KnowledgePanel` |
 
-**Verificación automática:** lint, `npm test` (**99**), `npm run build` — limpios.
+**Verificación automática:** lint, `npm test` (**103**), `npm run build` — limpios.
 
 **Decisiones de alcance (no son olvidos):**
 - Runway/burn rate de empresa fuera: sin gasto bancario real. El “por pagar” operativo sí existe: coste de equipo estimado.

@@ -163,11 +163,13 @@ async function callOpenAI(opts: {
   messages: Msg[];
   format: unknown;
   apiKey: string;
+  maxTokens?: number;
 }) {
   const body: Record<string, unknown> = {
     model: opts.model,
     messages: opts.messages,
     temperature: 0.2,
+    max_tokens: opts.maxTokens ?? 600,
   };
   if (opts.format) {
     body.response_format = { type: "json_object" };
@@ -206,6 +208,7 @@ async function callClaude(opts: {
   messages: Msg[];
   format: unknown;
   apiKey: string;
+  maxTokens?: number;
 }) {
   const { system, rest } = splitSystem(opts.messages);
   const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -217,7 +220,7 @@ async function callClaude(opts: {
     },
     body: JSON.stringify({
       model: opts.model,
-      max_tokens: 4096,
+      max_tokens: opts.maxTokens ?? 600,
       temperature: 0.2,
       system: system || undefined,
       messages: rest.map((m) => ({
@@ -256,6 +259,7 @@ async function callGemini(opts: {
   messages: Msg[];
   format: unknown;
   apiKey: string;
+  maxTokens?: number;
 }) {
   const { system, rest } = splitSystem(opts.messages);
   const contents = rest.map((m) => ({
@@ -267,6 +271,7 @@ async function callGemini(opts: {
     contents,
     generationConfig: {
       temperature: 0.2,
+      maxOutputTokens: opts.maxTokens ?? 600,
       ...(opts.format ? { responseMimeType: "application/json" } : {}),
     },
   };
@@ -344,6 +349,7 @@ export default async function handler(
   const model = req.body?.model || "";
   const messages = Array.isArray(req.body?.messages) ? req.body.messages : [];
   const format = req.body?.format ?? null;
+  const maxTokens = Math.min(4000, Math.max(128, Number((req.body as { maxTokens?: number } | null)?.maxTokens) || 600));
 
   if (messages.length > MAX_MESSAGES) {
     res.status(413).json({ error: `Demasiados mensajes (máx. ${MAX_MESSAGES})` });
@@ -377,11 +383,11 @@ export default async function handler(
   try {
     let result: { status: number; body: Record<string, unknown> };
     if (provider === "openai") {
-      result = await callOpenAI({ model, messages, format, apiKey });
+      result = await callOpenAI({ model, messages, format, apiKey, maxTokens });
     } else if (provider === "claude") {
-      result = await callClaude({ model, messages, format, apiKey });
+      result = await callClaude({ model, messages, format, apiKey, maxTokens });
     } else if (provider === "gemini") {
-      result = await callGemini({ model, messages, format, apiKey });
+      result = await callGemini({ model, messages, format, apiKey, maxTokens });
     } else {
       result = await callOllama({ model, messages, format, apiKey });
     }
