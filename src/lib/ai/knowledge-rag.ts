@@ -8,6 +8,7 @@ import {
 } from "@/lib/demo-data";
 import type { Invoice, Reservation } from "@/lib/ops-data";
 import { aiChat, parseJsonFromModel } from "./chat";
+import { aiChatStream } from "./chat-stream";
 import {
   KNOWLEDGE_KIND_LABEL,
   loadKnowledgeDocs,
@@ -322,4 +323,89 @@ export async function askKnowledge(
   }
 
   return synthesizeHeuristic(q, top);
+}
+
+/**
+ * Misma pipeline que askKnowledge, pero la síntesis IA va en streaming
+ * (texto libre; fuentes = fragmentos RAG). Heurística no streamea.
+ */
+export async function askKnowledgeStream(
+  question: string,
+  input: KnowledgeCorpusInput = {},
+  onToken?: (chunk: string) => void,
+  signal?: AbortSignal,
+): Promise<KnowledgeAskResult> {
+  const q = question.trim();
+  if (!q) {
+    return {
+      answer: "Escribe una pregunta (ej. «¿Cuánto costó Mongolia 2025?»).",
+      sources: [],
+      chunksUsed: [],
+      engine: "retrieval",
+      why: [],
+    };
+  }
+
+  const chunks = buildKnowledgeChunks(input);
+  const top = retrieveKnowledgeChunks(q, chunks, 6);
+
+  if (!aiReady()) {
+    const h = synthesizeHeuristic(q, top);
+    onToken?.(h.answer);
+    return h;
+  }
+
+  try {
+    const settings = loadAiSettings();
+    const label = providerLabel(settings);
+    const context = top
+      .map(
+        (c, i) =>
+          `[#${i + 1}] ${c.title}\nFuente: ${c.sourceLabel}\n${c.text.slice(0, 900)}`,
+      )
+      .join("\n\n");
+
+    const { content } = await aiChatStream(
+      [
+        {
+          role: "system",
+          content: [
+            "Eres el Knowledge Assistant interno de 30 MPS Adventures (solo equipo).",
+            "Responde en español, breve (bullets o tabla). Solo hechos del CONTEXTO.",
+            "Si no está en el contexto, dilo («no está en el sistema»).",
+            "PROHIBIDO redactar mensajes al viajero o inventar datos.",
+          ].join(" "),
+        },
+        {
+          role: "user",
+          content: `Pregunta:\n${question}\n\nCONTEXTO:\n${context || "(vacío)"}`,
+        },
+      ],
+      { settings, onToken, signal },
+    );
+
+    return {
+      answer: content.trim(),
+      sources: top.map((c) => c.sourceLabel),
+      chunksUsed: top,
+      engine: "ai",
+      provider: label,
+      why: [
+        `Síntesis en streaming con ${label}`,
+        "Fuentes = fragmentos RAG del Hub + docs",
+        "Solo equipo — nunca al viajero",
+      ],
+    };
+  } catch (err) {
+    const fallback = synthesizeHeuristic(q, top);
+    onToken?.(fallback.answer);
+    const detail = err instanceof Error ? err.message.slice(0, 120) : "error";
+    return {
+      ...fallback,
+      why: [
+        ...fallback.why,
+        `IA stream no disponible (${detail}) — heurística`,
+      ],
+    };
+  }
 }

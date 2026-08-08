@@ -3,7 +3,7 @@ import {
   AI_PROVIDER_LABEL,
   applyIntelligenceToClient,
   applyScoreToLead,
-  askKnowledge,
+  askKnowledgeStream,
   aiReady,
   clientsToContactThisMonth,
   classifyCustomer,
@@ -29,6 +29,7 @@ import { useNotifications } from "@/lib/notifications";
 import { COMPANY, GOLDEN_RULE, MPS_ANNEX, MPS_ASSUMPTIONS, TEAM } from "@/lib/assumptions";
 import { computeBusinessKpis } from "@/lib/business-kpis";
 import {
+  CONTENT_DRAFTS,
   EXPEDITIONS,
   EXPERIENCE_LABEL,
   KNOWLEDGE_ANSWERS,
@@ -92,6 +93,37 @@ import { ProfileModal } from "@/components/ProfileModal";
 import { SupportCard } from "@/components/SupportCard";
 import { SupportModal } from "@/components/SupportModal";
 import { UsersDirectoryPanel } from "@/components/UsersDirectoryPanel";
+import { AttentionPanel } from "@/components/AttentionPanel";
+import { ApprovalsPanel } from "@/components/ApprovalsPanel";
+import { FiscalCalendarPanel } from "@/components/FiscalCalendarPanel";
+import { IntegrationsPanel } from "@/components/IntegrationsPanel";
+import { AiAssistantHost } from "@/components/AiAssistantHost";
+import { UpcomingCashPanel } from "@/components/UpcomingCashPanel";
+import {
+  askAboutInvoice,
+  askAboutLead,
+  askAboutReservation,
+  askAboutTopic,
+  onAskRequested,
+  requestAsk,
+} from "@/lib/ai/ask-bus";
+import {
+  groupThreadsByRecency,
+  listAiThreads,
+  upsertAiThread,
+  type AiThread,
+} from "@/lib/ai/threads";
+import { TreasuryPanel } from "@/components/TreasuryPanel";
+import { PnLPanel } from "@/components/PnLPanel";
+import { estimateTokens, formatTokenK, loadAiUsage, recordAiUsage } from "@/lib/ai/token-budget";
+import { TeamOpsPanel } from "@/components/TeamOpsPanel";
+import { CashFlowChart } from "@/components/ui/CashFlowChart";
+import { ClosingProjection } from "@/components/ui/ClosingProjection";
+import { ViewTotals } from "@/components/ui/ViewTotals";
+import { buildTeamOps } from "@/lib/team-ops";
+import { buildTreasury } from "@/lib/treasury";
+import { coldByLabel, decayedScore } from "@/lib/ai/lead-scoring-core";
+import { formatEur } from "@/lib/format";
 import {
   applyUserPrefsToDocument,
   loadUserPrefs,
@@ -121,6 +153,7 @@ import {
   Bot,
   Building2,
   Car,
+  Activity,
   CircleHelp,
   ClipboardList,
   Cloud,
@@ -136,6 +169,7 @@ import {
   Moon,
   Pencil,
   Phone,
+  Plug,
   Plus,
   Presentation,
   RefreshCw,
@@ -149,7 +183,10 @@ import {
   Target,
   Upload,
   Users,
+  ShieldCheck,
+  ContactRound,
   UsersRound,
+  Wallet,
   Workflow,
   CalendarDays,
   Zap,
@@ -179,6 +216,9 @@ const NAV_IDS: { id: Section; icon: typeof LayoutDashboard; labelKey: string }[]
   { id: "clientes", icon: Users, labelKey: "nav_clients" },
   { id: "reservas", icon: CalendarDays, labelKey: "nav_reservations" },
   { id: "facturas", icon: FileText, labelKey: "nav_invoices" },
+  { id: "tesoreria", icon: Wallet, labelKey: "nav_treasury" },
+  { id: "aprobaciones", icon: ShieldCheck, labelKey: "nav_approvals" },
+  { id: "equipo", icon: ContactRound, labelKey: "nav_team" },
   { id: "contenido", icon: Sparkles, labelKey: "nav_content" },
   { id: "conocimiento", icon: BookOpen, labelKey: "nav_knowledge" },
   { id: "automatizaciones", icon: Workflow, labelKey: "nav_automations" },
@@ -295,7 +335,7 @@ function SettingsGroup({
   );
 }
 
-type SettingsTabId = "personal" | "ai" | "org" | "resources";
+type SettingsTabId = "personal" | "ai" | "uso" | "integrations" | "org" | "resources";
 
 function SettingsPanel({
   lang,
@@ -412,7 +452,19 @@ function SettingsPanel({
         icon: Bot,
         badge: 1,
       });
+      list.push({
+        id: "uso",
+        label: lang === "es" ? "Uso" : "Usage",
+        icon: Activity,
+        badge: 1,
+      });
     }
+    list.push({
+      id: "integrations",
+      label: lang === "es" ? "Integraciones" : "Integrations",
+      icon: Plug,
+      badge: 1,
+    });
     if (showOrg) {
       list.push({
         id: "org",
@@ -761,6 +813,34 @@ function SettingsPanel({
               </label>
             </>
           )}
+
+          <label className={labelCls}>
+            {lang === "es" ? "Máx. tokens de salida" : "Max output tokens"}
+            <input
+              type="number"
+              min={128}
+              max={4000}
+              step={50}
+              className={fieldCls}
+              value={ai.maxOutputTokens}
+              onChange={(e) =>
+                setAi({
+                  ...ai,
+                  maxOutputTokens: Math.min(4000, Math.max(128, Number(e.target.value) || 600)),
+                })
+              }
+            />
+          </label>
+          <label className="flex items-center gap-2 text-sm font-semibold text-[var(--ink)] sm:col-span-2">
+            <input
+              type="checkbox"
+              checked={ai.conciseMode}
+              onChange={(e) => setAi({ ...ai, conciseMode: e.target.checked })}
+            />
+            {lang === "es"
+              ? "Respuestas cortas (tablas + lectura rápida) · ahorra API"
+              : "Concise replies (tables + quick read) · saves API"}
+          </label>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -797,12 +877,55 @@ function SettingsPanel({
         {aiFlash && <p className="text-sm text-[var(--accent)]">{aiFlash}</p>}
         <p className="text-xs text-[var(--ink-muted)] text-pretty">
           {lang === "es"
-            ? "«Configuración lista» ≠ API verificada. Pulsa «Probar conexión API» para llamar de verdad al proveedor."
-            : "“Config ready” ≠ verified API. Hit “Test API connection” for a live call."}
+            ? "«Configuración lista» ≠ API verificada. Pulsa «Probar conexión API» para llamar de verdad al proveedor. El tope de tokens limita cada respuesta. El consumo detallado está en la pestaña Uso."
+            : "“Config ready” ≠ verified API. Hit “Test API connection” for a live call. Token cap limits each reply. Detailed usage lives in the Usage tab."}
         </p>
       </div>
     </Card>
   ) : null;
+
+  const usageCard = (
+    <Card
+      title={lang === "es" ? "Uso del asistente" : "Assistant usage"}
+      subtitle={
+        lang === "es"
+          ? "Estimación local de tokens · no es la factura del proveedor"
+          : "Local token estimate · not the provider invoice"
+      }
+    >
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {(() => {
+          const u = loadAiUsage();
+          const cells = [
+            [lang === "es" ? "Mensajes" : "Messages", String(u.messages)],
+            [lang === "es" ? "Conversaciones" : "Chats", String(u.conversations)],
+            ["Tokens in", formatTokenK(u.inputTokens)],
+            ["Tokens out", formatTokenK(u.outputTokens)],
+          ] as const;
+          return cells.map(([label, value]) => (
+            <div key={label} className="mps-settings-tile rounded-lg px-3 py-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+                {label}
+              </p>
+              <p className="mt-0.5 text-lg font-semibold tabular-nums text-[var(--ink)]">{value}</p>
+            </div>
+          ));
+        })()}
+      </div>
+      <p className="mt-3 text-xs text-[var(--ink-muted)] text-pretty">
+        {lang === "es"
+          ? "Tope actual de salida: "
+          : "Current output cap: "}
+        <strong className="text-[var(--ink)]">{ai.maxOutputTokens}</strong>
+        {lang === "es"
+          ? " tokens · modo conciso "
+          : " tokens · concise mode "}
+        <strong className="text-[var(--ink)]">{ai.conciseMode ? "ON" : "OFF"}</strong>
+      </p>
+    </Card>
+  );
+
+  const integrationsCard = <IntegrationsPanel lang={lang} />;
 
   const databaseCard = showDb ? (
     <Card
@@ -910,7 +1033,7 @@ function SettingsPanel({
 
       {showAi && (
         <SettingsGroup
-          label={lang === "es" ? "Integraciones" : "Integrations"}
+          label={lang === "es" ? "IA" : "AI"}
           description={
             lang === "es"
               ? "Proveedores de IA. Clasifican; nunca escriben al viajero."
@@ -918,8 +1041,20 @@ function SettingsPanel({
           }
         >
           {aiCard}
+          {usageCard}
         </SettingsGroup>
       )}
+
+      <SettingsGroup
+        label={lang === "es" ? "Integraciones" : "Integrations"}
+        description={
+          lang === "es"
+            ? "Stripe, Brevo, Supabase, WhatsApp, n8n y más del ecosistema."
+            : "Stripe, Brevo, Supabase, WhatsApp, n8n and more of the stack."
+        }
+      >
+        {integrationsCard}
+      </SettingsGroup>
 
       {showDb && (
         <SettingsGroup
@@ -956,6 +1091,10 @@ function SettingsPanel({
       </div>
     ) : settingsTab === "ai" ? (
       aiCard
+    ) : settingsTab === "uso" ? (
+      usageCard
+    ) : settingsTab === "integrations" ? (
+      integrationsCard
     ) : settingsTab === "org" ? (
       <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
         {businessCard}
@@ -1497,6 +1636,104 @@ function HubPanel({ lang }: { lang: Lang }) {
   );
 }
 
+/**
+ * Tesorería — movimientos derivados de facturas y reservas.
+ * La lógica vive en `@/lib/treasury`; aquí solo se conecta con el hub.
+ */
+function TreasurySection({ lang }: { lang: Lang }) {
+  const hub = useDataHub();
+  return (
+    <div className="space-y-5">
+      <header>
+        <h2 className="text-2xl font-semibold" style={{ color: "var(--text-primary)" }}>
+          {t(lang, "nav_treasury")}
+        </h2>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+          {lang === "es"
+            ? "Cobrado, pendiente y comprometido. Sin banco conectado: todo se deriva de facturas y reservas."
+            : "Collected, receivable and committed. No bank connected: everything is derived from invoices and bookings."}
+        </p>
+      </header>
+      <TreasuryPanel
+        invoices={hub.invoices}
+        reservations={hub.reservations}
+        lang={lang}
+        onAsk={(topic) => requestAsk(askAboutTopic(topic))}
+        onOpen={(m) => {
+          const target = m.category.includes("factura") || m.concept.includes("factura")
+            ? "facturas"
+            : "reservas";
+          window.dispatchEvent(new CustomEvent("mps-navigate", { detail: target }));
+        }}
+      />
+      <UpcomingCashPanel
+        invoices={hub.invoices}
+        reservations={hub.reservations}
+        lang={lang}
+        onOpen={(row) => {
+          const target =
+            row.source === "factura" ? "facturas" : row.source === "reserva" ? "reservas" : "equipo";
+          window.dispatchEvent(new CustomEvent("mps-navigate", { detail: target }));
+        }}
+      />
+      <PnLPanel invoices={hub.invoices} reservations={hub.reservations} lang={lang} />
+      <FiscalCalendarPanel invoices={hub.invoices} lang={lang} />
+    </div>
+  );
+}
+
+/**
+ * Aprobaciones — la regla de oro hecha interfaz.
+ * La IA propone en segundo plano; nada sale sin OK de una persona.
+ */
+function ApprovalsSection({ lang }: { lang: Lang }) {
+  const { user } = useAuth();
+  return (
+    <div className="space-y-5">
+      <header>
+        <h2 className="text-2xl font-semibold" style={{ color: "var(--text-primary)" }}>
+          {t(lang, "nav_approvals")}
+        </h2>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+          {lang === "es"
+            ? "La IA redacta en segundo plano. Publicar o enviar sigue siendo decisión de una persona."
+            : "The assistant drafts in the background. Publishing or sending stays a human decision."}
+        </p>
+      </header>
+      <ApprovalsPanel
+        drafts={CONTENT_DRAFTS}
+        currentUser={user?.email ?? "equipo"}
+        lang={lang}
+      />
+    </div>
+  );
+}
+
+function TeamSection({ lang }: { lang: Lang }) {
+  const hub = useDataHub();
+  return (
+    <div className="space-y-5">
+      <header>
+        <h2 className="text-2xl font-semibold" style={{ color: "var(--text-primary)" }}>
+          {t(lang, "nav_team")}
+        </h2>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+          {lang === "es"
+            ? "Conexiones guía/ops ↔ expedición ↔ coste estimado. Sin nóminas inventadas."
+            : "Guide/ops ↔ trip ↔ estimated cost links. No invented payroll."}
+        </p>
+      </header>
+      <TeamOpsPanel
+        reservations={hub.reservations}
+        lang={lang}
+        onOpenReservation={() =>
+          window.dispatchEvent(new CustomEvent("mps-navigate", { detail: "reservas" }))
+        }
+      />
+    </div>
+  );
+}
+
 function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
   const hub = useDataHub();
   const isMobile = useIsMobile();
@@ -1506,34 +1743,44 @@ function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
   const progress = progressToMillion();
   const dark = theme === "dark";
   const colors = dark ? ORIGIN_COLORS_DARK : ORIGIN_COLORS_LIGHT;
-  const chart = dark ? "#2dd4bf" : "#0f766e";
-  const chart2 = dark ? "#38bdf8" : "#0369a1";
-  const grid = dark ? "#334155" : "#e2e8f0";
-  const tick = dark ? "#94a3b8" : "#64748b";
+  const chart = "var(--chart-area)";
+  const chart2 = "var(--chart-area-2)";
+  const grid = "var(--chart-grid)";
+  const tick = "var(--chart-tick)";
   const chartTooltip = {
     contentStyle: {
-      background: dark ? "rgba(15, 23, 42, 0.96)" : "rgba(255, 255, 255, 0.98)",
-      border: `1px solid ${dark ? "rgba(148, 163, 184, 0.28)" : "rgba(15, 23, 42, 0.12)"}`,
+      background: "var(--chart-tooltip-bg)",
+      border: "1px solid var(--chart-tooltip-border)",
       borderRadius: 12,
-      color: dark ? "#f1f5f9" : "#0f172a",
-      boxShadow: dark
-        ? "0 14px 32px rgba(0,0,0,0.45)"
-        : "0 10px 24px rgba(15, 23, 42, 0.12)",
+      color: "var(--text-primary)",
       padding: "10px 12px",
     },
     labelStyle: {
-      color: dark ? "#f8fafc" : "#0f172a",
+      color: "var(--text-primary)",
       fontWeight: 700,
       marginBottom: 6,
     },
     itemStyle: {
-      color: dark ? "#e2e8f0" : "#334155",
+      color: "var(--text-secondary)",
       fontSize: 12,
     },
     cursor: {
-      fill: dark ? "rgba(148, 163, 184, 0.12)" : "rgba(15, 23, 42, 0.05)",
+      fill: "var(--chart-cursor)",
     },
   } as const;
+  const team = buildTeamOps(hub.reservations);
+  const treasury = buildTreasury({
+    invoices: hub.invoices,
+    reservations: hub.reservations,
+    teamCostByMonth: team.costByDepartureMonth,
+    teamPayable: team.pendingCost,
+  });
+  const cashChart = treasury.cashFlow.map((p) => ({
+    label: p.label,
+    entradas: p.cobrado,
+    salidas: p.salidas,
+    prevision: p.pendiente,
+  }));
   const chartRevenue = MONTHLY_KPIS.map((m) => ({
     month: m.month,
     revenue: m.revenue,
@@ -1598,6 +1845,51 @@ function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
           />
         </div>
       </div>
+
+      {/* Cola de acción: lo primero que se mira al abrir el panel. */}
+      <AttentionPanel
+        leads={hub.leads}
+        reservations={hub.reservations}
+        invoices={hub.invoices}
+        avgTicket={MPS_ANNEX.revenueCurrent / Math.max(1, MPS_ANNEX.travelersCurrent)}
+        lang={lang}
+        onAsk={(item) => {
+          const q =
+            item.source === "lead"
+              ? askAboutLead(item.title, item.reason)
+              : item.source === "reserva"
+                ? askAboutReservation(item.title, item.reason)
+                : askAboutInvoice(item.title, item.reason);
+          requestAsk(q);
+        }}
+        onResolve={(item) => {
+          const target: Section =
+            item.source === "lead" ? "leads" : item.source === "reserva" ? "reservas" : "facturas";
+          window.dispatchEvent(new CustomEvent("mps-navigate", { detail: target }));
+        }}
+      />
+
+      {!isMobile && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <ClosingProjection
+            actual={treasury.collected}
+            receivable={treasury.receivable}
+            payable={treasury.teamPayable}
+            lang={lang}
+          />
+          <CashFlowChart
+            data={cashChart}
+            lang={lang}
+            height={220}
+            title={lang === "es" ? "Caja y previsión" : "Cash and forecast"}
+            subtitle={
+              lang === "es"
+                ? "Misma estructura que Tesorería · entradas / equipo / previsión."
+                : "Same structure as Treasury · inflows / team / forecast."
+            }
+          />
+        </div>
+      )}
 
       <div className="grid gap-5 lg:grid-cols-3">
         <Card
@@ -1763,10 +2055,29 @@ function LeadsPanel({ lang }: { lang: Lang }) {
   const selected = sorted.find((l) => l.id === selectedId) ?? (isMobile ? null : sorted[0]) ?? null;
   const [scoring, setScoring] = useState(false);
   const [scoreSheetOpen, setScoreSheetOpen] = useState(false);
+  const [showScoreDetail, setShowScoreDetail] = useState(false);
 
   useEffect(() => {
     if (!isMobile && selected && selectedId !== selected.id) setSelectedId(selected.id);
   }, [selected, selectedId, isMobile]);
+
+  const viewTotals = useMemo(() => {
+    let cooling = 0;
+    let sumScore = 0;
+    for (const lead of sorted) {
+      sumScore += lead.score;
+      const d = decayedScore(lead);
+      if (d.base - d.effective >= 5) cooling += 1;
+    }
+    return {
+      count: sorted.length,
+      avg: sorted.length ? Math.round(sumScore / sorted.length) : 0,
+      cooling,
+    };
+  }, [sorted]);
+
+  const selectedDecay = selected ? decayedScore(selected) : null;
+  const selectedCold = selected ? coldByLabel(selected, lang) : null;
 
   const statuses = Object.keys({
     nuevo: 1,
@@ -1852,6 +2163,41 @@ function LeadsPanel({ lang }: { lang: Lang }) {
             : `${leadPriorityModeLabel(mode, "en")} mode · score is never rewritten`}
         </span>
       </div>
+
+      <ViewTotals
+        headline={{
+          label: lang === "es" ? "Leads (vista)" : "Leads (view)",
+          value: String(viewTotals.count),
+        }}
+        totals={[
+          {
+            label: lang === "es" ? "Score medio" : "Avg score",
+            value: String(viewTotals.avg),
+          },
+          {
+            label: lang === "es" ? "Se enfrían" : "Cooling",
+            value: String(viewTotals.cooling),
+            tone: viewTotals.cooling > 0 ? "negative" : "positive",
+          },
+          {
+            label: lang === "es" ? "Sin origen" : "No origin",
+            value: String(unknown),
+          },
+        ]}
+      />
+
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <label className="flex items-center gap-2 text-xs font-semibold text-[var(--ink-muted)]">
+          <input
+            type="checkbox"
+            checked={showScoreDetail}
+            onChange={(e) => setShowScoreDetail(e.target.checked)}
+            className="rounded"
+          />
+          {lang === "es" ? "Ver detalle del score" : "Show score detail"}
+        </label>
+      </div>
+
       <div className="grid gap-5 lg:grid-cols-5">
         <Card
           title={t(lang, "inbox")}
@@ -1859,7 +2205,9 @@ function LeadsPanel({ lang }: { lang: Lang }) {
           className={cn("lg:col-span-3", isMobile && "p-3")}
         >
           <ul className="divide-y divide-[var(--glass-border)]">
-            {sorted.map((lead) => (
+            {sorted.map((lead) => {
+              const decay = decayedScore(lead);
+              return (
               <li key={lead.id}>
                 <button
                   type="button"
@@ -1880,11 +2228,18 @@ function LeadsPanel({ lang }: { lang: Lang }) {
                       {whyById.get(lead.id) ?? ORIGIN_LABEL[lead.origin]}
                       <VehicleBadge vehicle={lead.vehicle} />
                     </p>
+                    {showScoreDetail ? (
+                      <p className="mt-1 text-[11px] tabular-nums text-[var(--ink-muted)]">
+                        base {decay.base} → ef. {decay.effective} · {decay.days}d ·{" "}
+                        {coldByLabel(lead, lang)}
+                      </p>
+                    ) : null}
                   </div>
                   <Badge tone={scoreTone(lead.score)}>{lead.score}</Badge>
                 </button>
               </li>
-            ))}
+            );
+            })}
           </ul>
         </Card>
         {!isMobile && (
@@ -1950,6 +2305,21 @@ function LeadsPanel({ lang }: { lang: Lang }) {
                   <li key={r}>{r}</li>
                 ))}
               </ol>
+              {showScoreDetail && selectedDecay ? (
+                <div className="mt-3 space-y-1 rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-3 text-xs tabular-nums text-[var(--ink-muted)]">
+                  <p>
+                    {lang === "es" ? "Base" : "Base"} {selectedDecay.base} →{" "}
+                    {lang === "es" ? "efectivo" : "effective"} {selectedDecay.effective}
+                  </p>
+                  <p>
+                    {selectedDecay.days}d · factor {selectedDecay.factor.toFixed(2)} ·{" "}
+                    {selectedCold}
+                  </p>
+                  <p className="text-[var(--ink)]">
+                    {whyById.get(selected.id)}
+                  </p>
+                </div>
+              ) : null}
               <div className="mt-5 rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-3 text-sm">
                 <p className="font-semibold text-[var(--ink)]">{t(lang, "human_action")}</p>
                 <p className="mt-1 text-[var(--ink-muted)]">{t(lang, "human_action_body")}</p>
@@ -2029,6 +2399,19 @@ function ClientsPanel({ lang }: { lang: Lang }) {
         SEGMENT_LABEL[c.segment].toLowerCase().includes(query),
     );
   }, [q, clients, segmentFilter]);
+
+  const clientView = useMemo(() => {
+    let ltv = 0;
+    let risk = 0;
+    let contactHits = 0;
+    const contactIds = new Set(contactQueue.map((c) => c.id));
+    for (const c of list) {
+      ltv += c.ltv || 0;
+      if (c.segment === "dormido" || c.segment === "en_riesgo") risk += 1;
+      if (contactIds.has(c.id)) contactHits += 1;
+    }
+    return { count: list.length, ltv, risk, contactHits };
+  }, [list, contactQueue]);
 
   function statusTone(s: Client["status"]): "good" | "warn" | "bad" | "neutral" {
     if (s === "al_dia") return "good";
@@ -2277,6 +2660,30 @@ function ClientsPanel({ lang }: { lang: Lang }) {
             </button>
           ))}
         </div>
+
+        <ViewTotals
+          className="mb-4"
+          headline={{
+            label: lang === "es" ? "LTV (vista)" : "LTV (view)",
+            value: formatEur(clientView.ltv, lang),
+          }}
+          totals={[
+            {
+              label: lang === "es" ? "Clientes" : "Clients",
+              value: String(clientView.count),
+            },
+            {
+              label: lang === "es" ? "En cola contacto" : "Contact queue",
+              value: String(clientView.contactHits),
+              tone: clientView.contactHits > 0 ? "negative" : undefined,
+            },
+            {
+              label: lang === "es" ? "Riesgo / dormidos" : "At risk / dormant",
+              value: String(clientView.risk),
+              tone: clientView.risk > 0 ? "negative" : "positive",
+            },
+          ]}
+        />
 
         <ul className="space-y-3">
           {list.map((c) => {
@@ -2572,8 +2979,14 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
     lang === "es" ? "¿Cuánto costó Mongolia 2025?" : "How much did Mongolia 2025 cost?",
   );
   const [asking, setAsking] = useState(false);
+  const [streamText, setStreamText] = useState("");
   const [result, setResult] = useState<KnowledgeAskResult | null>(null);
+  const [lastTokens, setLastTokens] = useState<{ out: number; max: number } | null>(null);
+  const [usage, setUsage] = useState(() => loadAiUsage());
+  const [threads, setThreads] = useState<AiThread[]>(() => listAiThreads());
+  const [activeThreadId, setActiveThreadId] = useState<string | undefined>();
   const [docs, setDocs] = useState<KnowledgeDoc[]>(() => loadKnowledgeDocs());
+  const askAbortRef = useRef<AbortController | null>(null);
   const [docForm, setDocForm] = useState({
     title: "",
     kind: "pdf" as KnowledgeDocKind,
@@ -2587,7 +3000,19 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
       setDocs(loadKnowledgeDocs());
     }
     window.addEventListener("mps-hub-refreshed", onHubRefresh);
-    return () => window.removeEventListener("mps-hub-refreshed", onHubRefresh);
+    return () => {
+      window.removeEventListener("mps-hub-refreshed", onHubRefresh);
+      askAbortRef.current?.abort();
+    };
+  }, []);
+
+  // El drawer global (AiAssistantHost) escucha ask-bus.
+  // Aquí solo sincronizamos la pregunta en la UI si el usuario está en esta sección.
+  useEffect(() => {
+    return onAskRequested((q) => {
+      setTab("ask");
+      setQuestion(q);
+    });
   }, []);
 
   const [active, setActive] = useState(0);
@@ -2595,6 +3020,7 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
   const filtered =
     cat === "all" ? KNOWLEDGE_ANSWERS : KNOWLEDGE_ANSWERS.filter((k) => k.category === cat);
   const item = filtered[Math.min(active, filtered.length - 1)] ?? filtered[0];
+  const threadGroups = useMemo(() => groupThreadsByRecency(threads), [threads]);
 
   const cats: { id: typeof cat; label: string }[] = [
     { id: "all", label: lang === "es" ? "Todas" : "All" },
@@ -2606,17 +3032,26 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
     { id: "stack", label: "Stack" },
   ];
 
+  // Prompts sugeridos: un cursor vacío no dice qué sabe hacer el asistente.
+  // Cubren las tres cosas que de verdad se preguntan: coste, operativa y
+  // dinero — no ejemplos decorativos.
   const examples =
     lang === "es"
       ? [
           "¿Cuánto costó Mongolia 2025?",
           "¿Qué hotel usamos en Namibia?",
           "¿Cuál fue el margen medio de Alaska?",
+          "¿Qué leads debería llamar hoy y por qué?",
+          "¿Qué reservas salen este mes con saldo pendiente?",
+          "¿Qué facturas llevan más de 30 días sin cobrar?",
         ]
       : [
           "How much did Mongolia 2025 cost?",
           "Which hotel did we use in Namibia?",
           "What was Alaska’s average margin?",
+          "Which leads should I call today, and why?",
+          "Which trips depart this month with money outstanding?",
+          "Which invoices are over 30 days uncollected?",
         ];
 
   function persistDocs(next: KnowledgeDoc[]) {
@@ -2627,22 +3062,79 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
   async function runAsk(q?: string) {
     const text = (q ?? question).trim();
     if (!text) return;
+    askAbortRef.current?.abort();
+    const ac = new AbortController();
+    askAbortRef.current = ac;
     setQuestion(text);
     setAsking(true);
+    setStreamText("");
     setResult(null);
     try {
-      const res = await askKnowledge(text, {
-        docs,
-        reservations: hub.reservations,
-        invoices: hub.invoices,
-        clients: hub.clients,
-        expeditions: EXPEDITIONS,
-        faq: KNOWLEDGE_ANSWERS,
-      });
+      const res = await askKnowledgeStream(
+        text,
+        {
+          docs,
+          reservations: hub.reservations,
+          invoices: hub.invoices,
+          clients: hub.clients,
+          expeditions: EXPEDITIONS,
+          faq: KNOWLEDGE_ANSWERS,
+        },
+        (chunk) => setStreamText((prev) => prev + chunk),
+        ac.signal,
+      );
       setResult(res);
+      setStreamText(res.answer);
+      const settings = loadAiSettings();
+      const out = estimateTokens(res.answer);
+      setLastTokens({ out, max: settings.maxOutputTokens });
+      setUsage(recordAiUsage({ prompt: text, reply: res.answer }));
+      const thread = upsertAiThread({
+        id: activeThreadId,
+        question: text,
+        answer: res.answer,
+        tokensOut: out,
+        tokensMax: settings.maxOutputTokens,
+      });
+      setActiveThreadId(thread.id);
+      setThreads(listAiThreads());
+    } catch (err) {
+      if ((err as Error)?.name === "AbortError") return;
+      setResult({
+        answer: err instanceof Error ? err.message : String(err),
+        sources: [],
+        chunksUsed: [],
+        engine: "retrieval",
+        why: [lang === "es" ? "Error al consultar" : "Query error"],
+      });
     } finally {
       setAsking(false);
     }
+  }
+
+  function loadThread(thread: AiThread) {
+    setActiveThreadId(thread.id);
+    const lastUser = [...thread.messages].reverse().find((m) => m.role === "user");
+    const lastAsst = [...thread.messages].reverse().find((m) => m.role === "assistant");
+    if (lastUser) setQuestion(lastUser.content);
+    if (lastAsst) {
+      setResult({
+        answer: lastAsst.content,
+        why: [
+          lang === "es"
+            ? "Recuperado del historial local de este hilo."
+            : "Restored from this thread’s local history.",
+        ],
+        sources: [lang === "es" ? "Historial local" : "Local history"],
+        engine: "retrieval",
+        chunksUsed: [],
+      });
+      if (lastAsst.tokensOut != null && lastAsst.tokensMax != null) {
+        setLastTokens({ out: lastAsst.tokensOut, max: lastAsst.tokensMax });
+      }
+    }
+    setTab("ask");
+    setStreamText(lastAsst?.content ?? "");
   }
 
   function addDoc() {
@@ -2660,6 +3152,38 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
     });
     persistDocs(next);
     setDocForm({ title: "", kind: "pdf", content: "", fileRef: "", tags: "" });
+  }
+
+  function ThreadGroup({
+    label,
+    items,
+  }: {
+    label: string;
+    items: AiThread[];
+  }) {
+    if (items.length === 0) return null;
+    return (
+      <div className="space-y-1.5">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--ink-muted)]">
+          {label}
+        </p>
+        {items.map((th) => (
+          <button
+            key={th.id}
+            type="button"
+            onClick={() => loadThread(th)}
+            className={cn(
+              "block w-full rounded-lg px-2.5 py-2 text-left text-xs transition",
+              activeThreadId === th.id
+                ? "bg-[color-mix(in_oklab,var(--accent)_14%,transparent)] text-[var(--ink)]"
+                : "text-[var(--ink-muted)] hover:bg-[color-mix(in_oklab,var(--ink)_6%,transparent)]",
+            )}
+          >
+            <span className="line-clamp-2 font-semibold">{th.title}</span>
+          </button>
+        ))}
+      </div>
+    );
   }
 
   return (
@@ -2706,11 +3230,50 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
                 ? "Solo heurística (sin IA)"
                 : "Heuristic only (no AI)"}
           </Badge>
+          <button
+            type="button"
+            className="mps-choice rounded-lg px-3 py-1.5 text-xs font-semibold"
+            onClick={() => {
+              setActiveThreadId(undefined);
+              setResult(null);
+              setQuestion("");
+            }}
+          >
+            {lang === "es" ? "Nuevo hilo" : "New thread"}
+          </button>
         </div>
       </Card>
 
       {tab === "ask" && (
-        <div className="grid gap-5 lg:grid-cols-5">
+        <div className="grid gap-5 lg:grid-cols-6">
+          <Card
+            title={lang === "es" ? "Historial" : "History"}
+            subtitle={lang === "es" ? "Hoy / esta semana" : "Today / this week"}
+            className="lg:col-span-1"
+          >
+            <div className="max-h-[420px] space-y-4 overflow-y-auto">
+              <ThreadGroup
+                label={lang === "es" ? "Hoy" : "Today"}
+                items={threadGroups.today}
+              />
+              <ThreadGroup
+                label={lang === "es" ? "Esta semana" : "This week"}
+                items={threadGroups.week}
+              />
+              <ThreadGroup
+                label={lang === "es" ? "Anteriores" : "Older"}
+                items={threadGroups.older}
+              />
+              {threads.length === 0 ? (
+                <p className="text-xs text-[var(--ink-muted)]">
+                  {lang === "es"
+                    ? "Aún no hay hilos. Haz una pregunta."
+                    : "No threads yet. Ask something."}
+                </p>
+              ) : null}
+            </div>
+          </Card>
+
           <Card
             title={lang === "es" ? "Pregunta del CEO" : "CEO question"}
             subtitle={
@@ -2763,26 +3326,56 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
             title={lang === "es" ? "Respuesta con fuentes" : "Answer with sources"}
             className="lg:col-span-3"
           >
-            {!result ? (
-              <p className="text-sm text-[var(--ink-muted)]">
-                {lang === "es"
-                  ? "Haz una pregunta. Primero se buscan docs + Hub; con IA activa se resume; sin IA se muestra el mejor fragmento."
-                  : "Ask a question. Docs + Hub are searched first; with AI on they are summarized; without AI you get the best chunk."}
-              </p>
+            {!result && !streamText && !asking ? (
+              <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
+                <span className="mps-ai-fab is-alive" aria-hidden>
+                  <Sparkles className="h-5 w-5" />
+                </span>
+                <p className="text-sm font-semibold text-[var(--ink)]">
+                  {lang === "es" ? "¿En qué te ayudo con la operación?" : "How can I help with ops?"}
+                </p>
+                <p className="max-w-sm text-sm text-[var(--ink-muted)]">
+                  {lang === "es"
+                    ? "Docs + Hub primero; IA resume en streaming si está activa. Respuestas cortas para ahorrar tokens."
+                    : "Docs + Hub first; AI streams a summary if enabled. Short answers to save tokens."}
+                </p>
+                <p className="text-[11px] tabular-nums text-[var(--ink-muted)]">
+                  {lang === "es" ? "Uso" : "Usage"} · {formatTokenK(usage.inputTokens)} in /{" "}
+                  {formatTokenK(usage.outputTokens)} out · {usage.messages} msg
+                </p>
+              </div>
             ) : (
               <>
-                <Badge tone={result.engine === "ai" ? "good" : "neutral"}>
-                  {result.engine === "ai"
-                    ? lang === "es"
-                      ? `Modo IA · ${result.provider ?? providerLabel()}`
-                      : `AI mode · ${result.provider ?? providerLabel()}`
-                    : lang === "es"
-                      ? "Modo heurística / retrieval"
-                      : "Heuristic / retrieval mode"}
-                </Badge>
+                <div className="flex flex-wrap items-center gap-2">
+                  {asking ? (
+                    <Badge tone="brand">
+                      {lang === "es" ? "Escribiendo…" : "Streaming…"}
+                    </Badge>
+                  ) : result ? (
+                    <Badge tone={result.engine === "ai" ? "good" : "neutral"}>
+                      {result.engine === "ai"
+                        ? lang === "es"
+                          ? `Modo IA · ${result.provider ?? providerLabel()}`
+                          : `AI mode · ${result.provider ?? providerLabel()}`
+                        : lang === "es"
+                          ? "Modo heurística / retrieval"
+                          : "Heuristic / retrieval mode"}
+                    </Badge>
+                  ) : null}
+                  {lastTokens && !asking ? (
+                    <span className="text-[11px] tabular-nums text-[var(--ink-muted)]">
+                      {lastTokens.out}/{lastTokens.max} tokens
+                    </span>
+                  ) : null}
+                </div>
                 <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[var(--ink)]">
-                  {result.answer}
+                  {streamText || result?.answer || ""}
+                  {asking ? (
+                    <span className="ml-0.5 inline-block h-3.5 w-1.5 animate-pulse bg-[var(--accent)] align-middle" />
+                  ) : null}
                 </p>
+                {result && !asking ? (
+                  <>
                 <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
                   {lang === "es" ? "Por qué importa" : "Why it matters"}
                 </p>
@@ -2825,6 +3418,8 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
                     </ul>
                   </details>
                 )}
+                  </>
+                ) : null}
               </>
             )}
             <p className="mt-5 flex items-start gap-2 rounded-xl bg-[var(--glass)] p-3 text-xs text-[var(--ink-muted)]">
@@ -3490,6 +4085,9 @@ export function MpsCrmApp() {
       {section === "clientes" && <ClientsPanel lang={lang} />}
       {section === "reservas" && <ReservationsPanel lang={lang} />}
       {section === "facturas" && <InvoicesVerifactuPanel lang={lang} />}
+      {section === "tesoreria" && <TreasurySection lang={lang} />}
+      {section === "aprobaciones" && <ApprovalsSection lang={lang} />}
+      {section === "equipo" && <TeamSection lang={lang} />}
       {section === "contenido" && <ContentFactoryPanel lang={lang} />}
       {section === "conocimiento" && <KnowledgePanel lang={lang} />}
       {section === "automatizaciones" && <AutomationsPanel lang={lang} />}
@@ -3565,6 +4163,7 @@ export function MpsCrmApp() {
           onPrefsChange={setPrefs}
         >
           {sectionPanels}
+          <AiAssistantHost lang={lang} />
         </MobileCrmShell>
         {user && (
           <ProfileModal
@@ -3852,6 +4451,7 @@ export function MpsCrmApp() {
 
         <main className="px-4 py-5 md:px-6 md:py-6">
           {sectionPanels}
+          <AiAssistantHost lang={lang} />
 
           <footer className="mt-8 flex flex-wrap items-center gap-2 border-t border-[var(--glass-border)] pt-4 text-xs text-[var(--ink-muted)]">
             <Lightbulb className="h-3.5 w-3.5" />

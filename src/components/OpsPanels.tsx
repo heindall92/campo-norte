@@ -1,3 +1,6 @@
+import { ViewTotals } from "@/components/ui/ViewTotals";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { askAboutInvoice, requestAsk } from "@/lib/ai/ask-bus";
 import { N8nFlowBuilder } from "@/components/N8nFlowBuilder";
 import { blankReservation, ReservationFormModal } from "@/components/ReservationFormModal";
 import { EntityActionBar } from "@/components/EntityActionBar";
@@ -25,19 +28,20 @@ import { useDataHub } from "@/lib/data";
 import { useNotifications } from "@/lib/notifications";
 import { GESTORIA_EXPORT_FIELDS, LEGAL_CITATIONS, VERIFACTU_CHECKLIST } from "@/lib/legal-verifactu";
 import { downloadInvoicePdf } from "@/lib/invoice-pdf";
+import { buildInvoiceAlerts } from "@/lib/invoice-alerts";
+import { formatEur } from "@/lib/format";
 import {
   INVOICE_STATUS_LABEL,
   PAYMENT_LABEL,
   RESERVATION_STATUS_LABEL,
-  TAX_REGIME_LABEL,
   downloadGestoriaPack,
-  type Invoice,
   type Reservation,
   type ReservationStatus,
 } from "@/lib/ops-data";
 import type { Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
+  AlertTriangle,
   Building2,
   CheckCircle2,
   ChevronDown,
@@ -127,13 +131,6 @@ function Card({
   );
 }
 
-function invTone(s: Invoice["status"]): "good" | "warn" | "bad" | "brand" | "neutral" {
-  if (s === "cobrada" || s === "enviada_aeat") return "good";
-  if (s === "emitida") return "brand";
-  if (s === "anulada") return "bad";
-  if (s === "borrador") return "warn";
-  return "neutral";
-}
 
 
 /** Ecosistema CRM: orquestación real A-01 + editor visual estilo n8n */
@@ -437,6 +434,18 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
     });
   }, [q, reservations, statusFilter]);
 
+  const viewAgg = useMemo(() => {
+    let total = 0;
+    let pending = 0;
+    let pax = 0;
+    for (const r of list) {
+      total += r.totalAmount;
+      pending += Math.max(0, r.totalAmount - r.depositPaid);
+      pax += r.pax;
+    }
+    return { total, pending, pax, count: list.length };
+  }, [list]);
+
   async function saveReservation(r: Reservation) {
     await hub.saveReservation(r);
     setOpenId(r.id);
@@ -559,6 +568,26 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
             </Badge>
           </div>
         </div>
+
+        <ViewTotals
+          className="mb-4"
+          headline={{
+            label: lang === "es" ? "Importe (vista)" : "Amount (view)",
+            value: euro(viewAgg.total, lang),
+          }}
+          totals={[
+            {
+              label: lang === "es" ? "Pendiente cobro" : "Outstanding",
+              value: euro(viewAgg.pending, lang),
+              tone: "negative",
+            },
+            { label: "Pax", value: String(viewAgg.pax) },
+            {
+              label: lang === "es" ? "Reservas" : "Bookings",
+              value: String(viewAgg.count),
+            },
+          ]}
+        />
 
         {list.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[var(--glass-border)] px-4 py-10 text-center">
@@ -837,15 +866,116 @@ export function InvoicesVerifactuPanel({ lang }: { lang: Lang }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [legalOpen, setLegalOpen] = useState(false);
   const [checklistOpen, setChecklistOpen] = useState(false);
+  const [filter, setFilter] = useState<"todas" | "vencidas" | "pendientes" | "cobradas">("todas");
+
+  const now = Date.now();
+  const enriched = useMemo(() => {
+    return invoices.map((inv) => {
+      const outstanding = Math.max(0, inv.total - inv.amountCollected);
+      const ageDays = Math.floor((now - new Date(inv.issueDate).getTime()) / 86_400_000);
+      const vencida =
+        outstanding > 0 &&
+        inv.status !== "anulada" &&
+        inv.status !== "borrador" &&
+        ageDays > 30;
+      return { inv, outstanding, ageDays, vencida };
+    });
+  }, [invoices, now]);
+
+  const visible = useMemo(() => {
+    return enriched.filter(({ inv, outstanding, vencida }) => {
+      if (filter === "cobradas") return inv.amountCollected > 0 && outstanding === 0;
+      if (filter === "pendientes") return outstanding > 0 && !vencida;
+      if (filter === "vencidas") return vencida;
+      return inv.status !== "anulada";
+    });
+  }, [enriched, filter]);
+
+  const viewTotals = useMemo(() => {
+    let cobrado = 0;
+    let pendiente = 0;
+    for (const row of visible) {
+      cobrado += row.inv.amountCollected;
+      pendiente += row.outstanding;
+    }
+    return { cobrado, pendiente, count: visible.length };
+  }, [visible]);
+
+  const counts = useMemo(() => {
+    const all = enriched.filter((e) => e.inv.status !== "anulada").length;
+    const vencidas = enriched.filter((e) => e.vencida).length;
+    const pendientes = enriched.filter((e) => e.outstanding > 0 && !e.vencida).length;
+    const cobradas = enriched.filter((e) => e.inv.amountCollected > 0 && e.outstanding === 0).length;
+    return { todas: all, vencidas, pendientes, cobradas };
+  }, [enriched]);
+
+  const alerts = useMemo(() => buildInvoiceAlerts(invoices), [invoices]);
 
   return (
     <div className="space-y-5">
+      {alerts.length > 0 ? (
+        <div className="space-y-2">
+          {alerts.map((a) => (
+            <div
+              key={a.id}
+              className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border px-4 py-3"
+              style={{
+                borderColor:
+                  a.tone === "negative"
+                    ? "color-mix(in oklab, var(--negative) 40%, transparent)"
+                    : a.tone === "warning"
+                      ? "color-mix(in oklab, var(--warning) 40%, transparent)"
+                      : "var(--glass-border)",
+                background:
+                  a.tone === "negative"
+                    ? "color-mix(in oklab, var(--negative) 8%, transparent)"
+                    : a.tone === "warning"
+                      ? "color-mix(in oklab, var(--warning) 8%, transparent)"
+                      : "var(--glass)",
+              }}
+            >
+              <div className="flex min-w-0 items-start gap-2">
+                <AlertTriangle
+                  className="mt-0.5 h-4 w-4 shrink-0"
+                  style={{
+                    color:
+                      a.tone === "negative"
+                        ? "var(--negative)"
+                        : a.tone === "warning"
+                          ? "var(--warning)"
+                          : "var(--accent)",
+                  }}
+                />
+                <div>
+                  <p className="text-sm font-semibold text-[var(--ink)]">{a.title}</p>
+                  <p className="text-xs text-[var(--ink-muted)]">{a.body}</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {a.amount != null ? (
+                  <span className="text-sm font-semibold tabular-nums text-[var(--ink)]">
+                    {formatEur(a.amount, lang)}
+                  </span>
+                ) : null}
+                <button
+                  type="button"
+                  className="mps-choice rounded-lg px-2.5 py-1 text-xs font-semibold"
+                  onClick={() => setOpenId(a.invoiceId)}
+                >
+                  {lang === "es" ? "Ver" : "View"}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
       <Card
         title={lang === "es" ? "Facturas · Veri*FACTU · REAV" : "Invoices · Veri*FACTU · REAV"}
         subtitle={
           lang === "es"
-            ? "Facturación estilo agencia de viajes española: régimen especial, clave 05, PDF empresarial, medios de cobro y paquete listo para gestoría."
-            : "Spanish travel-agency invoicing: special scheme, key 05, business PDF, payment rails and tax-advisor export pack."
+            ? "Tabla con filtros, totales EN ESTA VISTA y enlaces a cliente / asistente."
+            : "Table with filters, IN THIS VIEW totals and links to client / assistant."
         }
         action={
           <button
@@ -858,16 +988,6 @@ export function InvoicesVerifactuPanel({ lang }: { lang: Lang }) {
           </button>
         }
       >
-        <div className="mb-4 rounded-xl border border-[color-mix(in_oklab,var(--accent)_35%,transparent)] bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] px-3 py-2.5 text-sm text-[var(--ink)]">
-          <p className="font-semibold text-[var(--accent)]">
-            {lang === "es" ? "Frase para Miguel (10 s)" : "Pitch line for Miguel (10 s)"}
-          </p>
-          <p className="mt-1 text-[var(--ink-muted)]">
-            {lang === "es"
-              ? "Este módulo prepara las facturas para la gestoría con el régimen fiscal específico de agencias de viajes. Cumple Veri*FACTU, que entra en vigor en 2027."
-              : "This module prepares invoices for the tax advisor under the travel-agency special VAT scheme. It is ready for Veri*FACTU, which becomes mandatory in 2027."}
-          </p>
-        </div>
         <div className="mb-4 flex flex-wrap gap-2">
           {["Stripe", "SEPA", "PayPal", "Depósito", "Efectivo"].map((p) => (
             <Badge key={p} tone="brand">
@@ -878,83 +998,179 @@ export function InvoicesVerifactuPanel({ lang }: { lang: Lang }) {
           <Badge tone="warn">Deadline IS 01/01/2027</Badge>
         </div>
 
-        <ul className="space-y-3">
-          {invoices.map((inv) => {
-            const open = openId === inv.id;
-            return (
-              <li
-                key={inv.id}
-                className="overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--glass)]"
-              >
-                <button
-                  type="button"
-                  onClick={() => setOpenId(open ? null : inv.id)}
-                  className="flex w-full flex-col gap-2 p-4 text-left sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p className="font-semibold text-[var(--ink)]">
-                      {inv.number} · {inv.clientName}
-                    </p>
-                    <p className="text-sm text-[var(--ink-muted)]">
-                      {inv.expedition} · NIF {inv.clientNif}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge tone={invTone(inv.status)}>{INVOICE_STATUS_LABEL[inv.status]}</Badge>
-                    <Badge tone="brand">{TAX_REGIME_LABEL[inv.regime]}</Badge>
-                    <span className="text-sm font-semibold text-[var(--ink)]">
-                      {euro(inv.total, lang)}
+        <ViewTotals
+          className="mb-4"
+          headline={{
+            label: lang === "es" ? "Emitido (vista)" : "Issued (view)",
+            value: euro(viewTotals.cobrado + viewTotals.pendiente, lang),
+          }}
+          totals={[
+            {
+              label: lang === "es" ? "Cobrado" : "Collected",
+              value: euro(viewTotals.cobrado, lang),
+              tone: "positive",
+            },
+            {
+              label: lang === "es" ? "Pendiente" : "Outstanding",
+              value: euro(viewTotals.pendiente, lang),
+              tone: "negative",
+            },
+            { label: lang === "es" ? "Facturas" : "Invoices", value: String(viewTotals.count) },
+          ]}
+        />
+
+        <div className="mb-3 flex flex-wrap gap-2">
+          {(
+            [
+              ["todas", lang === "es" ? "Todas" : "All"],
+              ["vencidas", lang === "es" ? "Vencidas" : "Overdue"],
+              ["pendientes", lang === "es" ? "Pendientes" : "Open"],
+              ["cobradas", lang === "es" ? "Cobradas" : "Paid"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setFilter(id)}
+              className={cn("mps-choice rounded-lg px-3 py-1 text-sm transition", filter === id && "is-active")}
+            >
+              {label}
+              <span className="ml-1.5 tabular-nums opacity-70">{counts[id]}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="overflow-x-auto rounded-xl border border-[var(--glass-border)]">
+          <table className="mps-table">
+            <thead>
+              <tr>
+                <th scope="col">{lang === "es" ? "Número" : "Number"}</th>
+                <th scope="col">{lang === "es" ? "Cliente" : "Client"}</th>
+                <th scope="col">{lang === "es" ? "Emisión" : "Issued"}</th>
+                <th scope="col">{lang === "es" ? "Estado" : "Status"}</th>
+                <th scope="col" className="mps-num">
+                  Total
+                </th>
+                <th scope="col" />
+              </tr>
+            </thead>
+            <tbody>
+              {visible.map(({ inv, outstanding, ageDays, vencida }) => (
+                <tr key={inv.id} className={openId === inv.id ? "mps-row-final" : undefined}>
+                  <td>
+                    <button
+                      type="button"
+                      className="text-left font-semibold text-[var(--accent)]"
+                      onClick={() => setOpenId(openId === inv.id ? null : inv.id)}
+                    >
+                      {inv.number}
+                    </button>
+                    <span className="block text-xs" style={{ color: "var(--text-tertiary)" }}>
+                      {inv.expedition}
                     </span>
+                  </td>
+                  <td>
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        downloadInvoicePdf(inv);
-                      }}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-strong)] px-2.5 py-1.5 text-xs font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
+                      className="text-left"
+                      onClick={() =>
+                        window.dispatchEvent(new CustomEvent("mps-navigate", { detail: "clientes" }))
+                      }
                     >
-                      <FileText className="h-3.5 w-3.5 text-[var(--accent)]" />
-                      PDF
+                      {inv.clientName}
                     </button>
-                  </div>
-                </button>
-                {open && (
-                  <div className="space-y-3 border-t border-[var(--glass-border)] px-4 pb-4 pt-3">
-                    <div className="grid gap-3 text-sm text-[var(--ink)] md:grid-cols-2">
-                      <p>
-                        <span className="text-[var(--ink-muted)]">Base (margen REAV):</span>{" "}
-                        {inv.taxBase.toFixed(2)} € · IVA {inv.vatRate}% = {inv.vatAmount.toFixed(2)} €
-                      </p>
-                      <p>
-                        <span className="text-[var(--ink-muted)]">Operación:</span>{" "}
-                        {inv.operationClass} · Mención REAV: {inv.reavMention ? "Sí" : "No"}
-                      </p>
-                      <p>
-                        <span className="text-[var(--ink-muted)]">Pago:</span>{" "}
-                        {PAYMENT_LABEL[inv.paymentChannel]} · {inv.paymentRef}
-                      </p>
-                      <p>
-                        <span className="text-[var(--ink-muted)]">Veri*FACTU:</span>{" "}
-                        {inv.verifactuHash} · AEAT: {inv.aeatStatus}
-                      </p>
-                      <p className="md:col-span-2 text-[var(--ink-muted)]">{inv.clientAddress}</p>
+                    <span className="block text-xs" style={{ color: "var(--text-tertiary)" }}>
+                      NIF {inv.clientNif}
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap" style={{ color: "var(--text-secondary)" }}>
+                    {inv.issueDate.slice(0, 10)}
+                    {vencida ? (
+                      <span className="block text-xs font-semibold" style={{ color: "var(--negative)" }}>
+                        {ageDays}d {lang === "es" ? "VENCIDA" : "OVERDUE"}
+                      </span>
+                    ) : null}
+                  </td>
+                  <td>
+                    <StatusBadge
+                      tone={vencida ? "negative" : inv.status === "cobrada" ? "positive" : "info"}
+                    >
+                      {INVOICE_STATUS_LABEL[inv.status]}
+                    </StatusBadge>
+                    {outstanding > 0 ? (
+                      <span className="mt-1 block text-[11px]" style={{ color: "var(--warning)" }}>
+                        pend. {euro(outstanding, lang)}
+                      </span>
+                    ) : null}
+                  </td>
+                  <td className="mps-num font-semibold">{euro(inv.total, lang)}</td>
+                  <td className="mps-num">
+                    <div className="flex flex-wrap justify-end gap-1">
+                      <button
+                        type="button"
+                        className="mps-choice rounded-lg px-2 py-1 text-xs font-semibold"
+                        onClick={() =>
+                          requestAsk(
+                            askAboutInvoice(
+                              inv.number,
+                              vencida ? `Vencida ${ageDays}d` : INVOICE_STATUS_LABEL[inv.status],
+                            ),
+                          )
+                        }
+                      >
+                        {lang === "es" ? "Preguntar" : "Ask"}
+                      </button>
+                      <button
+                        type="button"
+                        className="mps-choice rounded-lg px-2 py-1 text-xs font-semibold"
+                        onClick={() => downloadInvoicePdf(inv)}
+                      >
+                        PDF
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => downloadInvoicePdf(inv)}
-                      className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white"
-                    >
-                      <Download className="h-4 w-4" />
-                      {lang === "es"
-                        ? "Descargar factura PDF (formato empresarial ES)"
-                        : "Download invoice PDF (Spanish business format)"}
-                    </button>
+                  </td>
+                </tr>
+              ))}
+              {visible.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-6 text-center" style={{ color: "var(--text-tertiary)" }}>
+                    {lang === "es" ? "Sin facturas en esta vista." : "No invoices in this view."}
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+
+        {openId
+          ? (() => {
+              const inv = invoices.find((i) => i.id === openId);
+              if (!inv) return null;
+              return (
+                <div className="mt-3 space-y-3 rounded-2xl border border-[var(--glass-border)] bg-[var(--glass)] px-4 py-4">
+                  <div className="grid gap-3 text-sm text-[var(--ink)] md:grid-cols-2">
+                    <p>
+                      <span className="text-[var(--ink-muted)]">Base (margen REAV):</span>{" "}
+                      {inv.taxBase.toFixed(2)} € · IVA {inv.vatRate}% = {inv.vatAmount.toFixed(2)} €
+                    </p>
+                    <p>
+                      <span className="text-[var(--ink-muted)]">Operación:</span> {inv.operationClass} ·
+                      Mención REAV: {inv.reavMention ? "Sí" : "No"}
+                    </p>
+                    <p>
+                      <span className="text-[var(--ink-muted)]">Pago:</span>{" "}
+                      {PAYMENT_LABEL[inv.paymentChannel]} · {inv.paymentRef}
+                    </p>
+                    <p>
+                      <span className="text-[var(--ink-muted)]">Veri*FACTU:</span> {inv.verifactuHash} ·
+                      AEAT: {inv.aeatStatus}
+                    </p>
+                    <p className="md:col-span-2 text-[var(--ink-muted)]">{inv.clientAddress}</p>
                   </div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+                </div>
+              );
+            })()
+          : null}
       </Card>
 
       <section className="overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-strong)] shadow-[var(--shadow)] backdrop-blur-md">

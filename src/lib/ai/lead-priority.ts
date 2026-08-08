@@ -19,6 +19,7 @@ import {
 import {
   ORIGIN_WEIGHT,
   clampScore,
+  coldByLabel,
   decayFactor,
   daysSince,
   decayedScore,
@@ -280,6 +281,7 @@ export function rankLeads(input: RankLeadsInput): RankedLead[] {
 
     if (mode === "urgencia") {
       const cooled = decay.base - decay.effective >= 5;
+      const cold = coldByLabel(lead, lang, 55, undefined, now);
       return {
         lead,
         rank: decay.effective,
@@ -288,11 +290,11 @@ export function rankLeads(input: RankLeadsInput): RankedLead[] {
         days: decay.days,
         why: cooled
           ? lang === "es"
-            ? `${decay.base} enfriado a ${decay.effective} · ${decay.days} d`
-            : `${decay.base} cooled to ${decay.effective} · ${decay.days} d`
+            ? `${decay.base} → ${decay.effective} · ${cold}`
+            : `${decay.base} → ${decay.effective} · ${cold}`
           : lang === "es"
-            ? `Efectivo ${decay.effective} · fresco`
-            : `Effective ${decay.effective} · fresh`,
+            ? `Efectivo ${decay.effective} · fresco · ${cold}`
+            : `Effective ${decay.effective} · fresh · ${cold}`,
       };
     }
 

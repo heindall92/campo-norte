@@ -1,6 +1,6 @@
 "use client";
 
-import { applyScoreToLead, priorityFromScore, priorityLabel, scoreLead } from "@/lib/ai";
+import { applyScoreToLead, coldByLabel, priorityFromScore, priorityLabel, scoreLead } from "@/lib/ai";
 import { rankLeads } from "@/lib/ai/lead-priority";
 import { LeadPriorityModeSelect } from "@/components/LeadPriorityModeSelect";
 import { useDataHub } from "@/lib/data";
@@ -121,6 +121,7 @@ export function MobileLeadsScreen({ lang }: { lang: Lang }) {
           list.map(({ lead, effective, base, why }) => {
             const status = STATUS_LABEL[lead.status];
             const cooled = base - effective >= 5;
+            const cold = coldByLabel(lead, es ? "es" : "en");
             return (
               <button
                 key={lead.id}
@@ -146,7 +147,7 @@ export function MobileLeadsScreen({ lang }: { lang: Lang }) {
                     <MobileChip>{ORIGIN_LABEL[lead.origin]}</MobileChip>
                     {cooled && (
                       <MobileChip tone="warn">
-                        {es ? `enfriado a ${effective}` : `cooled to ${effective}`}
+                        {es ? `→ ${effective} · ${cold}` : `→ ${effective} · ${cold}`}
                       </MobileChip>
                     )}
                   </span>

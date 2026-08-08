@@ -61,6 +61,37 @@ export function clampScore(n: number): number {
   return Math.max(0, Math.min(100, Math.round(n)));
 }
 
+/**
+ * Tope de puntos que puede aportar el bloque "cliente vinculado".
+ *
+ * Sin tope, un repetidor de alto valor llegado por referido sumaba 109 y el
+ * recorte a 100 lo igualaba con otros ocho iguales. Justo el perfil que más
+ * importa quedaba sin orden interno.
+ */
+export const RELATIONSHIP_CAP = 30;
+
+/** A partir de aquí el score deja de crecer linealmente. */
+const COMPRESSION_KNEE = 80;
+const COMPRESSION_SPAN = 20;
+
+/**
+ * Compresión asintótica de la cola alta.
+ *
+ * Por debajo de la rodilla no toca nada. Por encima, comprime el exceso hacia
+ * 100 sin alcanzarlo nunca. La función es estrictamente creciente, así que dos
+ * leads con puntuación bruta distinta SIEMPRE quedan en orden distinto: el
+ * recorte plano en 100 los empataba y destruía el podio.
+ *
+ *   bruto  97 → 89
+ *   bruto 109 → 92
+ *   bruto 124 → 94
+ */
+export function compressTail(raw: number): number {
+  if (raw <= COMPRESSION_KNEE) return Math.max(0, raw);
+  const excess = raw - COMPRESSION_KNEE;
+  return COMPRESSION_KNEE + (excess / (excess + COMPRESSION_SPAN)) * COMPRESSION_SPAN;
+}
+
 /** Scoring determinístico. Solo clasifica: nunca escribe al viajero. */
 export function scoreLeadHeuristic(lead: Lead, linked?: Client | null): LeadScoreResult {
   const reasons: string[] = [];
@@ -87,9 +118,13 @@ export function scoreLeadHeuristic(lead: Lead, linked?: Client | null): LeadScor
     reasons.push(`Campaña: ${lead.campaign}`);
   }
 
+  // Bloque relación: se acumula aparte y se topa, para que un solo perfil no
+  // sature el score y borre las diferencias con sus iguales.
   if (linked) {
+    let relationship = 0;
+
     if (linked.trips > 0) {
-      score += 18;
+      relationship += 18;
       reasons.push(
         linked.trips === 1
           ? "Cliente con viaje previo"
@@ -97,28 +132,36 @@ export function scoreLeadHeuristic(lead: Lead, linked?: Client | null): LeadScor
       );
     }
     if (linked.ltv >= 10_000) {
-      score += 12;
+      relationship += 12;
       reasons.push("Alto poder adquisitivo (LTV)");
     }
     if (linked.brevoOpens >= 5) {
-      score += 8;
+      relationship += 8;
       reasons.push(`Ha abierto ${linked.brevoOpens} emails (Brevo)`);
     }
-    const mongoliaVisits = linked.history.filter((h) => h.route === "MONGOLIA").length;
-    if (mongoliaVisits >= 1) {
-      score += 6;
-      reasons.push(
-        mongoliaVisits >= 2
-          ? `Visitó Mongolia ${mongoliaVisits} veces`
-          : "Interés / historial Mongolia",
-      );
+
+    // Ha viajado antes por la ruta que ahora le interesa.
+    // Genérico a propósito: antes esto premiaba solo a MONGOLIA, lo que sesgaba
+    // la prioridad hacia un destino y se rompía al retirar o añadir rutas.
+    if (lead.interestRoute) {
+      const sameRoute = linked.history.filter((h) => h.route === lead.interestRoute).length;
+      if (sameRoute >= 1) {
+        relationship += 6;
+        const label = ROUTE_LABEL[lead.interestRoute];
+        reasons.push(
+          sameRoute >= 2 ? `Ha viajado a ${label} ${sameRoute} veces` : `Ya viajó a ${label}`,
+        );
+      }
     }
+
+    if (relationship > RELATIONSHIP_CAP) relationship = RELATIONSHIP_CAP;
+    score += relationship;
   }
 
   if (lead.status === "cualificado") score += 8;
   if (lead.status === "reservado") score += 15;
 
-  score = clampScore(score);
+  score = clampScore(compressTail(score));
   if (score >= 80) reasons.push("Probabilidad de compra alta");
 
   return {
@@ -193,4 +236,53 @@ export function decayedScore(
     days,
     factor,
   };
+}
+
+/**
+ * Fecha en la que el score efectivo cae por debajo de `floor` (p. ej. 55)
+ * si nadie toca al lead. Si ya está bajo el suelo, devuelve hoy.
+ *
+ * Convierte "se enfría" en "se enfría el 14 ago" — el detalle que hace
+ * descargar el teléfono (docs/GAP-DEMO-ANATOMIA.md §5).
+ */
+export function coldByDate(
+  lead: Pick<Lead, "score" | "lastTouchAt" | "createdAt">,
+  floor = 55,
+  halfLifeDays = DEFAULT_HALF_LIFE_DAYS,
+  now: Date = new Date(),
+): Date {
+  const touchIso = lead.lastTouchAt || lead.createdAt;
+  const touch = new Date(`${(touchIso || now.toISOString().slice(0, 10)).slice(0, 10)}T12:00:00`);
+  const baseTouch = Number.isNaN(touch.getTime()) ? now : touch;
+
+  if (lead.score <= 0) return baseTouch;
+  if (lead.score <= floor) return now;
+
+  // score * e^(-ln2/hl * d) = floor  →  d = ln(score/floor) * hl / ln2
+  const daysToFloor = Math.ceil(
+    (Math.log(lead.score / floor) * halfLifeDays) / Math.LN2,
+  );
+  const cold = new Date(baseTouch);
+  cold.setDate(cold.getDate() + Math.max(0, daysToFloor));
+  return cold;
+}
+
+/** Etiqueta corta: "se enfría el 14 ago" / "cools on 14 Aug". */
+export function coldByLabel(
+  lead: Pick<Lead, "score" | "lastTouchAt" | "createdAt">,
+  lang: "es" | "en" = "es",
+  floor = 55,
+  halfLifeDays = DEFAULT_HALF_LIFE_DAYS,
+  now: Date = new Date(),
+): string {
+  const d = coldByDate(lead, floor, halfLifeDays, now);
+  const when = d.toLocaleDateString(lang === "es" ? "es-ES" : "en-US", {
+    day: "numeric",
+    month: "short",
+  });
+  const already = lead.score * decayFactor(daysSince(lead.lastTouchAt || lead.createdAt, now), halfLifeDays) < floor;
+  if (already || d.getTime() <= now.getTime()) {
+    return lang === "es" ? `ya frío · ${when}` : `already cold · ${when}`;
+  }
+  return lang === "es" ? `se enfría el ${when}` : `cools on ${when}`;
 }

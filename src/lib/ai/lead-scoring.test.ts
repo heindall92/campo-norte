@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { priorityFromScore, scoreLeadHeuristic } from "@/lib/ai/lead-scoring";
-import type { Lead } from "@/lib/demo-data";
+import { compressTail } from "@/lib/ai/lead-scoring-core";
+import { CLIENTS, type Client, type Lead } from "@/lib/demo-data";
 import {
   isReavPriceShape,
   reavVatAmount,
@@ -88,5 +89,83 @@ describe("REAV invoice math", () => {
     const lines = csv.trim().split(/\r?\n/);
     expect(lines[0]).toContain("numero_factura");
     expect(lines.length).toBe(INVOICES.length + 1);
+  });
+});
+
+describe("correcciones de la heurística", () => {
+  const base: Lead = {
+    id: "L1",
+    name: "Ana",
+    email: "ana@example.com",
+    origin: "referral",
+    campaign: "verano",
+    status: "nuevo",
+    score: 0,
+    scoreReasons: [],
+    interestRoute: "NAMIBIA",
+    vehicle: "moto",
+    createdAt: "2026-08-01T00:00:00Z",
+    lastTouchAt: "2026-08-01T00:00:00Z",
+    owner: "Laura",
+  };
+
+  function client(over: Partial<Client> = {}): Client {
+    return {
+      ...CLIENTS[0]!,
+      email: "ana@example.com",
+      trips: 3,
+      ltv: 30_000,
+      brevoOpens: 9,
+      history: [],
+      ...over,
+    };
+  }
+
+  it("premia haber viajado a la ruta de interés, sea cual sea", () => {
+    const namibia = scoreLeadHeuristic(base, client({
+      history: [{ route: "NAMIBIA", date: "2024-01-01", vehicle: "moto", amount: 8000 }],
+    }));
+    expect(namibia.reasons.some((r) => /Namibia/i.test(r))).toBe(true);
+  });
+
+  it("no privilegia Mongolia sobre el resto de rutas", () => {
+    const mongolia = scoreLeadHeuristic(
+      { ...base, interestRoute: "MONGOLIA" },
+      client({ history: [{ route: "MONGOLIA", date: "2024-01-01", vehicle: "moto", amount: 8000 }] }),
+    );
+    const alaska = scoreLeadHeuristic(
+      { ...base, interestRoute: "ALASKA" },
+      client({ history: [{ route: "ALASKA", date: "2024-01-01", vehicle: "moto", amount: 8000 }] }),
+    );
+    expect(mongolia.score).toBe(alaska.score);
+  });
+
+  it("no premia un historial en una ruta que ya no interesa", () => {
+    const otra = scoreLeadHeuristic(
+      { ...base, interestRoute: "ALASKA" },
+      client({ history: [{ route: "MONGOLIA", date: "2024-01-01", vehicle: "moto", amount: 8000 }] }),
+    );
+    expect(otra.reasons.some((r) => /Mongolia/i.test(r))).toBe(false);
+  });
+
+  it("dos perfiles excelentes distintos NO empatan en 100", () => {
+    const bueno = scoreLeadHeuristic(base, client({ trips: 1, ltv: 12_000, brevoOpens: 6 }));
+    const mejor = scoreLeadHeuristic(base, client({
+      trips: 5,
+      ltv: 60_000,
+      brevoOpens: 20,
+      history: [{ route: "NAMIBIA", date: "2024-01-01", vehicle: "moto", amount: 9000 }],
+    }));
+    expect(mejor.score).toBeGreaterThanOrEqual(bueno.score);
+    expect(mejor.score).toBeLessThan(100);
+    expect(bueno.score).toBeLessThan(100);
+  });
+
+  it("la compresión es estrictamente creciente y nunca alcanza 100", () => {
+    expect(compressTail(50)).toBe(50);
+    expect(compressTail(80)).toBe(80);
+    expect(compressTail(97)).toBeGreaterThan(compressTail(90));
+    expect(compressTail(124)).toBeGreaterThan(compressTail(109));
+    expect(compressTail(1000)).toBeLessThan(100);
   });
 });
