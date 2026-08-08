@@ -5,7 +5,7 @@
 > memoria. El chat no es memoria: este archivo sí. Si el chat y el repo se
 > contradicen, **manda el repo**.
 
-**Última actualización:** 2026-08-08 · por Cursor · tip `cursor/aurora-patterns-2ebf` · fases 1–13 · memoria fuera-de-núcleo
+**Última actualización:** 2026-08-08 · por Cursor · tip `main` · Aurora 1–13b **fusionado**
 
 ---
 
@@ -13,14 +13,14 @@
 
 | Rama | Commit | Qué contiene |
 |---|---|---|
-| `main` | `1c360c2` | Producción. Móvil + lazo + selector 4 modos + analytics demo. |
-| `feat/aurora-patterns` | tip | Espejo local de patrones Aurora 1–13. Preview Vercel. Sin fusionar. |
-| `cursor/aurora-patterns-2ebf` | tip | PR Cloud #6 · patrones Aurora 1–13. |
-| Producción | — | https://30mps.vercel.app |
+| `main` | tip | Producción + **patrones Aurora 1–13b** (fusión pedida por el dueño). |
+| `feat/aurora-patterns` | tip | Espejo histórico de la rama Aurora (ya en main). |
+| `cursor/aurora-patterns-2ebf` | tip | PR Cloud #6 · misma punta que se fusionó a main. |
+| Producción | — | https://30mps.vercel.app (despliega desde main) |
 | Preview Aurora | — | https://30mps-git-feat-aurora-patterns-heindall92.vercel.app |
 | Supabase | `gkskudxjuafsidqiiqpg` | **30mps** (eu-west-1). Lazo verificado. |
-| **Fuera de núcleo** | `docs/FUERA-DE-NUCLEO.md` | RRHH/equity, contabilidad, alquileres, OCR, multi-org y otras modalidades — archivo para reutilizar enlaces luego. |
-| **Aurora playbook** | `docs/AURORA-CONOCIMIENTO.md` | Checklist canónico: qué se tomó, qué no, fórmulas y guía para futuros proyectos. |
+| **Fuera de núcleo** | `docs/FUERA-DE-NUCLEO.md` | RRHH/equity, contabilidad, alquileres, OCR, multi-org — enlaces futuros. |
+| **Aurora playbook** | `docs/AURORA-CONOCIMIENTO.md` | Checklist canónico para futuros proyectos. |
 
 ### Acceso al preview (móvil / pitch)
 
@@ -55,7 +55,7 @@
 | Encaje e intención | ¿Ideal y con prisa? | cuadrante fit×intent × decay |
 | Se parece a quien reservó | ¿Como mis buenos? | coseno k=5 convertidores × decay |
 
-### Patrones Aurora (rama — NO fusionada)
+### Patrones Aurora (**fusionados en `main`** 2026-08-08)
 
 Análisis en `docs/GAP-DEMO.md`, `docs/GAP-DEMO-ANATOMIA.md` y playbook
 canónico **`docs/AURORA-CONOCIMIENTO.md`**.
@@ -100,7 +100,8 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 - Móvil — Prioridad de hoy: **PARCIAL** (condensada; intencional).
 - Móvil — Tesorería: **PASS**. Aprobaciones: entrada añadida tras revisión fases 6–9.
 
-**Pendiente humano:** recorrer preview Vercel (demo login ya sirve) y decidir fusión.
+**Pendiente humano:** recorrer producción tras el deploy de Vercel (demo:
+miguel@ / 30mps2026 si el fallback sigue activo).
 
 ---
 
@@ -114,11 +115,11 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 
 ## 4 · Qué NO se toca
 
-1. Merge a `main` / push / deploy sin pedirlo el dueño.
+1. Deploy / cambios mayores sin pedirlo el dueño (fusión Aurora a main: **hecha** a petición).
 2. Regla de oro — nada escribe al viajero solo.
 3. `SUPABASE_SERVICE_ROLE_KEY` jamás en `VITE_` / navegador / repo.
 4. Un solo motor de scoring: `lead-scoring-core.ts`.
-5. Ampliar el CRM hacia RRHH, equity, contabilidad completa, alquileres, OCR o multi-org — ver `docs/FUERA-DE-NUCLEO.md` (archivo para más adelante, no backlog activo).
+5. Ampliar el CRM hacia RRHH, equity, contabilidad completa, alquileres, OCR o multi-org — ver `docs/FUERA-DE-NUCLEO.md`.
 
 ---
 
@@ -152,11 +153,8 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 
 ## 6 · Siguiente tarea (UNA)
 
-> **Decidir fusión de Aurora** tras validar el preview Vercel (demo:
-> miguel@ / 30mps2026). No fusionar ni desplegar hasta que lo pida el dueño.
-
-Después, en cola: endurecer Auth Supabase (desactivar alta pública y promover
-el primer admin en `mps_profiles`).
+> **Endurecer Auth Supabase:** desactivar alta pública y promover el primer
+> admin en `mps_profiles`. Aurora ya está en `main`.
 
 ### Plan B — repo público (fecha límite 2026-08-22)
 
