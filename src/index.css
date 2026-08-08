@@ -404,7 +404,11 @@ html[data-theme="dark"] .glass-panel {
   border: 1px solid color-mix(in oklab, #f8fafc 20%, transparent);
   box-shadow: 0 14px 34px -8px var(--ai-accent);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
+  cursor: grab;
+}
+
+.mps-ai-fab:active {
+  cursor: grabbing;
 }
 
 .mps-ai-fab:hover {

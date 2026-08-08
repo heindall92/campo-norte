@@ -434,6 +434,18 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
     });
   }, [q, reservations, statusFilter]);
 
+  const viewAgg = useMemo(() => {
+    let total = 0;
+    let pending = 0;
+    let pax = 0;
+    for (const r of list) {
+      total += r.totalAmount;
+      pending += Math.max(0, r.totalAmount - r.depositPaid);
+      pax += r.pax;
+    }
+    return { total, pending, pax, count: list.length };
+  }, [list]);
+
   async function saveReservation(r: Reservation) {
     await hub.saveReservation(r);
     setOpenId(r.id);
@@ -556,6 +568,26 @@ export function ReservationsPanel({ lang }: { lang: Lang }) {
             </Badge>
           </div>
         </div>
+
+        <ViewTotals
+          className="mb-4"
+          headline={{
+            label: lang === "es" ? "Importe (vista)" : "Amount (view)",
+            value: euro(viewAgg.total, lang),
+          }}
+          totals={[
+            {
+              label: lang === "es" ? "Pendiente cobro" : "Outstanding",
+              value: euro(viewAgg.pending, lang),
+              tone: "negative",
+            },
+            { label: "Pax", value: String(viewAgg.pax) },
+            {
+              label: lang === "es" ? "Reservas" : "Bookings",
+              value: String(viewAgg.count),
+            },
+          ]}
+        />
 
         {list.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[var(--glass-border)] px-4 py-10 text-center">

@@ -1,40 +1,46 @@
 /**
  * Canal para la IA contextual.
  *
- * El patrón que importa (docs/GAP-DEMO-ANATOMIA.md §7): la IA se invoca
- * DESDE la tarjeta o la fila que estás mirando, con el contexto ya cargado,
- * en vez de obligarte a ir a un chat y reescribir de qué hablabas.
- *
- * Implementación deliberadamente mínima: una pregunta pendiente en memoria
- * más un evento de ventana. Sin estado global, sin contexto de React, sin
- * dependencias entre paneles que no se conocen entre sí.
+ * El patrón (docs/GAP-DEMO-ANATOMIA.md §7): la IA se invoca DESDE la tarjeta
+ * o la fila, con el contexto ya cargado. El panel lateral global
+ * (`AiAssistantHost`) escucha el evento; ya no hace falta saltar a Conocimiento.
  */
 
 export const ASK_EVENT = "mps-ask-assistant";
+export const ASK_OPEN_EVENT = "mps-ask-open";
 
 let pending: string | null = null;
 
+export type RequestAskOptions = {
+  /**
+   * Si true, también navega a Conocimiento (historial / docs).
+   * Por defecto false: el drawer global basta.
+   */
+  navigate?: boolean;
+};
+
 /**
- * Encola una pregunta y avisa al panel del asistente.
- * Quien llama no necesita saber si el panel está montado.
+ * Encola una pregunta y abre el asistente contextual.
  */
-export function requestAsk(question: string): void {
+export function requestAsk(question: string, options?: RequestAskOptions): void {
   const text = question.trim();
   if (!text) return;
   pending = text;
   if (typeof window === "undefined") return;
-  // Lleva al usuario al asistente reutilizando el canal de navegación que ya
-  // usa la app; si el rol no tiene acceso, el listener lo ignora y la
-  // pregunta se queda encolada sin romper nada.
-  window.dispatchEvent(new CustomEvent("mps-navigate", { detail: "conocimiento" }));
+  if (options?.navigate) {
+    window.dispatchEvent(new CustomEvent("mps-navigate", { detail: "conocimiento" }));
+  }
   window.dispatchEvent(new CustomEvent(ASK_EVENT, { detail: text }));
+}
+
+/** Abre el drawer vacío (FAB) sin lanzar pregunta. */
+export function openAssistant(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(ASK_OPEN_EVENT));
 }
 
 /**
  * Recoge la pregunta pendiente y la borra.
- *
- * Se consume una sola vez a propósito: si el panel se remonta (cambio de
- * pestaña, rotación en móvil) no debe relanzar sola la última pregunta.
  */
 export function consumePendingAsk(): string | null {
   const text = pending;
@@ -42,7 +48,7 @@ export function consumePendingAsk(): string | null {
   return text;
 }
 
-/** Suscripción al canal. Devuelve la función para darse de baja. */
+/** Suscripción al canal de preguntas. */
 export function onAskRequested(handler: (question: string) => void): () => void {
   if (typeof window === "undefined") return () => {};
   const listener = (e: Event) => {
@@ -53,12 +59,13 @@ export function onAskRequested(handler: (question: string) => void): () => void 
   return () => window.removeEventListener(ASK_EVENT, listener);
 }
 
-/* ------------------------------------------------------------------ *
- * Redacción de preguntas
- * ------------------------------------------------------------------ *
- * Centralizado para que una tarjeta KPI y una fila de la cola de atención
- * no acaben preguntando lo mismo de dos maneras distintas.
- */
+/** Suscripción a «abrir drawer vacío». */
+export function onAssistantOpen(handler: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  const listener = () => handler();
+  window.addEventListener(ASK_OPEN_EVENT, listener);
+  return () => window.removeEventListener(ASK_OPEN_EVENT, listener);
+}
 
 export function askAboutTopic(topic: string): string {
   return `Explícame la situación de ${topic}: qué muestran los números, qué lo explica y qué harías esta semana.`;

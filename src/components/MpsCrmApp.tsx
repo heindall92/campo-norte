@@ -96,14 +96,13 @@ import { AttentionPanel } from "@/components/AttentionPanel";
 import { ApprovalsPanel } from "@/components/ApprovalsPanel";
 import { FiscalCalendarPanel } from "@/components/FiscalCalendarPanel";
 import { IntegrationsPanel } from "@/components/IntegrationsPanel";
+import { AiAssistantHost } from "@/components/AiAssistantHost";
 import { UpcomingCashPanel } from "@/components/UpcomingCashPanel";
-import { AiContextDrawer } from "@/components/AiContextDrawer";
 import {
   askAboutInvoice,
   askAboutLead,
   askAboutReservation,
   askAboutTopic,
-  consumePendingAsk,
   onAskRequested,
   requestAsk,
 } from "@/lib/ai/ask-bus";
@@ -119,8 +118,11 @@ import { estimateTokens, formatTokenK, loadAiUsage, recordAiUsage } from "@/lib/
 import { TeamOpsPanel } from "@/components/TeamOpsPanel";
 import { CashFlowChart } from "@/components/ui/CashFlowChart";
 import { ClosingProjection } from "@/components/ui/ClosingProjection";
+import { ViewTotals } from "@/components/ui/ViewTotals";
 import { buildTeamOps } from "@/lib/team-ops";
 import { buildTreasury } from "@/lib/treasury";
+import { coldByLabel, decayedScore } from "@/lib/ai/lead-scoring-core";
+import { formatEur } from "@/lib/format";
 import {
   applyUserPrefsToDocument,
   loadUserPrefs,
@@ -2052,10 +2054,29 @@ function LeadsPanel({ lang }: { lang: Lang }) {
   const selected = sorted.find((l) => l.id === selectedId) ?? (isMobile ? null : sorted[0]) ?? null;
   const [scoring, setScoring] = useState(false);
   const [scoreSheetOpen, setScoreSheetOpen] = useState(false);
+  const [showScoreDetail, setShowScoreDetail] = useState(false);
 
   useEffect(() => {
     if (!isMobile && selected && selectedId !== selected.id) setSelectedId(selected.id);
   }, [selected, selectedId, isMobile]);
+
+  const viewTotals = useMemo(() => {
+    let cooling = 0;
+    let sumScore = 0;
+    for (const lead of sorted) {
+      sumScore += lead.score;
+      const d = decayedScore(lead);
+      if (d.base - d.effective >= 5) cooling += 1;
+    }
+    return {
+      count: sorted.length,
+      avg: sorted.length ? Math.round(sumScore / sorted.length) : 0,
+      cooling,
+    };
+  }, [sorted]);
+
+  const selectedDecay = selected ? decayedScore(selected) : null;
+  const selectedCold = selected ? coldByLabel(selected, lang) : null;
 
   const statuses = Object.keys({
     nuevo: 1,
@@ -2141,6 +2162,41 @@ function LeadsPanel({ lang }: { lang: Lang }) {
             : `${leadPriorityModeLabel(mode, "en")} mode · score is never rewritten`}
         </span>
       </div>
+
+      <ViewTotals
+        headline={{
+          label: lang === "es" ? "Leads (vista)" : "Leads (view)",
+          value: String(viewTotals.count),
+        }}
+        totals={[
+          {
+            label: lang === "es" ? "Score medio" : "Avg score",
+            value: String(viewTotals.avg),
+          },
+          {
+            label: lang === "es" ? "Se enfrían" : "Cooling",
+            value: String(viewTotals.cooling),
+            tone: viewTotals.cooling > 0 ? "negative" : "positive",
+          },
+          {
+            label: lang === "es" ? "Sin origen" : "No origin",
+            value: String(unknown),
+          },
+        ]}
+      />
+
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <label className="flex items-center gap-2 text-xs font-semibold text-[var(--ink-muted)]">
+          <input
+            type="checkbox"
+            checked={showScoreDetail}
+            onChange={(e) => setShowScoreDetail(e.target.checked)}
+            className="rounded"
+          />
+          {lang === "es" ? "Ver detalle del score" : "Show score detail"}
+        </label>
+      </div>
+
       <div className="grid gap-5 lg:grid-cols-5">
         <Card
           title={t(lang, "inbox")}
@@ -2148,7 +2204,9 @@ function LeadsPanel({ lang }: { lang: Lang }) {
           className={cn("lg:col-span-3", isMobile && "p-3")}
         >
           <ul className="divide-y divide-[var(--glass-border)]">
-            {sorted.map((lead) => (
+            {sorted.map((lead) => {
+              const decay = decayedScore(lead);
+              return (
               <li key={lead.id}>
                 <button
                   type="button"
@@ -2169,11 +2227,18 @@ function LeadsPanel({ lang }: { lang: Lang }) {
                       {whyById.get(lead.id) ?? ORIGIN_LABEL[lead.origin]}
                       <VehicleBadge vehicle={lead.vehicle} />
                     </p>
+                    {showScoreDetail ? (
+                      <p className="mt-1 text-[11px] tabular-nums text-[var(--ink-muted)]">
+                        base {decay.base} → ef. {decay.effective} · {decay.days}d ·{" "}
+                        {coldByLabel(lead, lang)}
+                      </p>
+                    ) : null}
                   </div>
                   <Badge tone={scoreTone(lead.score)}>{lead.score}</Badge>
                 </button>
               </li>
-            ))}
+            );
+            })}
           </ul>
         </Card>
         {!isMobile && (
@@ -2239,6 +2304,21 @@ function LeadsPanel({ lang }: { lang: Lang }) {
                   <li key={r}>{r}</li>
                 ))}
               </ol>
+              {showScoreDetail && selectedDecay ? (
+                <div className="mt-3 space-y-1 rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-3 text-xs tabular-nums text-[var(--ink-muted)]">
+                  <p>
+                    {lang === "es" ? "Base" : "Base"} {selectedDecay.base} →{" "}
+                    {lang === "es" ? "efectivo" : "effective"} {selectedDecay.effective}
+                  </p>
+                  <p>
+                    {selectedDecay.days}d · factor {selectedDecay.factor.toFixed(2)} ·{" "}
+                    {selectedCold}
+                  </p>
+                  <p className="text-[var(--ink)]">
+                    {whyById.get(selected.id)}
+                  </p>
+                </div>
+              ) : null}
               <div className="mt-5 rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-3 text-sm">
                 <p className="font-semibold text-[var(--ink)]">{t(lang, "human_action")}</p>
                 <p className="mt-1 text-[var(--ink-muted)]">{t(lang, "human_action_body")}</p>
@@ -2318,6 +2398,19 @@ function ClientsPanel({ lang }: { lang: Lang }) {
         SEGMENT_LABEL[c.segment].toLowerCase().includes(query),
     );
   }, [q, clients, segmentFilter]);
+
+  const clientView = useMemo(() => {
+    let ltv = 0;
+    let risk = 0;
+    let contactHits = 0;
+    const contactIds = new Set(contactQueue.map((c) => c.id));
+    for (const c of list) {
+      ltv += c.ltv || 0;
+      if (c.segment === "dormido" || c.segment === "en_riesgo") risk += 1;
+      if (contactIds.has(c.id)) contactHits += 1;
+    }
+    return { count: list.length, ltv, risk, contactHits };
+  }, [list, contactQueue]);
 
   function statusTone(s: Client["status"]): "good" | "warn" | "bad" | "neutral" {
     if (s === "al_dia") return "good";
@@ -2566,6 +2659,30 @@ function ClientsPanel({ lang }: { lang: Lang }) {
             </button>
           ))}
         </div>
+
+        <ViewTotals
+          className="mb-4"
+          headline={{
+            label: lang === "es" ? "LTV (vista)" : "LTV (view)",
+            value: formatEur(clientView.ltv, lang),
+          }}
+          totals={[
+            {
+              label: lang === "es" ? "Clientes" : "Clients",
+              value: String(clientView.count),
+            },
+            {
+              label: lang === "es" ? "En cola contacto" : "Contact queue",
+              value: String(clientView.contactHits),
+              tone: clientView.contactHits > 0 ? "negative" : undefined,
+            },
+            {
+              label: lang === "es" ? "Riesgo / dormidos" : "At risk / dormant",
+              value: String(clientView.risk),
+              tone: clientView.risk > 0 ? "negative" : "positive",
+            },
+          ]}
+        />
 
         <ul className="space-y-3">
           {list.map((c) => {
@@ -2861,8 +2978,6 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
     lang === "es" ? "¿Cuánto costó Mongolia 2025?" : "How much did Mongolia 2025 cost?",
   );
   const [asking, setAsking] = useState(false);
-  const [thinkStep, setThinkStep] = useState(1);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [result, setResult] = useState<KnowledgeAskResult | null>(null);
   const [lastTokens, setLastTokens] = useState<{ out: number; max: number } | null>(null);
   const [usage, setUsage] = useState(() => loadAiUsage());
@@ -2885,37 +3000,14 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
     return () => window.removeEventListener("mps-hub-refreshed", onHubRefresh);
   }, []);
 
-  // IA contextual: recoge la pregunta lanzada desde una tarjeta o una fila.
-  // `runAskRef` evita meter runAsk en las dependencias y reejecutar el efecto
-  // en cada render.
-  const runAskRef = useRef<(q?: string) => void>(() => {});
+  // El drawer global (AiAssistantHost) escucha ask-bus.
+  // Aquí solo sincronizamos la pregunta en la UI si el usuario está en esta sección.
   useEffect(() => {
-    function launch(q: string) {
+    return onAskRequested((q) => {
       setTab("ask");
       setQuestion(q);
-      void runAskRef.current(q);
-    }
-    // Pendiente dejada antes de que este panel existiera (navegación).
-    const queued = consumePendingAsk();
-    if (queued) launch(queued);
-    // Si el panel ya estaba montado, el evento trae la pregunta: consumir
-    // pending evita relanzarla al remontar (cambio de pestaña / rotación).
-    return onAskRequested((q) => {
-      consumePendingAsk();
-      launch(q);
     });
   }, []);
-
-  useEffect(() => {
-    if (!asking) return;
-    setThinkStep(1);
-    const t1 = window.setTimeout(() => setThinkStep(2), 450);
-    const t2 = window.setTimeout(() => setThinkStep(3), 900);
-    return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-    };
-  }, [asking]);
 
   const [active, setActive] = useState(0);
   const [cat, setCat] = useState<"all" | KnowledgeItem["category"]>("all");
@@ -2966,7 +3058,6 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
     if (!text) return;
     setQuestion(text);
     setAsking(true);
-    setDrawerOpen(true);
     setResult(null);
     try {
       const res = await askKnowledge(text, {
@@ -2996,8 +3087,6 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
     }
   }
 
-  runAskRef.current = runAsk;
-
   function loadThread(thread: AiThread) {
     setActiveThreadId(thread.id);
     const lastUser = [...thread.messages].reverse().find((m) => m.role === "user");
@@ -3020,7 +3109,6 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
       }
     }
     setTab("ask");
-    setDrawerOpen(true);
   }
 
   function addDoc() {
@@ -3247,13 +3335,6 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
                       {lastTokens.out}/{lastTokens.max} tokens
                     </span>
                   ) : null}
-                  <button
-                    type="button"
-                    className="mps-choice rounded-lg px-2 py-1 text-[11px] font-semibold"
-                    onClick={() => setDrawerOpen(true)}
-                  >
-                    {lang === "es" ? "Panel lateral" : "Side panel"}
-                  </button>
                 </div>
                 <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[var(--ink)]">
                   {result.answer}
@@ -3311,62 +3392,6 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
           </Card>
         </div>
       )}
-
-      <AiContextDrawer
-        lang={lang}
-        open={drawerOpen && (asking || Boolean(result))}
-        thinking={asking}
-        step={thinkStep}
-        title={lang === "es" ? "Asistente 30 MPS" : "30 MPS assistant"}
-        subtitle={
-          result
-            ? result.engine === "ai"
-              ? lang === "es"
-                ? `Respuesta · ${result.provider ?? providerLabel()}`
-                : `Answer · ${result.provider ?? providerLabel()}`
-              : lang === "es"
-                ? "Respuesta · heurística"
-                : "Answer · heuristic"
-            : undefined
-        }
-        onClose={() => setDrawerOpen(false)}
-      >
-        {asking ? (
-          <ol className="space-y-3 text-sm">
-            {(
-              lang === "es"
-                ? ["Buscando en docs + Hub", "Ordenando fragmentos", "Redactando respuesta corta"]
-                : ["Searching docs + Hub", "Ranking chunks", "Drafting a short answer"]
-            ).map((label, i) => (
-              <li
-                key={label}
-                className={cn(
-                  "flex items-center gap-2 rounded-xl border px-3 py-2",
-                  thinkStep > i
-                    ? "border-[var(--accent)] text-[var(--ink)]"
-                    : "border-[var(--border-subtle)] text-[var(--ink-muted)]",
-                )}
-              >
-                {asking && thinkStep === i + 1 ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-[var(--accent)]" />
-                ) : (
-                  <Sparkles className="h-4 w-4 text-[var(--accent)]" />
-                )}
-                {label}
-              </li>
-            ))}
-          </ol>
-        ) : result ? (
-          <div className="space-y-3 text-sm">
-            <p className="whitespace-pre-wrap leading-relaxed">{result.answer}</p>
-            {lastTokens ? (
-              <p className="text-[11px] tabular-nums text-[var(--ink-muted)]">
-                {lastTokens.out}/{lastTokens.max} tokens
-              </p>
-            ) : null}
-          </div>
-        ) : null}
-      </AiContextDrawer>
 
       {tab === "docs" && (
         <div className="grid gap-5 lg:grid-cols-5">
@@ -4092,17 +4117,7 @@ export function MpsCrmApp() {
           onPrefsChange={setPrefs}
         >
           {sectionPanels}
-          <button
-            type="button"
-            className="mps-ai-fab is-alive fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-4 z-40 md:bottom-6 md:right-6"
-            aria-label={lang === "es" ? "Abrir asistente" : "Open assistant"}
-            onClick={() =>
-              window.dispatchEvent(new CustomEvent("mps-navigate", { detail: "conocimiento" }))
-            }
-          >
-            <Sparkles className="h-5 w-5" />
-          </button>
-
+          <AiAssistantHost lang={lang} />
         </MobileCrmShell>
         {user && (
           <ProfileModal
@@ -4390,17 +4405,7 @@ export function MpsCrmApp() {
 
         <main className="px-4 py-5 md:px-6 md:py-6">
           {sectionPanels}
-          <button
-            type="button"
-            className="mps-ai-fab is-alive fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-4 z-40 md:bottom-6 md:right-6"
-            aria-label={lang === "es" ? "Abrir asistente" : "Open assistant"}
-            onClick={() =>
-              window.dispatchEvent(new CustomEvent("mps-navigate", { detail: "conocimiento" }))
-            }
-          >
-            <Sparkles className="h-5 w-5" />
-          </button>
-
+          <AiAssistantHost lang={lang} />
 
           <footer className="mt-8 flex flex-wrap items-center gap-2 border-t border-[var(--glass-border)] pt-4 text-xs text-[var(--ink-muted)]">
             <Lightbulb className="h-3.5 w-3.5" />

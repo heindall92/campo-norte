@@ -131,7 +131,8 @@ describe("buildAttentionQueue", () => {
     expect(items).toHaveLength(1);
     expect(items[0]!.source).toBe("lead");
     expect(items[0]!.severity).toBe("vencido");
-    expect(items[0]!.reason).toContain("12 días sin contacto");
+    expect(items[0]!.reason).toContain("12 d sin contacto");
+    expect(items[0]!.reason).toMatch(/se enfría el/i);
   });
 
   it("señala saldo pendiente cuando la salida está cerca", () => {

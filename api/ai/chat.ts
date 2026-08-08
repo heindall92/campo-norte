@@ -123,6 +123,7 @@ async function callOllama(opts: {
   messages: Msg[];
   format: unknown;
   apiKey: string;
+  stream?: boolean;
 }) {
   const res = await fetch("https://ollama.com/api/chat", {
     method: "POST",
@@ -133,10 +134,13 @@ async function callOllama(opts: {
     body: JSON.stringify({
       model: opts.model,
       messages: opts.messages,
-      stream: false,
-      ...(opts.format ? { format: opts.format } : {}),
+      stream: Boolean(opts.stream),
+      ...(opts.format && !opts.stream ? { format: opts.format } : {}),
     }),
   });
+  if (opts.stream && res.ok && res.body) {
+    return { status: 200, stream: res.body, contentType: "application/x-ndjson" as const };
+  }
   const text = await res.text();
   let data: Record<string, unknown> = {};
   try {
@@ -164,14 +168,16 @@ async function callOpenAI(opts: {
   format: unknown;
   apiKey: string;
   maxTokens?: number;
+  stream?: boolean;
 }) {
   const body: Record<string, unknown> = {
     model: opts.model,
     messages: opts.messages,
     temperature: 0.2,
     max_tokens: opts.maxTokens ?? 600,
+    stream: Boolean(opts.stream),
   };
-  if (opts.format) {
+  if (opts.format && !opts.stream) {
     body.response_format = { type: "json_object" };
   }
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -182,6 +188,9 @@ async function callOpenAI(opts: {
     },
     body: JSON.stringify(body),
   });
+  if (opts.stream && res.ok && res.body) {
+    return { status: 200, stream: res.body, contentType: "text/event-stream" as const };
+  }
   const data = (await res.json()) as {
     choices?: { message?: { content?: string } }[];
     model?: string;
@@ -315,11 +324,16 @@ export default async function handler(
       messages?: Msg[];
       format?: unknown;
       apiKey?: string;
+      stream?: boolean;
+      maxTokens?: number;
     };
   },
   res: {
     status: (code: number) => { json: (body: unknown) => void; end: (s?: string) => void };
     setHeader: (k: string, v: string) => void;
+    write?: (chunk: string) => void;
+    end?: (s?: string) => void;
+    flushHeaders?: () => void;
   },
 ) {
   const verdict = guard(req.headers ?? {});
@@ -349,7 +363,8 @@ export default async function handler(
   const model = req.body?.model || "";
   const messages = Array.isArray(req.body?.messages) ? req.body.messages : [];
   const format = req.body?.format ?? null;
-  const maxTokens = Math.min(4000, Math.max(128, Number((req.body as { maxTokens?: number } | null)?.maxTokens) || 600));
+  const wantStream = Boolean(req.body?.stream);
+  const maxTokens = Math.min(4000, Math.max(128, Number(req.body?.maxTokens) || 600));
 
   if (messages.length > MAX_MESSAGES) {
     res.status(413).json({ error: `Demasiados mensajes (máx. ${MAX_MESSAGES})` });
@@ -360,8 +375,6 @@ export default async function handler(
     return;
   }
 
-  // Producción Vercel: solo keys en env del servidor (no confiar en body.apiKey del navegador).
-  // Demo/local: ALLOW_CLIENT_AI_KEYS=true (o no-production) permite body.apiKey.
   const isVercelProd = process.env.VERCEL_ENV === "production";
   const allowClientKeys =
     process.env.ALLOW_CLIENT_AI_KEYS === "true" ||
@@ -381,15 +394,45 @@ export default async function handler(
   }
 
   try {
+    // Stream nativo OpenAI / Ollama; Claude/Gemini → respuesta completa (cliente la trata como un token).
+    if (wantStream && (provider === "openai" || provider === "ollama") && res.write) {
+      const streamed =
+        provider === "openai"
+          ? await callOpenAI({ model, messages, format, apiKey, maxTokens, stream: true })
+          : await callOllama({ model, messages, format, apiKey, stream: true });
+
+      if ("stream" in streamed && streamed.stream) {
+        res.setHeader("Content-Type", streamed.contentType || "text/event-stream");
+        res.setHeader("Cache-Control", "no-cache, no-transform");
+        res.status(200);
+        res.flushHeaders?.();
+        const reader = streamed.stream.getReader();
+        const decoder = new TextDecoder();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          res.write?.(decoder.decode(value, { stream: true }));
+        }
+        res.end?.();
+        return;
+      }
+      if ("body" in streamed) {
+        res.status(streamed.status).json(streamed.body);
+        return;
+      }
+    }
+
     let result: { status: number; body: Record<string, unknown> };
     if (provider === "openai") {
-      result = await callOpenAI({ model, messages, format, apiKey, maxTokens });
+      const r = await callOpenAI({ model, messages, format, apiKey, maxTokens, stream: false });
+      result = { status: r.status, body: (r as { body: Record<string, unknown> }).body };
     } else if (provider === "claude") {
       result = await callClaude({ model, messages, format, apiKey, maxTokens });
     } else if (provider === "gemini") {
       result = await callGemini({ model, messages, format, apiKey, maxTokens });
     } else {
-      result = await callOllama({ model, messages, format, apiKey });
+      const r = await callOllama({ model, messages, format, apiKey, stream: false });
+      result = { status: r.status, body: (r as { body: Record<string, unknown> }).body };
     }
     res.status(result.status).json(result.body);
   } catch (err) {

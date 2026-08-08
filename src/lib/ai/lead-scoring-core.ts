@@ -237,3 +237,52 @@ export function decayedScore(
     factor,
   };
 }
+
+/**
+ * Fecha en la que el score efectivo cae por debajo de `floor` (p. ej. 55)
+ * si nadie toca al lead. Si ya está bajo el suelo, devuelve hoy.
+ *
+ * Convierte "se enfría" en "se enfría el 14 ago" — el detalle que hace
+ * descargar el teléfono (docs/GAP-DEMO-ANATOMIA.md §5).
+ */
+export function coldByDate(
+  lead: Pick<Lead, "score" | "lastTouchAt" | "createdAt">,
+  floor = 55,
+  halfLifeDays = DEFAULT_HALF_LIFE_DAYS,
+  now: Date = new Date(),
+): Date {
+  const touchIso = lead.lastTouchAt || lead.createdAt;
+  const touch = new Date(`${(touchIso || now.toISOString().slice(0, 10)).slice(0, 10)}T12:00:00`);
+  const baseTouch = Number.isNaN(touch.getTime()) ? now : touch;
+
+  if (lead.score <= 0) return baseTouch;
+  if (lead.score <= floor) return now;
+
+  // score * e^(-ln2/hl * d) = floor  →  d = ln(score/floor) * hl / ln2
+  const daysToFloor = Math.ceil(
+    (Math.log(lead.score / floor) * halfLifeDays) / Math.LN2,
+  );
+  const cold = new Date(baseTouch);
+  cold.setDate(cold.getDate() + Math.max(0, daysToFloor));
+  return cold;
+}
+
+/** Etiqueta corta: "se enfría el 14 ago" / "cools on 14 Aug". */
+export function coldByLabel(
+  lead: Pick<Lead, "score" | "lastTouchAt" | "createdAt">,
+  lang: "es" | "en" = "es",
+  floor = 55,
+  halfLifeDays = DEFAULT_HALF_LIFE_DAYS,
+  now: Date = new Date(),
+): string {
+  const d = coldByDate(lead, floor, halfLifeDays, now);
+  const when = d.toLocaleDateString(lang === "es" ? "es-ES" : "en-US", {
+    day: "numeric",
+    month: "short",
+  });
+  const already = lead.score * decayFactor(daysSince(lead.lastTouchAt || lead.createdAt, now), halfLifeDays) < floor;
+  if (already || d.getTime() <= now.getTime()) {
+    return lang === "es" ? `ya frío · ${when}` : `already cold · ${when}`;
+  }
+  return lang === "es" ? `se enfría el ${when}` : `cools on ${when}`;
+}

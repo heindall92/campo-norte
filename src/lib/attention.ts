@@ -10,9 +10,9 @@
  * enlaza a donde se resuelve.
  */
 
-import { decayFactor } from "@/lib/ai/lead-priority";
+import { coldByDate, decayFactor } from "@/lib/ai/lead-scoring-core";
 import type { Lead } from "@/lib/demo-data";
-import { daysBetween, formatEur } from "@/lib/format";
+import { daysBetween, formatDateShort, formatEur } from "@/lib/format";
 import type { Lang } from "@/lib/i18n";
 import type { Invoice, Reservation } from "@/lib/ops-data";
 
@@ -123,6 +123,8 @@ function fromLeads(
     const lost = lead.score - effective;
     // El "vencimiento" de un lead es el día en que cruza el suelo de atención.
     const daysToDue = th.leadStaleDays - days;
+    const coldAt = coldByDate(lead, th.leadFloor, undefined, now);
+    const coldLabel = formatDateShort(coldAt, lang);
 
     items.push({
       id: `lead:${lead.id}`,
@@ -131,8 +133,8 @@ function fromLeads(
       title: lead.name,
       reason:
         lang === "es"
-          ? `Score ${lead.score} enfriado a ${effective} · ${days} días sin contacto`
-          : `Score ${lead.score} cooled to ${effective} · ${days} days untouched`,
+          ? `Score ${lead.score} → ${effective} · ${days} d sin contacto · se enfría el ${coldLabel}`
+          : `Score ${lead.score} → ${effective} · ${days} d untouched · cools ${coldLabel}`,
       dueAt: lead.lastTouchAt,
       daysToDue,
       amount: lost >= 5 ? avgTicket : null,

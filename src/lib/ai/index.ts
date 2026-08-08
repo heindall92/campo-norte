@@ -75,12 +75,21 @@ export {
 } from "./knowledge-store";
 export {
   askKnowledge,
+  askKnowledgeStream,
   buildKnowledgeChunks,
   retrieveKnowledgeChunks,
   type KnowledgeAskResult,
   type KnowledgeChunk,
   type KnowledgeCorpusInput,
 } from "./knowledge-rag";
+export { aiChatStream } from "./chat-stream";
+export {
+  coldByDate,
+  coldByLabel,
+  decayedScore,
+  daysSince,
+  DEFAULT_HALF_LIFE_DAYS,
+} from "./lead-scoring-core";
 export {
   inferOriginFromForm,
   runLeadCapturePipeline,
