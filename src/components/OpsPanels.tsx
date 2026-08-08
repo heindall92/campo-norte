@@ -28,6 +28,8 @@ import { useDataHub } from "@/lib/data";
 import { useNotifications } from "@/lib/notifications";
 import { GESTORIA_EXPORT_FIELDS, LEGAL_CITATIONS, VERIFACTU_CHECKLIST } from "@/lib/legal-verifactu";
 import { downloadInvoicePdf } from "@/lib/invoice-pdf";
+import { buildInvoiceAlerts } from "@/lib/invoice-alerts";
+import { formatEur } from "@/lib/format";
 import {
   INVOICE_STATUS_LABEL,
   PAYMENT_LABEL,
@@ -39,6 +41,7 @@ import {
 import type { Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
+  AlertTriangle,
   Building2,
   CheckCircle2,
   ChevronDown,
@@ -874,8 +877,67 @@ export function InvoicesVerifactuPanel({ lang }: { lang: Lang }) {
     return { todas: all, vencidas, pendientes, cobradas };
   }, [enriched]);
 
+  const alerts = useMemo(() => buildInvoiceAlerts(invoices), [invoices]);
+
   return (
     <div className="space-y-5">
+      {alerts.length > 0 ? (
+        <div className="space-y-2">
+          {alerts.map((a) => (
+            <div
+              key={a.id}
+              className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border px-4 py-3"
+              style={{
+                borderColor:
+                  a.tone === "negative"
+                    ? "color-mix(in oklab, var(--negative) 40%, transparent)"
+                    : a.tone === "warning"
+                      ? "color-mix(in oklab, var(--warning) 40%, transparent)"
+                      : "var(--glass-border)",
+                background:
+                  a.tone === "negative"
+                    ? "color-mix(in oklab, var(--negative) 8%, transparent)"
+                    : a.tone === "warning"
+                      ? "color-mix(in oklab, var(--warning) 8%, transparent)"
+                      : "var(--glass)",
+              }}
+            >
+              <div className="flex min-w-0 items-start gap-2">
+                <AlertTriangle
+                  className="mt-0.5 h-4 w-4 shrink-0"
+                  style={{
+                    color:
+                      a.tone === "negative"
+                        ? "var(--negative)"
+                        : a.tone === "warning"
+                          ? "var(--warning)"
+                          : "var(--accent)",
+                  }}
+                />
+                <div>
+                  <p className="text-sm font-semibold text-[var(--ink)]">{a.title}</p>
+                  <p className="text-xs text-[var(--ink-muted)]">{a.body}</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {a.amount != null ? (
+                  <span className="text-sm font-semibold tabular-nums text-[var(--ink)]">
+                    {formatEur(a.amount, lang)}
+                  </span>
+                ) : null}
+                <button
+                  type="button"
+                  className="mps-choice rounded-lg px-2.5 py-1 text-xs font-semibold"
+                  onClick={() => setOpenId(a.invoiceId)}
+                >
+                  {lang === "es" ? "Ver" : "View"}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
       <Card
         title={lang === "es" ? "Facturas · Veri*FACTU · REAV" : "Invoices · Veri*FACTU · REAV"}
         subtitle={

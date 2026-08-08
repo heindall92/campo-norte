@@ -95,6 +95,9 @@ import { UsersDirectoryPanel } from "@/components/UsersDirectoryPanel";
 import { AttentionPanel } from "@/components/AttentionPanel";
 import { ApprovalsPanel } from "@/components/ApprovalsPanel";
 import { FiscalCalendarPanel } from "@/components/FiscalCalendarPanel";
+import { IntegrationsPanel } from "@/components/IntegrationsPanel";
+import { UpcomingCashPanel } from "@/components/UpcomingCashPanel";
+import { AiContextDrawer } from "@/components/AiContextDrawer";
 import {
   askAboutInvoice,
   askAboutLead,
@@ -104,6 +107,12 @@ import {
   onAskRequested,
   requestAsk,
 } from "@/lib/ai/ask-bus";
+import {
+  groupThreadsByRecency,
+  listAiThreads,
+  upsertAiThread,
+  type AiThread,
+} from "@/lib/ai/threads";
 import { TreasuryPanel } from "@/components/TreasuryPanel";
 import { PnLPanel } from "@/components/PnLPanel";
 import { estimateTokens, formatTokenK, loadAiUsage, recordAiUsage } from "@/lib/ai/token-budget";
@@ -141,6 +150,7 @@ import {
   Bot,
   Building2,
   Car,
+  Activity,
   CircleHelp,
   ClipboardList,
   Cloud,
@@ -156,6 +166,7 @@ import {
   Moon,
   Pencil,
   Phone,
+  Plug,
   Plus,
   Presentation,
   RefreshCw,
@@ -321,7 +332,7 @@ function SettingsGroup({
   );
 }
 
-type SettingsTabId = "personal" | "ai" | "org" | "resources";
+type SettingsTabId = "personal" | "ai" | "uso" | "integrations" | "org" | "resources";
 
 function SettingsPanel({
   lang,
@@ -438,7 +449,19 @@ function SettingsPanel({
         icon: Bot,
         badge: 1,
       });
+      list.push({
+        id: "uso",
+        label: lang === "es" ? "Uso" : "Usage",
+        icon: Activity,
+        badge: 1,
+      });
     }
+    list.push({
+      id: "integrations",
+      label: lang === "es" ? "Integraciones" : "Integrations",
+      icon: Plug,
+      badge: 1,
+    });
     if (showOrg) {
       list.push({
         id: "org",
@@ -849,33 +872,57 @@ function SettingsPanel({
           </a>
         </div>
         {aiFlash && <p className="text-sm text-[var(--accent)]">{aiFlash}</p>}
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {(() => {
-            const u = loadAiUsage();
-            const cells = [
-              [lang === "es" ? "Mensajes" : "Messages", String(u.messages)],
-              [lang === "es" ? "Conversaciones" : "Chats", String(u.conversations)],
-              ["Tokens in", formatTokenK(u.inputTokens)],
-              ["Tokens out", formatTokenK(u.outputTokens)],
-            ] as const;
-            return cells.map(([label, value]) => (
-              <div key={label} className="mps-settings-tile rounded-lg px-3 py-2">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
-                  {label}
-                </p>
-                <p className="mt-0.5 text-lg font-semibold tabular-nums text-[var(--ink)]">{value}</p>
-              </div>
-            ));
-          })()}
-        </div>
         <p className="text-xs text-[var(--ink-muted)] text-pretty">
           {lang === "es"
-            ? "«Configuración lista» ≠ API verificada. Pulsa «Probar conexión API» para llamar de verdad al proveedor. El tope de tokens limita cada respuesta."
-            : "“Config ready” ≠ verified API. Hit “Test API connection” for a live call. Token cap limits each reply."}
+            ? "«Configuración lista» ≠ API verificada. Pulsa «Probar conexión API» para llamar de verdad al proveedor. El tope de tokens limita cada respuesta. El consumo detallado está en la pestaña Uso."
+            : "“Config ready” ≠ verified API. Hit “Test API connection” for a live call. Token cap limits each reply. Detailed usage lives in the Usage tab."}
         </p>
       </div>
     </Card>
   ) : null;
+
+  const usageCard = (
+    <Card
+      title={lang === "es" ? "Uso del asistente" : "Assistant usage"}
+      subtitle={
+        lang === "es"
+          ? "Estimación local de tokens · no es la factura del proveedor"
+          : "Local token estimate · not the provider invoice"
+      }
+    >
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {(() => {
+          const u = loadAiUsage();
+          const cells = [
+            [lang === "es" ? "Mensajes" : "Messages", String(u.messages)],
+            [lang === "es" ? "Conversaciones" : "Chats", String(u.conversations)],
+            ["Tokens in", formatTokenK(u.inputTokens)],
+            ["Tokens out", formatTokenK(u.outputTokens)],
+          ] as const;
+          return cells.map(([label, value]) => (
+            <div key={label} className="mps-settings-tile rounded-lg px-3 py-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
+                {label}
+              </p>
+              <p className="mt-0.5 text-lg font-semibold tabular-nums text-[var(--ink)]">{value}</p>
+            </div>
+          ));
+        })()}
+      </div>
+      <p className="mt-3 text-xs text-[var(--ink-muted)] text-pretty">
+        {lang === "es"
+          ? "Tope actual de salida: "
+          : "Current output cap: "}
+        <strong className="text-[var(--ink)]">{ai.maxOutputTokens}</strong>
+        {lang === "es"
+          ? " tokens · modo conciso "
+          : " tokens · concise mode "}
+        <strong className="text-[var(--ink)]">{ai.conciseMode ? "ON" : "OFF"}</strong>
+      </p>
+    </Card>
+  );
+
+  const integrationsCard = <IntegrationsPanel lang={lang} />;
 
   const databaseCard = showDb ? (
     <Card
@@ -983,7 +1030,7 @@ function SettingsPanel({
 
       {showAi && (
         <SettingsGroup
-          label={lang === "es" ? "Integraciones" : "Integrations"}
+          label={lang === "es" ? "IA" : "AI"}
           description={
             lang === "es"
               ? "Proveedores de IA. Clasifican; nunca escriben al viajero."
@@ -991,8 +1038,20 @@ function SettingsPanel({
           }
         >
           {aiCard}
+          {usageCard}
         </SettingsGroup>
       )}
+
+      <SettingsGroup
+        label={lang === "es" ? "Integraciones" : "Integrations"}
+        description={
+          lang === "es"
+            ? "Stripe, Brevo, Supabase, WhatsApp, n8n y más del ecosistema."
+            : "Stripe, Brevo, Supabase, WhatsApp, n8n and more of the stack."
+        }
+      >
+        {integrationsCard}
+      </SettingsGroup>
 
       {showDb && (
         <SettingsGroup
@@ -1029,6 +1088,10 @@ function SettingsPanel({
       </div>
     ) : settingsTab === "ai" ? (
       aiCard
+    ) : settingsTab === "uso" ? (
+      usageCard
+    ) : settingsTab === "integrations" ? (
+      integrationsCard
     ) : settingsTab === "org" ? (
       <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
         {businessCard}
@@ -1597,6 +1660,16 @@ function TreasurySection({ lang }: { lang: Lang }) {
           const target = m.category.includes("factura") || m.concept.includes("factura")
             ? "facturas"
             : "reservas";
+          window.dispatchEvent(new CustomEvent("mps-navigate", { detail: target }));
+        }}
+      />
+      <UpcomingCashPanel
+        invoices={hub.invoices}
+        reservations={hub.reservations}
+        lang={lang}
+        onOpen={(row) => {
+          const target =
+            row.source === "factura" ? "facturas" : row.source === "reserva" ? "reservas" : "equipo";
           window.dispatchEvent(new CustomEvent("mps-navigate", { detail: target }));
         }}
       />
@@ -2788,9 +2861,13 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
     lang === "es" ? "¿Cuánto costó Mongolia 2025?" : "How much did Mongolia 2025 cost?",
   );
   const [asking, setAsking] = useState(false);
+  const [thinkStep, setThinkStep] = useState(1);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [result, setResult] = useState<KnowledgeAskResult | null>(null);
   const [lastTokens, setLastTokens] = useState<{ out: number; max: number } | null>(null);
   const [usage, setUsage] = useState(() => loadAiUsage());
+  const [threads, setThreads] = useState<AiThread[]>(() => listAiThreads());
+  const [activeThreadId, setActiveThreadId] = useState<string | undefined>();
   const [docs, setDocs] = useState<KnowledgeDoc[]>(() => loadKnowledgeDocs());
   const [docForm, setDocForm] = useState({
     title: "",
@@ -2829,11 +2906,23 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
     });
   }, []);
 
+  useEffect(() => {
+    if (!asking) return;
+    setThinkStep(1);
+    const t1 = window.setTimeout(() => setThinkStep(2), 450);
+    const t2 = window.setTimeout(() => setThinkStep(3), 900);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [asking]);
+
   const [active, setActive] = useState(0);
   const [cat, setCat] = useState<"all" | KnowledgeItem["category"]>("all");
   const filtered =
     cat === "all" ? KNOWLEDGE_ANSWERS : KNOWLEDGE_ANSWERS.filter((k) => k.category === cat);
   const item = filtered[Math.min(active, filtered.length - 1)] ?? filtered[0];
+  const threadGroups = useMemo(() => groupThreadsByRecency(threads), [threads]);
 
   const cats: { id: typeof cat; label: string }[] = [
     { id: "all", label: lang === "es" ? "Todas" : "All" },
@@ -2877,6 +2966,7 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
     if (!text) return;
     setQuestion(text);
     setAsking(true);
+    setDrawerOpen(true);
     setResult(null);
     try {
       const res = await askKnowledge(text, {
@@ -2892,12 +2982,46 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
       const out = estimateTokens(res.answer);
       setLastTokens({ out, max: settings.maxOutputTokens });
       setUsage(recordAiUsage({ prompt: text, reply: res.answer }));
+      const thread = upsertAiThread({
+        id: activeThreadId,
+        question: text,
+        answer: res.answer,
+        tokensOut: out,
+        tokensMax: settings.maxOutputTokens,
+      });
+      setActiveThreadId(thread.id);
+      setThreads(listAiThreads());
     } finally {
       setAsking(false);
     }
   }
 
   runAskRef.current = runAsk;
+
+  function loadThread(thread: AiThread) {
+    setActiveThreadId(thread.id);
+    const lastUser = [...thread.messages].reverse().find((m) => m.role === "user");
+    const lastAsst = [...thread.messages].reverse().find((m) => m.role === "assistant");
+    if (lastUser) setQuestion(lastUser.content);
+    if (lastAsst) {
+      setResult({
+        answer: lastAsst.content,
+        why: [
+          lang === "es"
+            ? "Recuperado del historial local de este hilo."
+            : "Restored from this thread’s local history.",
+        ],
+        sources: [lang === "es" ? "Historial local" : "Local history"],
+        engine: "retrieval",
+        chunksUsed: [],
+      });
+      if (lastAsst.tokensOut != null && lastAsst.tokensMax != null) {
+        setLastTokens({ out: lastAsst.tokensOut, max: lastAsst.tokensMax });
+      }
+    }
+    setTab("ask");
+    setDrawerOpen(true);
+  }
 
   function addDoc() {
     if (!docForm.title.trim() || !docForm.content.trim()) return;
@@ -2914,6 +3038,38 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
     });
     persistDocs(next);
     setDocForm({ title: "", kind: "pdf", content: "", fileRef: "", tags: "" });
+  }
+
+  function ThreadGroup({
+    label,
+    items,
+  }: {
+    label: string;
+    items: AiThread[];
+  }) {
+    if (items.length === 0) return null;
+    return (
+      <div className="space-y-1.5">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--ink-muted)]">
+          {label}
+        </p>
+        {items.map((th) => (
+          <button
+            key={th.id}
+            type="button"
+            onClick={() => loadThread(th)}
+            className={cn(
+              "block w-full rounded-lg px-2.5 py-2 text-left text-xs transition",
+              activeThreadId === th.id
+                ? "bg-[color-mix(in_oklab,var(--accent)_14%,transparent)] text-[var(--ink)]"
+                : "text-[var(--ink-muted)] hover:bg-[color-mix(in_oklab,var(--ink)_6%,transparent)]",
+            )}
+          >
+            <span className="line-clamp-2 font-semibold">{th.title}</span>
+          </button>
+        ))}
+      </div>
+    );
   }
 
   return (
@@ -2960,11 +3116,50 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
                 ? "Solo heurística (sin IA)"
                 : "Heuristic only (no AI)"}
           </Badge>
+          <button
+            type="button"
+            className="mps-choice rounded-lg px-3 py-1.5 text-xs font-semibold"
+            onClick={() => {
+              setActiveThreadId(undefined);
+              setResult(null);
+              setQuestion("");
+            }}
+          >
+            {lang === "es" ? "Nuevo hilo" : "New thread"}
+          </button>
         </div>
       </Card>
 
       {tab === "ask" && (
-        <div className="grid gap-5 lg:grid-cols-5">
+        <div className="grid gap-5 lg:grid-cols-6">
+          <Card
+            title={lang === "es" ? "Historial" : "History"}
+            subtitle={lang === "es" ? "Hoy / esta semana" : "Today / this week"}
+            className="lg:col-span-1"
+          >
+            <div className="max-h-[420px] space-y-4 overflow-y-auto">
+              <ThreadGroup
+                label={lang === "es" ? "Hoy" : "Today"}
+                items={threadGroups.today}
+              />
+              <ThreadGroup
+                label={lang === "es" ? "Esta semana" : "This week"}
+                items={threadGroups.week}
+              />
+              <ThreadGroup
+                label={lang === "es" ? "Anteriores" : "Older"}
+                items={threadGroups.older}
+              />
+              {threads.length === 0 ? (
+                <p className="text-xs text-[var(--ink-muted)]">
+                  {lang === "es"
+                    ? "Aún no hay hilos. Haz una pregunta."
+                    : "No threads yet. Ask something."}
+                </p>
+              ) : null}
+            </div>
+          </Card>
+
           <Card
             title={lang === "es" ? "Pregunta del CEO" : "CEO question"}
             subtitle={
@@ -3052,6 +3247,13 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
                       {lastTokens.out}/{lastTokens.max} tokens
                     </span>
                   ) : null}
+                  <button
+                    type="button"
+                    className="mps-choice rounded-lg px-2 py-1 text-[11px] font-semibold"
+                    onClick={() => setDrawerOpen(true)}
+                  >
+                    {lang === "es" ? "Panel lateral" : "Side panel"}
+                  </button>
                 </div>
                 <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[var(--ink)]">
                   {result.answer}
@@ -3109,6 +3311,62 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
           </Card>
         </div>
       )}
+
+      <AiContextDrawer
+        lang={lang}
+        open={drawerOpen && (asking || Boolean(result))}
+        thinking={asking}
+        step={thinkStep}
+        title={lang === "es" ? "Asistente 30 MPS" : "30 MPS assistant"}
+        subtitle={
+          result
+            ? result.engine === "ai"
+              ? lang === "es"
+                ? `Respuesta · ${result.provider ?? providerLabel()}`
+                : `Answer · ${result.provider ?? providerLabel()}`
+              : lang === "es"
+                ? "Respuesta · heurística"
+                : "Answer · heuristic"
+            : undefined
+        }
+        onClose={() => setDrawerOpen(false)}
+      >
+        {asking ? (
+          <ol className="space-y-3 text-sm">
+            {(
+              lang === "es"
+                ? ["Buscando en docs + Hub", "Ordenando fragmentos", "Redactando respuesta corta"]
+                : ["Searching docs + Hub", "Ranking chunks", "Drafting a short answer"]
+            ).map((label, i) => (
+              <li
+                key={label}
+                className={cn(
+                  "flex items-center gap-2 rounded-xl border px-3 py-2",
+                  thinkStep > i
+                    ? "border-[var(--accent)] text-[var(--ink)]"
+                    : "border-[var(--border-subtle)] text-[var(--ink-muted)]",
+                )}
+              >
+                {asking && thinkStep === i + 1 ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-[var(--accent)]" />
+                ) : (
+                  <Sparkles className="h-4 w-4 text-[var(--accent)]" />
+                )}
+                {label}
+              </li>
+            ))}
+          </ol>
+        ) : result ? (
+          <div className="space-y-3 text-sm">
+            <p className="whitespace-pre-wrap leading-relaxed">{result.answer}</p>
+            {lastTokens ? (
+              <p className="text-[11px] tabular-nums text-[var(--ink-muted)]">
+                {lastTokens.out}/{lastTokens.max} tokens
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+      </AiContextDrawer>
 
       {tab === "docs" && (
         <div className="grid gap-5 lg:grid-cols-5">

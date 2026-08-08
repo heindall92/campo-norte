@@ -5,7 +5,7 @@
 > memoria. El chat no es memoria: este archivo sí. Si el chat y el repo se
 > contradicen, **manda el repo**.
 
-**Última actualización:** 2026-08-08 · por Cursor · tip `feat/aurora-patterns` · fases 1–11
+**Última actualización:** 2026-08-08 · por Cursor · tip `cursor/aurora-patterns-2ebf` · fases 1–12
 
 ---
 
@@ -14,8 +14,8 @@
 | Rama | Commit | Qué contiene |
 |---|---|---|
 | `main` | `1c360c2` | Producción. Móvil + lazo + selector 4 modos + analytics demo. |
-| `feat/aurora-patterns` | tip | **Patrones Aurora 1–9**. Preview Vercel. Sin fusionar. |
-| `cursor/aurora-patterns-2ebf` | tip | Espejo del tip de `feat/aurora-patterns` (PR Cloud #6). |
+| `feat/aurora-patterns` | tip | Espejo local de patrones Aurora 1–12. Preview Vercel. Sin fusionar. |
+| `cursor/aurora-patterns-2ebf` | tip | PR Cloud #6 · patrones Aurora 1–12. |
 | Producción | — | https://30mps.vercel.app |
 | Preview Aurora | — | https://30mps-git-feat-aurora-patterns-heindall92.vercel.app |
 | Supabase | `gkskudxjuafsidqiiqpg` | **30mps** (eu-west-1). Lazo verificado. |
@@ -71,8 +71,9 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 | 9 | Heurística: ruta genérica (sin Mongolia hardcode), cap relación + cola estricta, umbral lead 2 días | `lead-scoring-core.ts`, `attention.ts` |
 | 10 | Dashboard/tesorería económicos + conexiones equipo | `ClosingProjection`, `CashFlowChart`, `team-ops.ts` |
 | 11 | Tablas facturas + P&G operativo + IA con tope de tokens/FAB | `OpsPanels`, `pnl.ts`, `token-budget.ts`, `KnowledgePanel` |
+| 12 | Integraciones + Uso + próximos movimientos + alertas facturas + historial IA + fiscal timeline | `integrations.ts`, `upcoming-cash.ts`, `invoice-alerts.ts`, `threads.ts`, `AiContextDrawer` |
 
-**Verificación automática:** lint, `npm test` (**103**), `npm run build` — limpios.
+**Verificación automática:** lint, `npm test` (**105**), `npm run build` — limpios.
 
 **Decisiones de alcance (no son olvidos):**
 - Runway/burn rate de empresa fuera: sin gasto bancario real. El “por pagar” operativo sí existe: coste de equipo estimado.
@@ -80,6 +81,8 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 - Laboral RRHH genérico / equity fuera: en su lugar, **Equipo** = tour leader ↔ expedición ↔ dieta×días.
 - Aprobar en la bandeja cambia estado (localStorage); no publica al viajero (regla de oro).
 - Marca/assets de la demo Aurora: no se copian. Solo estructura, colores semánticos de gráficas y conexiones.
+- Integraciones: catálogo con estado local/env; no OAuth real de terceros en esta fase.
+- Historial IA: localStorage (HOY / ESTA SEMANA); sin backend de threads.
 
 **Bugs corregidos en esta rama:**
 - Fase 8: vencimientos fiscales en UTC (evita −1 día al serializar ISO en ES).
@@ -130,6 +133,9 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 | **Aurora — scoring** | `src/lib/ai/lead-scoring-core.ts` |
 | **Aurora — gráficas/econ** | `ClosingProjection.tsx`, `CashFlowChart.tsx`, tokens `--chart-in/out/forecast` |
 | **Aurora — equipo** | `src/lib/team-ops.ts`, `TeamOpsPanel.tsx` |
+| **Aurora — integraciones/uso** | `src/lib/integrations.ts`, `IntegrationsPanel.tsx`, pestaña Uso en Ajustes |
+| **Aurora — caja/alertas** | `upcoming-cash.ts`, `UpcomingCashPanel.tsx`, `invoice-alerts.ts` |
+| **Aurora — IA threads** | `src/lib/ai/threads.ts`, `AiContextDrawer.tsx`, KnowledgePanel |
 
 ---
 
