@@ -5,7 +5,7 @@
 > memoria. El chat no es memoria: este archivo sí. Si el chat y el repo se
 > contradicen, **manda el repo**.
 
-**Última actualización:** 2026-08-08 · por Claude Code · tip `feat/aurora-patterns`
+**Última actualización:** 2026-08-08 · por Cursor · tip `cursor/aurora-patterns-2ebf` (= `feat/aurora-patterns`)
 
 ---
 
@@ -13,10 +13,19 @@
 
 | Rama | Commit | Qué contiene |
 |---|---|---|
-| `main` | `545aa04` | Producción. Móvil + lazo + **selector 4 modos**. |
-| `feat/aurora-patterns` | `32a50d4` | **Patrones de demo Aurora**: tokens 3 capas, KPI, cola de atención, tesorería. Sin fusionar. |
+| `main` | `1c360c2` | Producción. Móvil + lazo + selector 4 modos + analytics demo. |
+| `feat/aurora-patterns` | tip | **Patrones Aurora** + fix Tesorería en móvil. Preview Vercel. Sin fusionar. |
+| `cursor/aurora-patterns-2ebf` | tip | Misma punta que `feat/aurora-patterns` (PR del agente Cloud). |
 | Producción | — | https://30mps.vercel.app |
+| Preview Aurora | — | https://30mps-git-feat-aurora-patterns-heindall92.vercel.app |
 | Supabase | `gkskudxjuafsidqiiqpg` | **30mps** (eu-west-1). Lazo verificado. |
+
+### Login demo vs preview Vercel
+
+- Login demo (`miguel@30mps.com` / `30mps2026`) **solo funciona sin** `VITE_SUPABASE_*`.
+- El preview de Vercel tiene esas vars → `30mps2026` da **Invalid login credentials**.
+- En local sin esas vars, el demo entra bien.
+- Preview Vercel: pide sesión de Vercel + **usuario real** de Supabase.
 
 ---
 
@@ -24,11 +33,12 @@
 
 ### Vista móvil
 - Inicio, Clientes / Reservas / Leads, fichas in-place, módulos en barra.
+- Tesorería accesible desde «Más módulos» (`MobileCrmShell`).
 
 ### Lazo de leads
 - Ingesta + cron + `/captura` + decay. **Verde en prod** con Supabase.
 
-### Selector de 4 modos (nuevo — lint/test/build OK)
+### Selector de 4 modos (lint/test/build OK)
 - Motor: `src/lib/ai/lead-priority.ts` — solo reordena; **nunca** reescribe score.
 - Preferencia por usuario en `user-prefs.leadPriorityMode` (localStorage).
 - UI: desplegable en Leads (móvil + escritorio); Prioridad de hoy respeta el modo.
@@ -42,9 +52,7 @@
 | Encaje e intención | ¿Ideal y con prisa? | cuadrante fit×intent × decay |
 | Se parece a quien reservó | ¿Como mis buenos? | coseno k=5 convertidores × decay |
 
-**Verificación:** `npm run lint`, `npm test` (47), `npm run build` — limpios.
-
-### Patrones Aurora (rama `feat/aurora-patterns` — NO fusionada)
+### Patrones Aurora (rama — NO fusionada)
 
 Análisis en `docs/GAP-DEMO.md` y `docs/GAP-DEMO-ANATOMIA.md`.
 Referencia conceptual: no hay código, marca ni assets de terceros.
@@ -57,8 +65,15 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 | 4 | Tesorería adaptada (cobrado/pendiente/comprometido + gráficas) | `src/lib/treasury.ts`, `TreasuryPanel.tsx` |
 | 5 | Integración: sección `tesoreria` + atención en el cuadro de mando | `MpsCrmApp.tsx`, `roles.ts`, `i18n.ts` |
 
-**Verificación:** lint, `npm test` (**68**), `npm run build` — limpios.
-**Pendiente:** validación visual con sesión iniciada en el preview de Vercel.
+**Verificación automática:** lint, `npm test` (**68**), `npm run build` — limpios.
+
+**Validación visual (local, demo auth, 2026-08-08):**
+- Escritorio — cola de atención: **PASS** (filtros, badges, € en juego).
+- Escritorio — Tesorería: **PASS** (KPIs, flujo, origen del dinero, movimientos).
+- Móvil — Prioridad de hoy: **PARCIAL** (top condensado; no es el panel completo; diseño intencional).
+- Móvil — Tesorería: **PASS** tras añadir `tesoreria` a `MORE_SECTIONS` en `MobileCrmShell.tsx`.
+
+**Pendiente humano:** mismo recorrido en el preview de Vercel con usuario Supabase real (el demo login no sirve ahí).
 
 ---
 
@@ -86,14 +101,17 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 | **Motor modos** | `src/lib/ai/lead-priority.ts`, `src/lib/data/stats.ts`, `src/lib/user-prefs.ts`, `src/lib/use-lead-priority-mode.ts` |
 | **UI selector** | `LeadPriorityModeSelect.tsx`, `MobileLeadsScreen.tsx`, `MobileHomeSummary.tsx`, `MpsCrmApp.tsx` (LeadsPanel) |
 | **Lazo / API** | `api/**`, `src/lib/leads/**`, `supabase/schema.sql` |
+| **Aurora — tokens/UI** | `src/index.css`, `src/lib/format.ts`, `src/components/ui/**` |
+| **Aurora — atención** | `src/lib/attention.ts`, `AttentionPanel.tsx` |
+| **Aurora — tesorería** | `src/lib/treasury.ts`, `TreasuryPanel.tsx`, `MobileCrmShell.tsx` (Más módulos) |
+| **Aurora — integración** | `MpsCrmApp.tsx`, `roles.ts`, `i18n.ts` |
 
 ---
 
 ## 6 · Siguiente tarea (UNA)
 
-> **Validar `feat/aurora-patterns` en el preview de Vercel** con sesión
-> iniciada: cuadro de mando (cola de atención) y sección Tesorería, en
-> escritorio y en móvil. Después decidir fusión.
+> **Decidir fusión de Aurora** tras (opcional) validar el preview Vercel con
+> usuario Supabase real. No fusionar ni desplegar hasta que lo pida el dueño.
 
 Después, en cola: endurecer Auth Supabase (desactivar alta pública y promover
 el primer admin en `mps_profiles`).
