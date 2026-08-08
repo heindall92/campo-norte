@@ -15,6 +15,7 @@ export type AppSection =
   | "clientes"
   | "reservas"
   | "facturas"
+  | "tesoreria"
   | "contenido"
   | "conocimiento"
   | "automatizaciones"

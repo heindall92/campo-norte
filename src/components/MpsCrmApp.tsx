@@ -91,6 +91,8 @@ import { ProfileModal } from "@/components/ProfileModal";
 import { SupportCard } from "@/components/SupportCard";
 import { SupportModal } from "@/components/SupportModal";
 import { UsersDirectoryPanel } from "@/components/UsersDirectoryPanel";
+import { AttentionPanel } from "@/components/AttentionPanel";
+import { TreasuryPanel } from "@/components/TreasuryPanel";
 import {
   applyUserPrefsToDocument,
   loadUserPrefs,
@@ -149,6 +151,7 @@ import {
   Upload,
   Users,
   UsersRound,
+  Wallet,
   Workflow,
   CalendarDays,
   Zap,
@@ -178,6 +181,7 @@ const NAV_IDS: { id: Section; icon: typeof LayoutDashboard; labelKey: string }[]
   { id: "clientes", icon: Users, labelKey: "nav_clients" },
   { id: "reservas", icon: CalendarDays, labelKey: "nav_reservations" },
   { id: "facturas", icon: FileText, labelKey: "nav_invoices" },
+  { id: "tesoreria", icon: Wallet, labelKey: "nav_treasury" },
   { id: "contenido", icon: Sparkles, labelKey: "nav_content" },
   { id: "conocimiento", icon: BookOpen, labelKey: "nav_knowledge" },
   { id: "automatizaciones", icon: Workflow, labelKey: "nav_automations" },
@@ -1496,6 +1500,29 @@ function HubPanel({ lang }: { lang: Lang }) {
   );
 }
 
+/**
+ * Tesorería — movimientos derivados de facturas y reservas.
+ * La lógica vive en `@/lib/treasury`; aquí solo se conecta con el hub.
+ */
+function TreasurySection({ lang }: { lang: Lang }) {
+  const hub = useDataHub();
+  return (
+    <div className="space-y-5">
+      <header>
+        <h2 className="text-2xl font-semibold" style={{ color: "var(--text-primary)" }}>
+          {t(lang, "nav_treasury")}
+        </h2>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+          {lang === "es"
+            ? "Cobrado, pendiente y comprometido. Sin banco conectado: todo se deriva de facturas y reservas."
+            : "Collected, receivable and committed. No bank connected: everything is derived from invoices and bookings."}
+        </p>
+      </header>
+      <TreasuryPanel invoices={hub.invoices} reservations={hub.reservations} lang={lang} />
+    </div>
+  );
+}
+
 function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
   const hub = useDataHub();
   const isMobile = useIsMobile();
@@ -1597,6 +1624,15 @@ function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
           />
         </div>
       </div>
+
+      {/* Cola de acción: lo primero que se mira al abrir el panel. */}
+      <AttentionPanel
+        leads={hub.leads}
+        reservations={hub.reservations}
+        invoices={hub.invoices}
+        avgTicket={MPS_ANNEX.revenueCurrent / Math.max(1, MPS_ANNEX.travelersCurrent)}
+        lang={lang}
+      />
 
       <div className="grid gap-5 lg:grid-cols-3">
         <Card
@@ -3489,6 +3525,7 @@ export function MpsCrmApp() {
       {section === "clientes" && <ClientsPanel lang={lang} />}
       {section === "reservas" && <ReservationsPanel lang={lang} />}
       {section === "facturas" && <InvoicesVerifactuPanel lang={lang} />}
+      {section === "tesoreria" && <TreasurySection lang={lang} />}
       {section === "contenido" && <ContentFactoryPanel lang={lang} />}
       {section === "conocimiento" && <KnowledgePanel lang={lang} />}
       {section === "automatizaciones" && <AutomationsPanel lang={lang} />}
