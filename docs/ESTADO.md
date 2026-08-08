@@ -14,18 +14,19 @@
 | Rama | Commit | Qué contiene |
 |---|---|---|
 | `main` | `1c360c2` | Producción. Móvil + lazo + selector 4 modos + analytics demo. |
-| `feat/aurora-patterns` | tip | **Patrones Aurora** + fix Tesorería en móvil. Preview Vercel. Sin fusionar. |
+| `feat/aurora-patterns` | tip | **Patrones Aurora** + Tesorería móvil + **login demo con Supabase**. Preview Vercel. Sin fusionar. |
 | `cursor/aurora-patterns-2ebf` | tip | Misma punta que `feat/aurora-patterns` (PR del agente Cloud). |
 | Producción | — | https://30mps.vercel.app |
 | Preview Aurora | — | https://30mps-git-feat-aurora-patterns-heindall92.vercel.app |
 | Supabase | `gkskudxjuafsidqiiqpg` | **30mps** (eu-west-1). Lazo verificado. |
 
-### Login demo vs preview Vercel
+### Acceso al preview (móvil / pitch)
 
-- Login demo (`miguel@30mps.com` / `30mps2026`) **solo funciona sin** `VITE_SUPABASE_*`.
-- El preview de Vercel tiene esas vars → `30mps2026` da **Invalid login credentials**.
-- En local sin esas vars, el demo entra bien.
-- Preview Vercel: pide sesión de Vercel + **usuario real** de Supabase.
+- URL: https://30mps-git-feat-aurora-patterns-heindall92.vercel.app
+- App login demo: `miguel@30mps.com` / `30mps2026` (también laura@ · david@ · ramon@, misma pass).
+- Tras cherry-pick del fallback demo (`165467f`): si Supabase rechaza la pass, cae a cuentas demo + Hub semilla local.
+- Si Vercel pide login de la plataforma (Deployment Protection), hay que autenticarse en Vercel; eso es del hosting, no de la app.
+- Cerrar demo en prod real: `VITE_STRICT_AUTH=true` o `VITE_ALLOW_DEMO_AUTH=false`.
 
 ---
 
