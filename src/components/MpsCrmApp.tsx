@@ -29,6 +29,7 @@ import { useNotifications } from "@/lib/notifications";
 import { COMPANY, GOLDEN_RULE, MPS_ANNEX, MPS_ASSUMPTIONS, TEAM } from "@/lib/assumptions";
 import { computeBusinessKpis } from "@/lib/business-kpis";
 import {
+  CONTENT_DRAFTS,
   EXPEDITIONS,
   EXPERIENCE_LABEL,
   KNOWLEDGE_ANSWERS,
@@ -92,6 +93,7 @@ import { SupportCard } from "@/components/SupportCard";
 import { SupportModal } from "@/components/SupportModal";
 import { UsersDirectoryPanel } from "@/components/UsersDirectoryPanel";
 import { AttentionPanel } from "@/components/AttentionPanel";
+import { ApprovalsPanel } from "@/components/ApprovalsPanel";
 import {
   askAboutInvoice,
   askAboutLead,
@@ -159,6 +161,7 @@ import {
   Target,
   Upload,
   Users,
+  ShieldCheck,
   UsersRound,
   Wallet,
   Workflow,
@@ -191,6 +194,7 @@ const NAV_IDS: { id: Section; icon: typeof LayoutDashboard; labelKey: string }[]
   { id: "reservas", icon: CalendarDays, labelKey: "nav_reservations" },
   { id: "facturas", icon: FileText, labelKey: "nav_invoices" },
   { id: "tesoreria", icon: Wallet, labelKey: "nav_treasury" },
+  { id: "aprobaciones", icon: ShieldCheck, labelKey: "nav_approvals" },
   { id: "contenido", icon: Sparkles, labelKey: "nav_content" },
   { id: "conocimiento", icon: BookOpen, labelKey: "nav_knowledge" },
   { id: "automatizaciones", icon: Workflow, labelKey: "nav_automations" },
@@ -1532,6 +1536,33 @@ function TreasurySection({ lang }: { lang: Lang }) {
         reservations={hub.reservations}
         lang={lang}
         onAsk={(topic) => requestAsk(askAboutTopic(topic))}
+      />
+    </div>
+  );
+}
+
+/**
+ * Aprobaciones — la regla de oro hecha interfaz.
+ * La IA propone en segundo plano; nada sale sin OK de una persona.
+ */
+function ApprovalsSection({ lang }: { lang: Lang }) {
+  const { user } = useAuth();
+  return (
+    <div className="space-y-5">
+      <header>
+        <h2 className="text-2xl font-semibold" style={{ color: "var(--text-primary)" }}>
+          {t(lang, "nav_approvals")}
+        </h2>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+          {lang === "es"
+            ? "La IA redacta en segundo plano. Publicar o enviar sigue siendo decisión de una persona."
+            : "The assistant drafts in the background. Publishing or sending stays a human decision."}
+        </p>
+      </header>
+      <ApprovalsPanel
+        drafts={CONTENT_DRAFTS}
+        currentUser={user?.email ?? "equipo"}
+        lang={lang}
       />
     </div>
   );
@@ -3581,6 +3612,7 @@ export function MpsCrmApp() {
       {section === "reservas" && <ReservationsPanel lang={lang} />}
       {section === "facturas" && <InvoicesVerifactuPanel lang={lang} />}
       {section === "tesoreria" && <TreasurySection lang={lang} />}
+      {section === "aprobaciones" && <ApprovalsSection lang={lang} />}
       {section === "contenido" && <ContentFactoryPanel lang={lang} />}
       {section === "conocimiento" && <KnowledgePanel lang={lang} />}
       {section === "automatizaciones" && <AutomationsPanel lang={lang} />}
