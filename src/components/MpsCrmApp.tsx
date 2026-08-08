@@ -94,6 +94,7 @@ import { SupportModal } from "@/components/SupportModal";
 import { UsersDirectoryPanel } from "@/components/UsersDirectoryPanel";
 import { AttentionPanel } from "@/components/AttentionPanel";
 import { ApprovalsPanel } from "@/components/ApprovalsPanel";
+import { FiscalCalendarPanel } from "@/components/FiscalCalendarPanel";
 import {
   askAboutInvoice,
   askAboutLead,
@@ -1537,6 +1538,7 @@ function TreasurySection({ lang }: { lang: Lang }) {
         lang={lang}
         onAsk={(topic) => requestAsk(askAboutTopic(topic))}
       />
+      <FiscalCalendarPanel invoices={hub.invoices} lang={lang} />
     </div>
   );
 }
