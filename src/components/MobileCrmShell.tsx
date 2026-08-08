@@ -39,6 +39,7 @@ import {
   Presentation,
   RefreshCw,
   Settings,
+  ShieldCheck,
   Sparkles,
   UserRound,
   Users,
@@ -65,6 +66,7 @@ const QUICK: {
 const MORE_SECTIONS: { id: AppSection; labelEs: string; labelEn: string; icon: LucideIcon }[] = [
   { id: "facturas", labelEs: "Facturas", labelEn: "Invoices", icon: FileText },
   { id: "tesoreria", labelEs: "Tesorería", labelEn: "Treasury", icon: Wallet },
+  { id: "aprobaciones", labelEs: "Aprobaciones", labelEn: "Approvals", icon: ShieldCheck },
   { id: "contenido", labelEs: "Contenido", labelEn: "Content", icon: Sparkles },
   { id: "conocimiento", labelEs: "Conocimiento", labelEn: "Knowledge", icon: BookOpen },
   { id: "automatizaciones", labelEs: "Automatizaciones", labelEn: "Automations", icon: Workflow },
@@ -82,6 +84,7 @@ const SECTION_TITLE_KEY: Partial<Record<AppSection, string>> = {
   hub: "nav_hub",
   facturas: "nav_invoices",
   tesoreria: "nav_treasury",
+  aprobaciones: "nav_approvals",
   contenido: "nav_content",
   conocimiento: "nav_knowledge",
   automatizaciones: "nav_automations",

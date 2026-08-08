@@ -5,7 +5,7 @@
 > memoria. El chat no es memoria: este archivo sí. Si el chat y el repo se
 > contradicen, **manda el repo**.
 
-**Última actualización:** 2026-08-08 · por Cursor · tip `cursor/aurora-patterns-2ebf` (= `feat/aurora-patterns`)
+**Última actualización:** 2026-08-08 · por Cursor · tip `feat/aurora-patterns` (= `cursor/aurora-patterns-2ebf`)
 
 ---
 
@@ -14,8 +14,8 @@
 | Rama | Commit | Qué contiene |
 |---|---|---|
 | `main` | `1c360c2` | Producción. Móvil + lazo + selector 4 modos + analytics demo. |
-| `feat/aurora-patterns` | tip | **Patrones Aurora** + Tesorería móvil + **login demo con Supabase**. Preview Vercel. Sin fusionar. |
-| `cursor/aurora-patterns-2ebf` | tip | Misma punta que `feat/aurora-patterns` (PR del agente Cloud). |
+| `feat/aurora-patterns` | tip | **Patrones Aurora 1–9**. Preview Vercel. Sin fusionar. |
+| `cursor/aurora-patterns-2ebf` | tip | Espejo del tip de `feat/aurora-patterns` (PR Cloud #6). |
 | Producción | — | https://30mps.vercel.app |
 | Preview Aurora | — | https://30mps-git-feat-aurora-patterns-heindall92.vercel.app |
 | Supabase | `gkskudxjuafsidqiiqpg` | **30mps** (eu-west-1). Lazo verificado. |
@@ -24,8 +24,8 @@
 
 - URL: https://30mps-git-feat-aurora-patterns-heindall92.vercel.app
 - App login demo: `miguel@30mps.com` / `30mps2026` (también laura@ · david@ · ramon@, misma pass).
-- Tras cherry-pick del fallback demo (`165467f`): si Supabase rechaza la pass, cae a cuentas demo + Hub semilla local.
-- Si Vercel pide login de la plataforma (Deployment Protection), hay que autenticarse en Vercel; eso es del hosting, no de la app.
+- Fallback demo activo aunque haya `VITE_SUPABASE_*` (Hub semilla local).
+- Si Vercel pide login de la plataforma (Deployment Protection), autenticarse en Vercel; eso es del hosting, no de la app.
 - Cerrar demo en prod real: `VITE_STRICT_AUTH=true` o `VITE_ALLOW_DEMO_AUTH=false`.
 
 ---
@@ -34,7 +34,7 @@
 
 ### Vista móvil
 - Inicio, Clientes / Reservas / Leads, fichas in-place, módulos en barra.
-- Tesorería accesible desde «Más módulos» (`MobileCrmShell`).
+- Tesorería y **Aprobaciones** en «Más módulos» (`MobileCrmShell`).
 
 ### Lazo de leads
 - Ingesta + cron + `/captura` + decay. **Verde en prod** con Supabase.
@@ -68,25 +68,27 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 | 6 | IA contextual cableada + prompts sugeridos (3→6) | `src/lib/ai/ask-bus.ts`, `MpsCrmApp.tsx` |
 | 7 | **Bandeja de Aprobaciones** (regla de oro hecha interfaz) | `src/lib/approvals.ts`, `ApprovalsPanel.tsx` |
 | 8 | Calendario fiscal AEAT (303/111/390/200) con importe estimado | `src/lib/fiscal-calendar.ts`, `FiscalCalendarPanel.tsx` |
+| 9 | Heurística: ruta genérica (sin Mongolia hardcode), cap relación + cola estricta, umbral lead 2 días | `lead-scoring-core.ts`, `attention.ts` |
 
-**Verificación automática:** lint, `npm test` (**87**), `npm run build` — limpios.
+**Verificación automática:** lint, `npm test` (**96**), `npm run build` — limpios.
 
 **Decisiones de alcance (no son olvidos):**
 - Runway y burn rate fuera: sin datos de gasto real serían cifras inventadas.
 - Modelos 111 y 200 sin importe: dependen de nóminas/contabilidad que no hay.
 - Laboral, RRHH y equity fuera: no aplica a un equipo de 4 personas.
+- Aprobar en la bandeja cambia estado (localStorage); no publica al viajero (regla de oro).
 
-**Bug corregido en fase 8:** los vencimientos fiscales se construían con
-`new Date(y,m,d)` (hora local) y al serializar a ISO se desplazaban un día en
-España. Ahora se construyen en UTC a mediodía.
+**Bugs corregidos en esta rama:**
+- Fase 8: vencimientos fiscales en UTC (evita −1 día al serializar ISO en ES).
+- Tesorería y Aprobaciones en `MORE_SECTIONS` móvil.
+- ask-bus: consumir `pending` también al recibir el evento (evita relanzar al remontar).
 
 **Validación visual (local, demo auth, 2026-08-08):**
-- Escritorio — cola de atención: **PASS** (filtros, badges, € en juego).
-- Escritorio — Tesorería: **PASS** (KPIs, flujo, origen del dinero, movimientos).
-- Móvil — Prioridad de hoy: **PARCIAL** (top condensado; no es el panel completo; diseño intencional).
-- Móvil — Tesorería: **PASS** tras añadir `tesoreria` a `MORE_SECTIONS` en `MobileCrmShell.tsx`.
+- Escritorio — cola de atención / Tesorería: **PASS**.
+- Móvil — Prioridad de hoy: **PARCIAL** (condensada; intencional).
+- Móvil — Tesorería: **PASS**. Aprobaciones: entrada añadida tras revisión fases 6–9.
 
-**Pendiente humano:** mismo recorrido en el preview de Vercel con usuario Supabase real (el demo login no sirve ahí).
+**Pendiente humano:** recorrer preview Vercel (demo login ya sirve) y decidir fusión.
 
 ---
 
@@ -116,18 +118,20 @@ España. Ahora se construyen en UTC a mediodía.
 | **Lazo / API** | `api/**`, `src/lib/leads/**`, `supabase/schema.sql` |
 | **Aurora — tokens/UI** | `src/index.css`, `src/lib/format.ts`, `src/components/ui/**` |
 | **Aurora — atención** | `src/lib/attention.ts`, `AttentionPanel.tsx` |
-| **Aurora — tesorería** | `src/lib/treasury.ts`, `TreasuryPanel.tsx`, `MobileCrmShell.tsx` (Más módulos) |
+| **Aurora — tesorería** | `src/lib/treasury.ts`, `TreasuryPanel.tsx` |
+| **Aurora — móvil nav** | `MobileCrmShell.tsx` (Más módulos: tesorería, aprobaciones) |
 | **Aurora — integración** | `MpsCrmApp.tsx`, `roles.ts`, `i18n.ts` |
-| **Aurora — IA contextual** | `src/lib/ai/ask-bus.ts` (canal + redacción de preguntas) |
+| **Aurora — IA contextual** | `src/lib/ai/ask-bus.ts` |
 | **Aurora — aprobaciones** | `src/lib/approvals.ts`, `ApprovalsPanel.tsx` |
 | **Aurora — fiscal** | `src/lib/fiscal-calendar.ts`, `FiscalCalendarPanel.tsx` |
+| **Aurora — scoring** | `src/lib/ai/lead-scoring-core.ts` |
 
 ---
 
 ## 6 · Siguiente tarea (UNA)
 
-> **Decidir fusión de Aurora** tras (opcional) validar el preview Vercel con
-> usuario Supabase real. No fusionar ni desplegar hasta que lo pida el dueño.
+> **Decidir fusión de Aurora** tras validar el preview Vercel (demo:
+> miguel@ / 30mps2026). No fusionar ni desplegar hasta que lo pida el dueño.
 
 Después, en cola: endurecer Auth Supabase (desactivar alta pública y promover
 el primer admin en `mps_profiles`).

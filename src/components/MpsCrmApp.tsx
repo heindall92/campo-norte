@@ -2699,7 +2699,12 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
     // Pendiente dejada antes de que este panel existiera (navegación).
     const queued = consumePendingAsk();
     if (queued) launch(queued);
-    return onAskRequested(launch);
+    // Si el panel ya estaba montado, el evento trae la pregunta: consumir
+    // pending evita relanzarla al remontar (cambio de pestaña / rotación).
+    return onAskRequested((q) => {
+      consumePendingAsk();
+      launch(q);
+    });
   }, []);
 
   const [active, setActive] = useState(0);
