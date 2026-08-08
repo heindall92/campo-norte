@@ -3,7 +3,7 @@ import {
   AI_PROVIDER_LABEL,
   applyIntelligenceToClient,
   applyScoreToLead,
-  askKnowledge,
+  askKnowledgeStream,
   aiReady,
   clientsToContactThisMonth,
   classifyCustomer,
@@ -2978,12 +2978,14 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
     lang === "es" ? "¿Cuánto costó Mongolia 2025?" : "How much did Mongolia 2025 cost?",
   );
   const [asking, setAsking] = useState(false);
+  const [streamText, setStreamText] = useState("");
   const [result, setResult] = useState<KnowledgeAskResult | null>(null);
   const [lastTokens, setLastTokens] = useState<{ out: number; max: number } | null>(null);
   const [usage, setUsage] = useState(() => loadAiUsage());
   const [threads, setThreads] = useState<AiThread[]>(() => listAiThreads());
   const [activeThreadId, setActiveThreadId] = useState<string | undefined>();
   const [docs, setDocs] = useState<KnowledgeDoc[]>(() => loadKnowledgeDocs());
+  const askAbortRef = useRef<AbortController | null>(null);
   const [docForm, setDocForm] = useState({
     title: "",
     kind: "pdf" as KnowledgeDocKind,
@@ -2997,7 +2999,10 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
       setDocs(loadKnowledgeDocs());
     }
     window.addEventListener("mps-hub-refreshed", onHubRefresh);
-    return () => window.removeEventListener("mps-hub-refreshed", onHubRefresh);
+    return () => {
+      window.removeEventListener("mps-hub-refreshed", onHubRefresh);
+      askAbortRef.current?.abort();
+    };
   }, []);
 
   // El drawer global (AiAssistantHost) escucha ask-bus.
@@ -3056,19 +3061,29 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
   async function runAsk(q?: string) {
     const text = (q ?? question).trim();
     if (!text) return;
+    askAbortRef.current?.abort();
+    const ac = new AbortController();
+    askAbortRef.current = ac;
     setQuestion(text);
     setAsking(true);
+    setStreamText("");
     setResult(null);
     try {
-      const res = await askKnowledge(text, {
-        docs,
-        reservations: hub.reservations,
-        invoices: hub.invoices,
-        clients: hub.clients,
-        expeditions: EXPEDITIONS,
-        faq: KNOWLEDGE_ANSWERS,
-      });
+      const res = await askKnowledgeStream(
+        text,
+        {
+          docs,
+          reservations: hub.reservations,
+          invoices: hub.invoices,
+          clients: hub.clients,
+          expeditions: EXPEDITIONS,
+          faq: KNOWLEDGE_ANSWERS,
+        },
+        (chunk) => setStreamText((prev) => prev + chunk),
+        ac.signal,
+      );
       setResult(res);
+      setStreamText(res.answer);
       const settings = loadAiSettings();
       const out = estimateTokens(res.answer);
       setLastTokens({ out, max: settings.maxOutputTokens });
@@ -3082,6 +3097,15 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
       });
       setActiveThreadId(thread.id);
       setThreads(listAiThreads());
+    } catch (err) {
+      if ((err as Error)?.name === "AbortError") return;
+      setResult({
+        answer: err instanceof Error ? err.message : String(err),
+        sources: [],
+        chunksUsed: [],
+        engine: "retrieval",
+        why: [lang === "es" ? "Error al consultar" : "Query error"],
+      });
     } finally {
       setAsking(false);
     }
@@ -3109,6 +3133,7 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
       }
     }
     setTab("ask");
+    setStreamText(lastAsst?.content ?? "");
   }
 
   function addDoc() {
@@ -3300,7 +3325,7 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
             title={lang === "es" ? "Respuesta con fuentes" : "Answer with sources"}
             className="lg:col-span-3"
           >
-            {!result ? (
+            {!result && !streamText && !asking ? (
               <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
                 <span className="mps-ai-fab is-alive" aria-hidden>
                   <Sparkles className="h-5 w-5" />
@@ -3310,8 +3335,8 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
                 </p>
                 <p className="max-w-sm text-sm text-[var(--ink-muted)]">
                   {lang === "es"
-                    ? "Docs + Hub primero; IA resume si está activa. Respuestas cortas para ahorrar tokens."
-                    : "Docs + Hub first; AI summarizes if enabled. Short answers to save tokens."}
+                    ? "Docs + Hub primero; IA resume en streaming si está activa. Respuestas cortas para ahorrar tokens."
+                    : "Docs + Hub first; AI streams a summary if enabled. Short answers to save tokens."}
                 </p>
                 <p className="text-[11px] tabular-nums text-[var(--ink-muted)]">
                   {lang === "es" ? "Uso" : "Usage"} · {formatTokenK(usage.inputTokens)} in /{" "}
@@ -3321,24 +3346,35 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
             ) : (
               <>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge tone={result.engine === "ai" ? "good" : "neutral"}>
-                    {result.engine === "ai"
-                      ? lang === "es"
-                        ? `Modo IA · ${result.provider ?? providerLabel()}`
-                        : `AI mode · ${result.provider ?? providerLabel()}`
-                      : lang === "es"
-                        ? "Modo heurística / retrieval"
-                        : "Heuristic / retrieval mode"}
-                  </Badge>
-                  {lastTokens ? (
+                  {asking ? (
+                    <Badge tone="brand">
+                      {lang === "es" ? "Escribiendo…" : "Streaming…"}
+                    </Badge>
+                  ) : result ? (
+                    <Badge tone={result.engine === "ai" ? "good" : "neutral"}>
+                      {result.engine === "ai"
+                        ? lang === "es"
+                          ? `Modo IA · ${result.provider ?? providerLabel()}`
+                          : `AI mode · ${result.provider ?? providerLabel()}`
+                        : lang === "es"
+                          ? "Modo heurística / retrieval"
+                          : "Heuristic / retrieval mode"}
+                    </Badge>
+                  ) : null}
+                  {lastTokens && !asking ? (
                     <span className="text-[11px] tabular-nums text-[var(--ink-muted)]">
                       {lastTokens.out}/{lastTokens.max} tokens
                     </span>
                   ) : null}
                 </div>
                 <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[var(--ink)]">
-                  {result.answer}
+                  {streamText || result?.answer || ""}
+                  {asking ? (
+                    <span className="ml-0.5 inline-block h-3.5 w-1.5 animate-pulse bg-[var(--accent)] align-middle" />
+                  ) : null}
                 </p>
+                {result && !asking ? (
+                  <>
                 <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
                   {lang === "es" ? "Por qué importa" : "Why it matters"}
                 </p>
@@ -3381,6 +3417,8 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
                     </ul>
                   </details>
                 )}
+                  </>
+                ) : null}
               </>
             )}
             <p className="mt-5 flex items-start gap-2 rounded-xl bg-[var(--glass)] p-3 text-xs text-[var(--ink-muted)]">

@@ -74,6 +74,7 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 | 11 | Tablas facturas + P&G operativo + IA con tope de tokens/FAB | `OpsPanels`, `pnl.ts`, `token-budget.ts`, `KnowledgePanel` |
 | 12 | Integraciones + Uso + próximos movimientos + alertas facturas + historial IA + fiscal timeline | `integrations.ts`, `upcoming-cash.ts`, `invoice-alerts.ts`, `threads.ts`, `AiContextDrawer` |
 | 13 | IA contextual global + streaming + decay con fecha + detalle score + EN ESTA VISTA + FAB arrastrable | `AiAssistantHost`, `chat-stream.ts`, `coldBy*`, `ViewTotals` leads/reservas/clientes, `DraggableAiFab` |
+| 13b | Streaming también en pestaña Conocimiento | `KnowledgePanel` → `askKnowledgeStream` |
 
 **Verificación automática:** lint, `npm test` (**107**), `npm run build` — limpios.
 
