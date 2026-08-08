@@ -8,7 +8,10 @@
 > Complementa `docs/GAP-DEMO.md` y `docs/GAP-DEMO-ANATOMIA.md` (análisis
 > Aurora). No copiar marca, assets ni código de terceros.
 >
-> Última actualización: 2026-08-08 · Cursor · tras fases Aurora 1–12
+> Última actualización: 2026-08-08 · Cursor · tras fases Aurora 1–13b
+>
+> **Playbook canónico para futuros proyectos:** `docs/AURORA-CONOCIMIENTO.md`
+> (checklist aplicado / diferido / nunca + anatomía + fórmulas).
 
 ---
 
@@ -100,6 +103,7 @@ Para no reabrir debates: lo aprovechado ya está en la rama Aurora 1–12.
 | Doc | Rol |
 |---|---|
 | `docs/ESTADO.md` | Verdad operativa del día a día |
-| `docs/GAP-DEMO.md` | Comparativa Aurora vs Growth OS |
+| `docs/AURORA-CONOCIMIENTO.md` | **Playbook canónico** Aurora → aplicado / diferido / futuro |
+| `docs/GAP-DEMO.md` | Comparativa Aurora vs Growth OS (histórico) |
 | `docs/GAP-DEMO-ANATOMIA.md` | Anatomía UI/UX de patrones |
 | **este archivo** | Cementerio útil: fuera de núcleo + enlaces futuros |

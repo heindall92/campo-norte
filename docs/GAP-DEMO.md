@@ -4,6 +4,10 @@
 > Aurora es producto de terceros; aquí solo se documentan patrones de
 > producto y decisiones de UX para reimplementarlos con criterio propio.
 > Fecha: 2026-08-08 · Autor: Claude Code (revisión: Yoandy)
+>
+> **Estado actual aplicado:** ver `docs/AURORA-CONOCIMIENTO.md` y
+> `docs/ESTADO.md` (fases 1–13b). La tabla §2 de abajo es del **arranque**
+> del trabajo y ya no refleja el tip: P1–P5 y extras están implementados.
 
 ---
 

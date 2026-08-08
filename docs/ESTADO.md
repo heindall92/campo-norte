@@ -20,6 +20,7 @@
 | Preview Aurora | — | https://30mps-git-feat-aurora-patterns-heindall92.vercel.app |
 | Supabase | `gkskudxjuafsidqiiqpg` | **30mps** (eu-west-1). Lazo verificado. |
 | **Fuera de núcleo** | `docs/FUERA-DE-NUCLEO.md` | RRHH/equity, contabilidad, alquileres, OCR, multi-org y otras modalidades — archivo para reutilizar enlaces luego. |
+| **Aurora playbook** | `docs/AURORA-CONOCIMIENTO.md` | Checklist canónico: qué se tomó, qué no, fórmulas y guía para futuros proyectos. |
 
 ### Acceso al preview (móvil / pitch)
 
@@ -56,7 +57,8 @@
 
 ### Patrones Aurora (rama — NO fusionada)
 
-Análisis en `docs/GAP-DEMO.md` y `docs/GAP-DEMO-ANATOMIA.md`.
+Análisis en `docs/GAP-DEMO.md`, `docs/GAP-DEMO-ANATOMIA.md` y playbook
+canónico **`docs/AURORA-CONOCIMIENTO.md`**.
 Referencia conceptual: no hay código, marca ni assets de terceros.
 
 | Fase | Qué | Archivos |
@@ -144,6 +146,7 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 | **Aurora — IA global/stream** | `AiAssistantHost.tsx`, `chat-stream.ts`, `askKnowledgeStream`, FAB `DraggableAiFab` |
 | **Aurora — decay fecha / vistas** | `coldByDate/Label`, ViewTotals leads·reservas·clientes, toggle detalle score |
 | **Fuera de núcleo (memoria)** | `docs/FUERA-DE-NUCLEO.md` |
+| **Aurora playbook futuros** | `docs/AURORA-CONOCIMIENTO.md` |
 
 ---
 
