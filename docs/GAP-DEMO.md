@@ -152,6 +152,9 @@ superficie / elevado) y la disciplina de contraste sobre fondo oscuro.
 | 8 | Calendario fiscal AEAT | Bajo | Alto | — |
 | — | Laboral / RRHH / equity | — | — | **Fuera de alcance** |
 
+Detalle ampliado (contabilidad, alquileres, OCR, multi-org, otras modalidades
+y enlaces futuros): **`docs/FUERA-DE-NUCLEO.md`**.
+
 Orden de ejecución recomendado: **1 → 2 → 3 → 6 → 4 → 5**.
 
 Los puntos 7 y 8 solo cobran sentido si el ecosistema se generaliza a "negocio
