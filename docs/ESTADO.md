@@ -65,8 +65,20 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 | 3 | Cola "Requiere tu atención" (vista derivada) | `src/lib/attention.ts`, `AttentionPanel.tsx` |
 | 4 | Tesorería adaptada (cobrado/pendiente/comprometido + gráficas) | `src/lib/treasury.ts`, `TreasuryPanel.tsx` |
 | 5 | Integración: sección `tesoreria` + atención en el cuadro de mando | `MpsCrmApp.tsx`, `roles.ts`, `i18n.ts` |
+| 6 | IA contextual cableada + prompts sugeridos (3→6) | `src/lib/ai/ask-bus.ts`, `MpsCrmApp.tsx` |
+| 7 | **Bandeja de Aprobaciones** (regla de oro hecha interfaz) | `src/lib/approvals.ts`, `ApprovalsPanel.tsx` |
+| 8 | Calendario fiscal AEAT (303/111/390/200) con importe estimado | `src/lib/fiscal-calendar.ts`, `FiscalCalendarPanel.tsx` |
 
-**Verificación automática:** lint, `npm test` (**68**), `npm run build` — limpios.
+**Verificación automática:** lint, `npm test` (**87**), `npm run build` — limpios.
+
+**Decisiones de alcance (no son olvidos):**
+- Runway y burn rate fuera: sin datos de gasto real serían cifras inventadas.
+- Modelos 111 y 200 sin importe: dependen de nóminas/contabilidad que no hay.
+- Laboral, RRHH y equity fuera: no aplica a un equipo de 4 personas.
+
+**Bug corregido en fase 8:** los vencimientos fiscales se construían con
+`new Date(y,m,d)` (hora local) y al serializar a ISO se desplazaban un día en
+España. Ahora se construyen en UTC a mediodía.
 
 **Validación visual (local, demo auth, 2026-08-08):**
 - Escritorio — cola de atención: **PASS** (filtros, badges, € en juego).
@@ -106,6 +118,9 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 | **Aurora — atención** | `src/lib/attention.ts`, `AttentionPanel.tsx` |
 | **Aurora — tesorería** | `src/lib/treasury.ts`, `TreasuryPanel.tsx`, `MobileCrmShell.tsx` (Más módulos) |
 | **Aurora — integración** | `MpsCrmApp.tsx`, `roles.ts`, `i18n.ts` |
+| **Aurora — IA contextual** | `src/lib/ai/ask-bus.ts` (canal + redacción de preguntas) |
+| **Aurora — aprobaciones** | `src/lib/approvals.ts`, `ApprovalsPanel.tsx` |
+| **Aurora — fiscal** | `src/lib/fiscal-calendar.ts`, `FiscalCalendarPanel.tsx` |
 
 ---
 
