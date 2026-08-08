@@ -5,7 +5,7 @@
 > memoria. El chat no es memoria: este archivo sí. Si el chat y el repo se
 > contradicen, **manda el repo**.
 
-**Última actualización:** 2026-08-02 · por Cursor · tip `main` `da16ff5`
+**Última actualización:** 2026-08-08 · por Claude Code · tip `feat/aurora-patterns`
 
 ---
 
@@ -13,7 +13,8 @@
 
 | Rama | Commit | Qué contiene |
 |---|---|---|
-| `main` | `da16ff5` | Producción. Móvil + lazo + **selector 4 modos**. |
+| `main` | `545aa04` | Producción. Móvil + lazo + **selector 4 modos**. |
+| `feat/aurora-patterns` | `32a50d4` | **Patrones de demo Aurora**: tokens 3 capas, KPI, cola de atención, tesorería. Sin fusionar. |
 | Producción | — | https://30mps.vercel.app |
 | Supabase | `gkskudxjuafsidqiiqpg` | **30mps** (eu-west-1). Lazo verificado. |
 
@@ -42,6 +43,22 @@
 | Se parece a quien reservó | ¿Como mis buenos? | coseno k=5 convertidores × decay |
 
 **Verificación:** `npm run lint`, `npm test` (47), `npm run build` — limpios.
+
+### Patrones Aurora (rama `feat/aurora-patterns` — NO fusionada)
+
+Análisis en `docs/GAP-DEMO.md` y `docs/GAP-DEMO-ANATOMIA.md`.
+Referencia conceptual: no hay código, marca ni assets de terceros.
+
+| Fase | Qué | Archivos |
+|---|---|---|
+| 1 | Tokens 3 capas (paleta → semántica → componente) + formateadores | `src/index.css`, `src/lib/format.ts` |
+| 2 | Primitivas: KPI, sparkline, badge, "EN ESTA VISTA", tabla jerárquica | `src/components/ui/**` |
+| 3 | Cola "Requiere tu atención" (vista derivada) | `src/lib/attention.ts`, `AttentionPanel.tsx` |
+| 4 | Tesorería adaptada (cobrado/pendiente/comprometido + gráficas) | `src/lib/treasury.ts`, `TreasuryPanel.tsx` |
+| 5 | Integración: sección `tesoreria` + atención en el cuadro de mando | `MpsCrmApp.tsx`, `roles.ts`, `i18n.ts` |
+
+**Verificación:** lint, `npm test` (**68**), `npm run build` — limpios.
+**Pendiente:** validación visual con sesión iniciada en el preview de Vercel.
 
 ---
 
@@ -74,8 +91,19 @@
 
 ## 6 · Siguiente tarea (UNA)
 
-> **Endurecer Auth Supabase:** desactivar alta pública y promover el primer
-> admin en `mps_profiles` (cuando exista usuario de equipo).
+> **Validar `feat/aurora-patterns` en el preview de Vercel** con sesión
+> iniciada: cuadro de mando (cola de atención) y sección Tesorería, en
+> escritorio y en móvil. Después decidir fusión.
+
+Después, en cola: endurecer Auth Supabase (desactivar alta pública y promover
+el primer admin en `mps_profiles`).
+
+### Plan B — repo público (fecha límite 2026-08-22)
+
+Si no hay contacto ni entrevista de 30 MPS, se generaliza y se publica:
+quitar marca, temática moto/4x4 y los PDF del business case ajeno; dejar un
+CRM genérico con motor de leads reutilizable. Los tokens de la fase 1 son
+justo lo que abarata ese rebrand: se edita la capa 1, no 44 componentes.
 
 ---
 
