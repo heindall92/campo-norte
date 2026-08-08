@@ -27,6 +27,7 @@ import { UnreadDot } from "@/components/UnreadDot";
 import {
   Bell,
   BookOpen,
+  ContactRound,
   Layers,
   CalendarDays,
   ClipboardList,
@@ -67,6 +68,7 @@ const MORE_SECTIONS: { id: AppSection; labelEs: string; labelEn: string; icon: L
   { id: "facturas", labelEs: "Facturas", labelEn: "Invoices", icon: FileText },
   { id: "tesoreria", labelEs: "Tesorería", labelEn: "Treasury", icon: Wallet },
   { id: "aprobaciones", labelEs: "Aprobaciones", labelEn: "Approvals", icon: ShieldCheck },
+  { id: "equipo", labelEs: "Equipo", labelEn: "Team", icon: ContactRound },
   { id: "contenido", labelEs: "Contenido", labelEn: "Content", icon: Sparkles },
   { id: "conocimiento", labelEs: "Conocimiento", labelEn: "Knowledge", icon: BookOpen },
   { id: "automatizaciones", labelEs: "Automatizaciones", labelEn: "Automations", icon: Workflow },
@@ -85,6 +87,7 @@ const SECTION_TITLE_KEY: Partial<Record<AppSection, string>> = {
   facturas: "nav_invoices",
   tesoreria: "nav_treasury",
   aprobaciones: "nav_approvals",
+  equipo: "nav_team",
   contenido: "nav_content",
   conocimiento: "nav_knowledge",
   automatizaciones: "nav_automations",

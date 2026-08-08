@@ -1,15 +1,7 @@
 import { useMemo, useState } from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 
+import { CashFlowChart } from "@/components/ui/CashFlowChart";
+import { ClosingProjection } from "@/components/ui/ClosingProjection";
 import { StatCard } from "@/components/ui/StatCard";
 import { StatusBadge, type StatusTone } from "@/components/ui/StatusBadge";
 import { ViewTotals } from "@/components/ui/ViewTotals";
@@ -17,6 +9,7 @@ import { ROUTE_LABEL } from "@/lib/demo-data";
 import { formatEur, formatDate } from "@/lib/format";
 import type { Lang } from "@/lib/i18n";
 import type { Invoice, Reservation } from "@/lib/ops-data";
+import { buildTeamOps } from "@/lib/team-ops";
 import {
   buildTreasury,
   deltaVsPrevious,
@@ -50,10 +43,6 @@ interface TreasuryPanelProps {
   className?: string;
 }
 
-function chartAxisStyle() {
-  return { fill: "var(--text-tertiary)", fontSize: 11 };
-}
-
 export function TreasuryPanel({
   invoices,
   reservations,
@@ -65,9 +54,18 @@ export function TreasuryPanel({
 }: TreasuryPanelProps) {
   const [filter, setFilter] = useState<Filter>("todos");
 
+  const team = useMemo(() => buildTeamOps(reservations), [reservations]);
+
   const snapshot = useMemo(
-    () => buildTreasury({ invoices, reservations, now }),
-    [invoices, reservations, now],
+    () =>
+      buildTreasury({
+        invoices,
+        reservations,
+        now,
+        teamCostByMonth: team.costByDepartureMonth,
+        teamPayable: team.pendingCost,
+      }),
+    [invoices, reservations, now, team],
   );
 
   const visible = useMemo(
@@ -80,8 +78,6 @@ export function TreasuryPanel({
 
   const view = useMemo(() => totalsForView(visible), [visible]);
 
-  // Delta del último mes cerrado frente al anterior: comparamos el mismo
-  // punto del periodo, no un mes a medias contra uno completo.
   const flow = snapshot.cashFlow;
   const lastClosed = flow.at(-2);
   const prevClosed = flow.at(-3);
@@ -90,6 +86,13 @@ export function TreasuryPanel({
 
   const sparkCollected = flow.map((p) => p.cobrado);
   const sparkPending = flow.map((p) => p.pendiente);
+
+  const chartData = flow.map((p) => ({
+    label: p.label,
+    entradas: p.cobrado,
+    salidas: p.salidas,
+    prevision: p.pendiente,
+  }));
 
   const counts: Record<Filter, number> = {
     todos: snapshot.movements.length,
@@ -100,7 +103,6 @@ export function TreasuryPanel({
 
   return (
     <div className={cn("space-y-5", className)}>
-      {/* ---------- Tarjetas KPI ---------- */}
       <div className="grid gap-4 sm:grid-cols-2">
         <StatCard
           title="Caja"
@@ -128,7 +130,7 @@ export function TreasuryPanel({
         <StatCard
           title="Cartera"
           lang={lang}
-          onAsk={onAsk ? () => onAsk("cartera comprometida") : undefined}
+          onAsk={onAsk ? () => onAsk("cartera y coste de equipo") : undefined}
           metrics={[
             {
               label: "Comprometido",
@@ -136,61 +138,40 @@ export function TreasuryPanel({
               helper: "Saldos de reservas futuras",
             },
             {
-              label: "Proyección de cierre",
-              value: formatEur(snapshot.projectedClose, lang),
-              helper: "Cobrado + por cobrar + comprometido",
+              label: "Coste equipo",
+              value: formatEur(snapshot.teamPayable, lang),
+              helper: "Por pagar operativo · expediciones abiertas",
+              lowerIsBetter: true,
             },
           ]}
-          footnote="La proyección asume que todo lo comprometido acaba cobrándose."
+          footnote="El coste de equipo se deriva de tour leaders × días · no es nómina."
         />
       </div>
 
-      {/* ---------- Flujo de caja ---------- */}
-      <section className="glass-panel rounded-2xl p-5">
-        <header className="mb-3">
-          <h3 className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>
-            Flujo de caja
-          </h3>
-          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            Cobrado y pendiente por mes · últimos {flow.length} meses.
-          </p>
-        </header>
-        <div style={{ height: 240 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={flow} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
-              <XAxis dataKey="label" tick={chartAxisStyle()} axisLine={false} tickLine={false} />
-              <YAxis
-                tick={chartAxisStyle()}
-                axisLine={false}
-                tickLine={false}
-                width={62}
-                tickFormatter={(v: number) => formatEur(v, lang)}
-              />
-              <Tooltip
-                cursor={{ fill: "var(--surface-hover)" }}
-                contentStyle={{
-                  background: "var(--surface-elevated)",
-                  border: "1px solid var(--border-default)",
-                  borderRadius: 12,
-                  color: "var(--text-primary)",
-                }}
-                formatter={(v) => formatEur(Number(v ?? 0), lang)}
-              />
-              <Legend wrapperStyle={{ fontSize: 12, color: "var(--text-secondary)" }} />
-              <Bar dataKey="cobrado" name="Cobrado" fill="var(--positive)" radius={[4, 4, 0, 0]} />
-              <Bar
-                dataKey="pendiente"
-                name="Pendiente"
-                fill="var(--warning)"
-                radius={[4, 4, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </section>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ClosingProjection
+          actual={snapshot.collected}
+          receivable={snapshot.receivable}
+          payable={snapshot.teamPayable}
+          lang={lang}
+          footnote={
+            lang === "es"
+              ? `Comprometido en reservas (aún no en cierre neto): ${formatEur(snapshot.committed, lang)}.`
+              : `Committed bookings (not in net close): ${formatEur(snapshot.committed, lang)}.`
+          }
+        />
+        <CashFlowChart
+          data={chartData}
+          lang={lang}
+          title={lang === "es" ? "Flujo de caja" : "Cash flow"}
+          subtitle={
+            lang === "es"
+              ? "Entradas, salidas de equipo y previsión · últimos meses."
+              : "Inflows, team outflows and forecast · recent months."
+          }
+        />
+      </div>
 
-      {/* ---------- Reparto por ruta ---------- */}
       {snapshot.byRoute.length > 0 ? (
         <section className="glass-panel rounded-2xl p-5">
           <header className="mb-3">
@@ -220,7 +201,7 @@ export function TreasuryPanel({
                     className="h-full rounded-full"
                     style={{
                       width: `${r.pct}%`,
-                      background: i === 0 ? "var(--accent)" : "var(--accent-2)",
+                      background: i === 0 ? "var(--chart-area)" : "var(--chart-area-2)",
                     }}
                   />
                 </div>
@@ -230,7 +211,6 @@ export function TreasuryPanel({
         </section>
       ) : null}
 
-      {/* ---------- Movimientos ---------- */}
       <section className="glass-panel rounded-2xl p-5">
         <header className="mb-4">
           <h3 className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>
@@ -312,8 +292,6 @@ export function TreasuryPanel({
                   >
                     {formatEur(m.amount, lang)}
                   </td>
-                  {/* Columna de acciones casi vacía a propósito: solo aparece
-                      cuando de verdad hay algo que hacer. */}
                   <td className="mps-num">
                     {onOpen && m.status !== "cobrado" ? (
                       <button

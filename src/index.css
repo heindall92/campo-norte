@@ -63,6 +63,10 @@ html[data-theme="light"] {
   --chip: rgba(255, 255, 255, 0.9);
   --chart: #2563eb;
   --chart-2: #0ea5e9;
+  /* Series económicas (estructura Aurora, paleta 30mps) */
+  --chart-in: var(--mps-green-600);
+  --chart-out: var(--mps-red-600);
+  --chart-forecast: var(--mps-amber-600);
   --header: rgba(232, 238, 242, 0.72);
   --danger: #b91c1c;
   --ok: #047857;
@@ -118,6 +122,9 @@ html[data-theme="dark"] {
   --chip: rgba(15, 23, 42, 0.85);
   --chart: #3b82f6;
   --chart-2: #38bdf8;
+  --chart-in: var(--mps-green-400);
+  --chart-out: var(--mps-red-400);
+  --chart-forecast: var(--mps-amber-300);
   --header: rgba(11, 18, 32, 0.72);
   --danger: #f87171;
   --ok: #34d399;
@@ -164,6 +171,21 @@ html[data-theme="dark"] {
   --kpi-delta-up-fg: var(--positive);
   --kpi-delta-down-fg: var(--negative);
   --kpi-spark-stroke: var(--chart);
+
+  --chart-grid: var(--border-subtle);
+  --chart-tick: var(--text-tertiary);
+  --chart-tooltip-bg: var(--surface-elevated);
+  --chart-tooltip-border: var(--border-default);
+  --chart-cursor: var(--surface-hover);
+  --chart-bar-in: var(--chart-in);
+  --chart-bar-out: var(--chart-out);
+  --chart-bar-forecast: var(--chart-forecast);
+  --chart-area: var(--chart);
+  --chart-area-2: var(--chart-2);
+
+  --projection-actual: var(--text-primary);
+  --projection-in: var(--positive);
+  --projection-out: var(--negative);
 
   --table-header-fg: var(--text-tertiary);
   --table-row-border: var(--border-subtle);

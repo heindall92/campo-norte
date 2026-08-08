@@ -5,7 +5,7 @@
 > memoria. El chat no es memoria: este archivo sí. Si el chat y el repo se
 > contradicen, **manda el repo**.
 
-**Última actualización:** 2026-08-08 · por Cursor · tip `feat/aurora-patterns` (= `cursor/aurora-patterns-2ebf`)
+**Última actualización:** 2026-08-08 · por Cursor · tip `feat/aurora-patterns` (= `cursor/aurora-patterns-2ebf`) · fase 10 económica/equipo
 
 ---
 
@@ -34,7 +34,7 @@
 
 ### Vista móvil
 - Inicio, Clientes / Reservas / Leads, fichas in-place, módulos en barra.
-- Tesorería y **Aprobaciones** en «Más módulos» (`MobileCrmShell`).
+- Tesorería, **Aprobaciones** y **Equipo** en «Más módulos» (`MobileCrmShell`).
 
 ### Lazo de leads
 - Ingesta + cron + `/captura` + decay. **Verde en prod** con Supabase.
@@ -69,14 +69,16 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 | 7 | **Bandeja de Aprobaciones** (regla de oro hecha interfaz) | `src/lib/approvals.ts`, `ApprovalsPanel.tsx` |
 | 8 | Calendario fiscal AEAT (303/111/390/200) con importe estimado | `src/lib/fiscal-calendar.ts`, `FiscalCalendarPanel.tsx` |
 | 9 | Heurística: ruta genérica (sin Mongolia hardcode), cap relación + cola estricta, umbral lead 2 días | `lead-scoring-core.ts`, `attention.ts` |
+| 10 | Dashboard/tesorería económicos + conexiones equipo (estructura Aurora, estética 30mps) | `ClosingProjection`, `CashFlowChart`, `team-ops.ts`, `TeamOpsPanel` |
 
-**Verificación automática:** lint, `npm test` (**96**), `npm run build` — limpios.
+**Verificación automática:** lint, `npm test` (**99**), `npm run build` — limpios.
 
 **Decisiones de alcance (no son olvidos):**
-- Runway y burn rate fuera: sin datos de gasto real serían cifras inventadas.
+- Runway/burn rate de empresa fuera: sin gasto bancario real. El “por pagar” operativo sí existe: coste de equipo estimado.
 - Modelos 111 y 200 sin importe: dependen de nóminas/contabilidad que no hay.
-- Laboral, RRHH y equity fuera: no aplica a un equipo de 4 personas.
+- Laboral RRHH genérico / equity fuera: en su lugar, **Equipo** = tour leader ↔ expedición ↔ dieta×días.
 - Aprobar en la bandeja cambia estado (localStorage); no publica al viajero (regla de oro).
+- Marca/assets de la demo Aurora: no se copian. Solo estructura, colores semánticos de gráficas y conexiones.
 
 **Bugs corregidos en esta rama:**
 - Fase 8: vencimientos fiscales en UTC (evita −1 día al serializar ISO en ES).
@@ -125,6 +127,8 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 | **Aurora — aprobaciones** | `src/lib/approvals.ts`, `ApprovalsPanel.tsx` |
 | **Aurora — fiscal** | `src/lib/fiscal-calendar.ts`, `FiscalCalendarPanel.tsx` |
 | **Aurora — scoring** | `src/lib/ai/lead-scoring-core.ts` |
+| **Aurora — gráficas/econ** | `ClosingProjection.tsx`, `CashFlowChart.tsx`, tokens `--chart-in/out/forecast` |
+| **Aurora — equipo** | `src/lib/team-ops.ts`, `TeamOpsPanel.tsx` |
 
 ---
 

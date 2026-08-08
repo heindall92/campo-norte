@@ -50,6 +50,8 @@ export interface CashFlowPoint {
   label: string;
   cobrado: number;
   pendiente: number;
+  /** Coste de equipo estimado en el mes de salida. */
+  salidas: number;
 }
 
 export interface RouteRevenue {
@@ -68,8 +70,12 @@ export interface TreasurySnapshot {
   overdue: number;
   /** Reservas futuras aún no facturadas del todo. */
   committed: number;
-  /** collected + receivable + committed */
+  /** Coste de equipo pendiente (conexiones tour leader ↔ expedición). */
+  teamPayable: number;
+  /** collected + receivable + committed (bruto). */
   projectedClose: number;
+  /** collected + receivable − teamPayable (cierre neto operativo). */
+  projectedCloseNet: number;
   cashFlow: CashFlowPoint[];
   byRoute: RouteRevenue[];
 }
@@ -82,6 +88,10 @@ export interface BuildTreasuryInput {
   dueDays?: number;
   /** Meses hacia atrás en la serie de flujo de caja. */
   months?: number;
+  /** Coste de equipo por mes de salida ("YYYY-MM" → €). */
+  teamCostByMonth?: Record<string, number>;
+  /** Coste de equipo pendiente total (expediciones abiertas). */
+  teamPayable?: number;
 }
 
 const DEFAULT_DUE_DAYS = 30;
@@ -186,16 +196,23 @@ function movementsFromReservations(reservations: Reservation[]): Movement[] {
  * Series
  * ------------------------------------------------------------------ */
 
-function buildCashFlow(movements: Movement[], now: Date, months: number): CashFlowPoint[] {
+function buildCashFlow(
+  movements: Movement[],
+  now: Date,
+  months: number,
+  teamCostByMonth: Record<string, number> = {},
+): CashFlowPoint[] {
   const buckets = new Map<string, CashFlowPoint>();
 
   for (let i = months - 1; i >= 0; i -= 1) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    buckets.set(monthKey(d), {
-      month: monthKey(d),
+    const key = monthKey(d);
+    buckets.set(key, {
+      month: key,
       label: monthLabel(d),
       cobrado: 0,
       pendiente: 0,
+      salidas: teamCostByMonth[key] ?? 0,
     });
   }
 
@@ -257,14 +274,19 @@ export function buildTreasury(input: BuildTreasuryInput): TreasurySnapshot {
     }
   }
 
+  const teamPayable = input.teamPayable ?? 0;
+  const projectedClose = collected + receivable + committed;
+
   return {
     movements,
     collected,
     receivable,
     overdue,
     committed,
-    projectedClose: collected + receivable + committed,
-    cashFlow: buildCashFlow(movements, now, months),
+    teamPayable,
+    projectedClose,
+    projectedCloseNet: collected + receivable - teamPayable,
+    cashFlow: buildCashFlow(movements, now, months, input.teamCostByMonth),
     byRoute: buildByRoute(movements),
   };
 }

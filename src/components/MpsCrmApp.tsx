@@ -105,6 +105,11 @@ import {
   requestAsk,
 } from "@/lib/ai/ask-bus";
 import { TreasuryPanel } from "@/components/TreasuryPanel";
+import { TeamOpsPanel } from "@/components/TeamOpsPanel";
+import { CashFlowChart } from "@/components/ui/CashFlowChart";
+import { ClosingProjection } from "@/components/ui/ClosingProjection";
+import { buildTeamOps } from "@/lib/team-ops";
+import { buildTreasury } from "@/lib/treasury";
 import {
   applyUserPrefsToDocument,
   loadUserPrefs,
@@ -163,6 +168,7 @@ import {
   Upload,
   Users,
   ShieldCheck,
+  ContactRound,
   UsersRound,
   Wallet,
   Workflow,
@@ -196,6 +202,7 @@ const NAV_IDS: { id: Section; icon: typeof LayoutDashboard; labelKey: string }[]
   { id: "facturas", icon: FileText, labelKey: "nav_invoices" },
   { id: "tesoreria", icon: Wallet, labelKey: "nav_treasury" },
   { id: "aprobaciones", icon: ShieldCheck, labelKey: "nav_approvals" },
+  { id: "equipo", icon: ContactRound, labelKey: "nav_team" },
   { id: "contenido", icon: Sparkles, labelKey: "nav_content" },
   { id: "conocimiento", icon: BookOpen, labelKey: "nav_knowledge" },
   { id: "automatizaciones", icon: Workflow, labelKey: "nav_automations" },
@@ -1570,6 +1577,31 @@ function ApprovalsSection({ lang }: { lang: Lang }) {
   );
 }
 
+function TeamSection({ lang }: { lang: Lang }) {
+  const hub = useDataHub();
+  return (
+    <div className="space-y-5">
+      <header>
+        <h2 className="text-2xl font-semibold" style={{ color: "var(--text-primary)" }}>
+          {t(lang, "nav_team")}
+        </h2>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+          {lang === "es"
+            ? "Conexiones guía/ops ↔ expedición ↔ coste estimado. Sin nóminas inventadas."
+            : "Guide/ops ↔ trip ↔ estimated cost links. No invented payroll."}
+        </p>
+      </header>
+      <TeamOpsPanel
+        reservations={hub.reservations}
+        lang={lang}
+        onOpenReservation={() =>
+          window.dispatchEvent(new CustomEvent("mps-navigate", { detail: "reservas" }))
+        }
+      />
+    </div>
+  );
+}
+
 function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
   const hub = useDataHub();
   const isMobile = useIsMobile();
@@ -1579,34 +1611,44 @@ function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
   const progress = progressToMillion();
   const dark = theme === "dark";
   const colors = dark ? ORIGIN_COLORS_DARK : ORIGIN_COLORS_LIGHT;
-  const chart = dark ? "#2dd4bf" : "#0f766e";
-  const chart2 = dark ? "#38bdf8" : "#0369a1";
-  const grid = dark ? "#334155" : "#e2e8f0";
-  const tick = dark ? "#94a3b8" : "#64748b";
+  const chart = "var(--chart-area)";
+  const chart2 = "var(--chart-area-2)";
+  const grid = "var(--chart-grid)";
+  const tick = "var(--chart-tick)";
   const chartTooltip = {
     contentStyle: {
-      background: dark ? "rgba(15, 23, 42, 0.96)" : "rgba(255, 255, 255, 0.98)",
-      border: `1px solid ${dark ? "rgba(148, 163, 184, 0.28)" : "rgba(15, 23, 42, 0.12)"}`,
+      background: "var(--chart-tooltip-bg)",
+      border: "1px solid var(--chart-tooltip-border)",
       borderRadius: 12,
-      color: dark ? "#f1f5f9" : "#0f172a",
-      boxShadow: dark
-        ? "0 14px 32px rgba(0,0,0,0.45)"
-        : "0 10px 24px rgba(15, 23, 42, 0.12)",
+      color: "var(--text-primary)",
       padding: "10px 12px",
     },
     labelStyle: {
-      color: dark ? "#f8fafc" : "#0f172a",
+      color: "var(--text-primary)",
       fontWeight: 700,
       marginBottom: 6,
     },
     itemStyle: {
-      color: dark ? "#e2e8f0" : "#334155",
+      color: "var(--text-secondary)",
       fontSize: 12,
     },
     cursor: {
-      fill: dark ? "rgba(148, 163, 184, 0.12)" : "rgba(15, 23, 42, 0.05)",
+      fill: "var(--chart-cursor)",
     },
   } as const;
+  const team = buildTeamOps(hub.reservations);
+  const treasury = buildTreasury({
+    invoices: hub.invoices,
+    reservations: hub.reservations,
+    teamCostByMonth: team.costByDepartureMonth,
+    teamPayable: team.pendingCost,
+  });
+  const cashChart = treasury.cashFlow.map((p) => ({
+    label: p.label,
+    entradas: p.cobrado,
+    salidas: p.salidas,
+    prevision: p.pendiente,
+  }));
   const chartRevenue = MONTHLY_KPIS.map((m) => ({
     month: m.month,
     revenue: m.revenue,
@@ -1694,6 +1736,28 @@ function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
           window.dispatchEvent(new CustomEvent("mps-navigate", { detail: target }));
         }}
       />
+
+      {!isMobile && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <ClosingProjection
+            actual={treasury.collected}
+            receivable={treasury.receivable}
+            payable={treasury.teamPayable}
+            lang={lang}
+          />
+          <CashFlowChart
+            data={cashChart}
+            lang={lang}
+            height={220}
+            title={lang === "es" ? "Caja y previsión" : "Cash and forecast"}
+            subtitle={
+              lang === "es"
+                ? "Misma estructura que Tesorería · entradas / equipo / previsión."
+                : "Same structure as Treasury · inflows / team / forecast."
+            }
+          />
+        </div>
+      )}
 
       <div className="grid gap-5 lg:grid-cols-3">
         <Card
@@ -3620,6 +3684,7 @@ export function MpsCrmApp() {
       {section === "facturas" && <InvoicesVerifactuPanel lang={lang} />}
       {section === "tesoreria" && <TreasurySection lang={lang} />}
       {section === "aprobaciones" && <ApprovalsSection lang={lang} />}
+      {section === "equipo" && <TeamSection lang={lang} />}
       {section === "contenido" && <ContentFactoryPanel lang={lang} />}
       {section === "conocimiento" && <KnowledgePanel lang={lang} />}
       {section === "automatizaciones" && <AutomationsPanel lang={lang} />}

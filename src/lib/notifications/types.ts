@@ -17,6 +17,7 @@ export type AppSection =
   | "facturas"
   | "tesoreria"
   | "aprobaciones"
+  | "equipo"
   | "contenido"
   | "conocimiento"
   | "automatizaciones"
