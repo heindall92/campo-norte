@@ -92,6 +92,15 @@ import { SupportCard } from "@/components/SupportCard";
 import { SupportModal } from "@/components/SupportModal";
 import { UsersDirectoryPanel } from "@/components/UsersDirectoryPanel";
 import { AttentionPanel } from "@/components/AttentionPanel";
+import {
+  askAboutInvoice,
+  askAboutLead,
+  askAboutReservation,
+  askAboutTopic,
+  consumePendingAsk,
+  onAskRequested,
+  requestAsk,
+} from "@/lib/ai/ask-bus";
 import { TreasuryPanel } from "@/components/TreasuryPanel";
 import {
   applyUserPrefsToDocument,
@@ -1518,7 +1527,12 @@ function TreasurySection({ lang }: { lang: Lang }) {
             : "Collected, receivable and committed. No bank connected: everything is derived from invoices and bookings."}
         </p>
       </header>
-      <TreasuryPanel invoices={hub.invoices} reservations={hub.reservations} lang={lang} />
+      <TreasuryPanel
+        invoices={hub.invoices}
+        reservations={hub.reservations}
+        lang={lang}
+        onAsk={(topic) => requestAsk(askAboutTopic(topic))}
+      />
     </div>
   );
 }
@@ -1632,6 +1646,20 @@ function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
         invoices={hub.invoices}
         avgTicket={MPS_ANNEX.revenueCurrent / Math.max(1, MPS_ANNEX.travelersCurrent)}
         lang={lang}
+        onAsk={(item) => {
+          const q =
+            item.source === "lead"
+              ? askAboutLead(item.title, item.reason)
+              : item.source === "reserva"
+                ? askAboutReservation(item.title, item.reason)
+                : askAboutInvoice(item.title, item.reason);
+          requestAsk(q);
+        }}
+        onResolve={(item) => {
+          const target: Section =
+            item.source === "lead" ? "leads" : item.source === "reserva" ? "reservas" : "facturas";
+          window.dispatchEvent(new CustomEvent("mps-navigate", { detail: target }));
+        }}
       />
 
       <div className="grid gap-5 lg:grid-cols-3">
@@ -2625,6 +2653,22 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
     return () => window.removeEventListener("mps-hub-refreshed", onHubRefresh);
   }, []);
 
+  // IA contextual: recoge la pregunta lanzada desde una tarjeta o una fila.
+  // `runAskRef` evita meter runAsk en las dependencias y reejecutar el efecto
+  // en cada render.
+  const runAskRef = useRef<(q?: string) => void>(() => {});
+  useEffect(() => {
+    function launch(q: string) {
+      setTab("ask");
+      setQuestion(q);
+      void runAskRef.current(q);
+    }
+    // Pendiente dejada antes de que este panel existiera (navegación).
+    const queued = consumePendingAsk();
+    if (queued) launch(queued);
+    return onAskRequested(launch);
+  }, []);
+
   const [active, setActive] = useState(0);
   const [cat, setCat] = useState<"all" | KnowledgeItem["category"]>("all");
   const filtered =
@@ -2641,17 +2685,26 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
     { id: "stack", label: "Stack" },
   ];
 
+  // Prompts sugeridos: un cursor vacío no dice qué sabe hacer el asistente.
+  // Cubren las tres cosas que de verdad se preguntan: coste, operativa y
+  // dinero — no ejemplos decorativos.
   const examples =
     lang === "es"
       ? [
           "¿Cuánto costó Mongolia 2025?",
           "¿Qué hotel usamos en Namibia?",
           "¿Cuál fue el margen medio de Alaska?",
+          "¿Qué leads debería llamar hoy y por qué?",
+          "¿Qué reservas salen este mes con saldo pendiente?",
+          "¿Qué facturas llevan más de 30 días sin cobrar?",
         ]
       : [
           "How much did Mongolia 2025 cost?",
           "Which hotel did we use in Namibia?",
           "What was Alaska’s average margin?",
+          "Which leads should I call today, and why?",
+          "Which trips depart this month with money outstanding?",
+          "Which invoices are over 30 days uncollected?",
         ];
 
   function persistDocs(next: KnowledgeDoc[]) {
@@ -2679,6 +2732,8 @@ function KnowledgePanel({ lang }: { lang: Lang }) {
       setAsking(false);
     }
   }
+
+  runAskRef.current = runAsk;
 
   function addDoc() {
     if (!docForm.title.trim() || !docForm.content.trim()) return;
