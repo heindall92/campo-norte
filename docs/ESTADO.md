@@ -5,7 +5,7 @@
 > memoria. El chat no es memoria: este archivo sí. Si el chat y el repo se
 > contradicen, **manda el repo**.
 
-**Última actualización:** 2026-08-08 · por Cursor · tip `cursor/aurora-patterns-2ebf` · fases 1–12 · memoria fuera-de-núcleo
+**Última actualización:** 2026-08-08 · por Cursor · tip `cursor/aurora-patterns-2ebf` · fases 1–13 · memoria fuera-de-núcleo
 
 ---
 
@@ -14,8 +14,8 @@
 | Rama | Commit | Qué contiene |
 |---|---|---|
 | `main` | `1c360c2` | Producción. Móvil + lazo + selector 4 modos + analytics demo. |
-| `feat/aurora-patterns` | tip | Espejo local de patrones Aurora 1–12. Preview Vercel. Sin fusionar. |
-| `cursor/aurora-patterns-2ebf` | tip | PR Cloud #6 · patrones Aurora 1–12. |
+| `feat/aurora-patterns` | tip | Espejo local de patrones Aurora 1–13. Preview Vercel. Sin fusionar. |
+| `cursor/aurora-patterns-2ebf` | tip | PR Cloud #6 · patrones Aurora 1–13. |
 | Producción | — | https://30mps.vercel.app |
 | Preview Aurora | — | https://30mps-git-feat-aurora-patterns-heindall92.vercel.app |
 | Supabase | `gkskudxjuafsidqiiqpg` | **30mps** (eu-west-1). Lazo verificado. |
@@ -140,6 +140,8 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 | **Aurora — integraciones/uso** | `src/lib/integrations.ts`, `IntegrationsPanel.tsx`, pestaña Uso en Ajustes |
 | **Aurora — caja/alertas** | `upcoming-cash.ts`, `UpcomingCashPanel.tsx`, `invoice-alerts.ts` |
 | **Aurora — IA threads** | `src/lib/ai/threads.ts`, `AiContextDrawer.tsx`, KnowledgePanel |
+| **Aurora — IA global/stream** | `AiAssistantHost.tsx`, `chat-stream.ts`, `askKnowledgeStream`, FAB `DraggableAiFab` |
+| **Aurora — decay fecha / vistas** | `coldByDate/Label`, ViewTotals leads·reservas·clientes, toggle detalle score |
 | **Fuera de núcleo (memoria)** | `docs/FUERA-DE-NUCLEO.md` |
 
 ---
