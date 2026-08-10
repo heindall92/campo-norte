@@ -16,7 +16,7 @@ interface TeamOpsPanelProps {
 
 /**
  * Equipo operativo — conexiones persona ↔ expedición ↔ coste estimado.
- * Traducción a 30 MPS del patrón "Laboral" de la demo de referencia,
+ * Traducción a Campo Norte del patrón "Laboral" de la demo de referencia,
  * sin nóminas ni equity inventados.
  */
 export function TeamOpsPanel({

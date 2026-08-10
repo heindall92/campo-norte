@@ -21,7 +21,7 @@ function baseLead(over: Partial<Lead> = {}): Lead {
     status: "nuevo",
     score: 0,
     scoreReasons: [],
-    owner: "Miguel",
+    owner: "Sofía",
     createdAt: "2026-01-01",
     lastTouchAt: "2026-01-01",
     ...over,

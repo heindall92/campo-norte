@@ -17,7 +17,7 @@ interface AiContextDrawerProps {
 
 /**
  * Panel lateral de IA contextual — glow + pasos «Trabajando…».
- * Anatomía de la demo; tokens/estética 30mps.
+ * Anatomía de la demo; tokens/estética camponorte.
  */
 export function AiContextDrawer({
   lang = "es",
@@ -67,7 +67,7 @@ export function AiContextDrawer({
             </span>
             <div>
               <p className="text-sm font-semibold">
-                {title ?? (lang === "es" ? "Asistente 30 MPS" : "30 MPS assistant")}
+                {title ?? (lang === "es" ? "Asistente Campo Norte" : "Campo Norte assistant")}
               </p>
               <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
                 {thinking

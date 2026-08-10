@@ -10,7 +10,7 @@ import { useState, type FormEvent } from "react";
  *
  * Envía a `POST /api/leads/ingest`, que valida, deduplica, cruza con la cartera
  * y puntúa en el servidor. Es el formulario que controlamos nosotros: el de
- * 30mps.com solo tendría que apuntar al mismo endpoint.
+ * example.com solo tendría que apuntar al mismo endpoint.
  *
  * La clave de ingesta NO vive aquí. El navegador llama a `/api/leads/ingest`
  * desde el mismo origen y es la función quien exige la credencial; publicar la
@@ -113,7 +113,7 @@ export function LeadCaptureForm() {
       <div className="mx-auto flex w-full max-w-xl flex-col gap-5">
         <header className="flex flex-col gap-2">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--accent)]">
-            30 MPS Adventures
+            Campo Norte
           </p>
           <h1 className="font-[family-name:var(--mps-display)] text-3xl text-[var(--ink)]">
             Cuéntanos qué ruta te mueve

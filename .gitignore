@@ -30,7 +30,7 @@ dist-ssr
 Hero Login.mp4
 Home-Page-v4.mov
 *.mov
-Propuesta Empresarial 30MPS Yoandy Ramirez Delgado.pptx
+Propuesta Empresarial CAMPONORTE Equipo demo.pptx
 
 # PNG fuente de diapositivas (~20 MB); el CRM sirve public/deck/slides/*.jpg
 /slides/
@@ -40,13 +40,13 @@ Propuesta Empresarial 30MPS Yoandy Ramirez Delgado.pptx
 .env.*
 !.env.example
 
-# --- Material confidencial de 30 MPS (NDA) ---
+# --- Material confidencial de Campo Norte (NDA) ---
 # Documentación que nos entregó el cliente. Nunca debe entrar al repositorio,
 # ni siquiera siendo privado. Se mantiene en local, fuera de git.
-/30MPS_BusinessCase_Evolve*.pdf
-/30MPS_Presentacion_Corporativa*.pdf
-/30MPS_Growth_Builder_Job_Description*.pdf
-/30MPS_NDA*.pdf
+/CAMPONORTE_BusinessCase_Evolve*.pdf
+/CAMPONORTE_Presentacion_Corporativa*.pdf
+/CAMPONORTE_Growth_Builder_Job_Description*.pdf
+/CAMPONORTE_NDA*.pdf
 
 # --- Material de trabajo propio, pesado o duplicado ---
 # El deck servido por la app vive en public/deck/. Esto son las fuentes.

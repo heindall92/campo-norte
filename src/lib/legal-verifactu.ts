@@ -1,7 +1,7 @@
 /**
  * Marco legal Veri*FACTU / facturación agencia de viajes (ES).
  * Citas para demo interna y paquete de exportación a gestoría.
- * No sustituye asesoramiento fiscal: validar con gestoría de 30 MPS.
+ * No sustituye asesoramiento fiscal: validar con gestoría de Campo Norte.
  */
 
 export interface LegalCitation {

@@ -1,6 +1,6 @@
 # Fuera de núcleo — memoria de alcance y enlaces futuros
 
-> **Memoria entre agentes.** Lo que no entra en el Growth OS de 30 MPS
+> **Memoria entre agentes.** Lo que no entra en el Growth OS de Campo Norte
 > (núcleo = **viajes + leads**) no se borra de la cabeza: se archiva aquí
 > con el *por qué*, el *sustituto actual* y el *enlace estructural* por si
 > otro producto, vertical o fase posterior puede aprovecharlo.
@@ -36,12 +36,12 @@ conectaría más adelante.
 
 ## 1 · Dejar fuera (explícito)
 
-| Ámbito | Qué es (patrón de producto) | Por qué fuera del núcleo | Sustituto hoy en 30 MPS | Enlace futuro (si algún día) |
+| Ámbito | Qué es (patrón de producto) | Por qué fuera del núcleo | Sustituto hoy en Campo Norte | Enlace futuro (si algún día) |
 |---|---|---|---|---|
 | **Laboral / RRHH** | Empleados, fichajes, coste salarial, organigrama | No operamos empleo; operamos guías y prep de viaje | `team-ops.ts` · Equipo (dieta × días × salida) | Módulo aparte o integración con software laboral; el *enlace* sería `person ↔ reservationId ↔ cost` ya modelado |
 | **Equity / cap table** | Participaciones, dilución, vesting | Modalidad de startup/holding, no de turoperación | — | Producto distinto; no mezclar con CRM de viajeros |
 | **Contabilidad completa** | Asientos, PGC, conciliación bancaria, libro diario | Gestoría + AEAT; nosotros estimamos, no presentamos | Fiscal estimado (`fiscal-calendar.ts`), P&G **operativo** (`pnl.ts`), export gestoría | Puente CSV/API hacia Holded/A3/gestor; mantener `basis` auditable |
-| **Alquileres / inmobiliario** | Contratos de renta, vencimientos de local, fianza | Otra economía (asset-heavy); 30 MPS vende plazas de viaje | — | Si hubiera local propio: un `UpcomingMovement` de tipo `pago_fijo` reutilizando anatomía de caja |
+| **Alquileres / inmobiliario** | Contratos de renta, vencimientos de local, fianza | Otra economía (asset-heavy); Campo Norte vende plazas de viaje | — | Si hubiera local propio: un `UpcomingMovement` de tipo `pago_fijo` reutilizando anatomía de caja |
 | **OCR de facturas** | Digitalizar PDF proveedor → asiento / pago | Sin pipeline de docs proveedor ni compliance OCR | Registro manual / extracto en Knowledge; Drive como carpeta humana | Integración Drive → cola de aprobación (mismo patrón que `ApprovalsPanel`) antes de tocar caja |
 | **Multi-org / multi-tenant** | Varias empresas en un login, switching de contexto | Un Hub, una marca, un equipo ops | Roles internos (`mps_profiles`) | Schema `org_id` + RLS Supabase; no diseñar hasta haber 2 orgs reales |
 | **Runway / burn rate** | Meses de caja con gasto fijo de empresa | Sin banco ni gasto recurrente modelado | Cierre proyectado **operativo** (`ClosingProjection` / tesorería) | Cuando haya feed bancario o gastos fijos reales, misma gráfica con serie `out` alimentada de verdad |
@@ -53,15 +53,15 @@ conectaría más adelante.
 ## 2 · Otras modalidades económicas (referencia, no implementar)
 
 Patrones vistos en back-offices “empresa 5→50” que **no son viajes+leads**.
-Se guardan como *anatomía reutilizable*, no como backlog de 30 MPS.
+Se guardan como *anatomía reutilizable*, no como backlog de Campo Norte.
 
-| Modalidad | Anatomía aprovechable | Dónde ya vive un eco en 30 MPS | Cuándo reabrir |
+| Modalidad | Anatomía aprovechable | Dónde ya vive un eco en Campo Norte | Cuándo reabrir |
 |---|---|---|---|
 | Categorías de gasto genéricas (oficina, SaaS, marketing) | Árbol gasto → % del total → drill-down | P&G operativo por expedición / canal de cobro | Solo si el Hub guarda gastos reales (no inventados) |
 | Contactos financieros (proveedores/acreedores) | Ficha + saldo + vencimiento | Cliente viajero + factura; logística en reserva | Proveedores de ruta podrían ser entidad `supplier` enlazada a expedición |
 | Conciliación bancaria | Match movimiento ↔ factura | `paymentRef` / canal en factura | Open banking o CSV banco → cola “Requiere tu atención” |
 | Multi-sociedad / holdings | Switcher de org + permisos | Roles owner/admin/member | Segunda marca o franquicia real |
-| Marketplace / comisiones a terceros | Split de margen | Margen por ruta en scoring / KPIs | Si 30 MPS cobra comisión a partners |
+| Marketplace / comisiones a terceros | Split de margen | Margen por ruta en scoring / KPIs | Si Campo Norte cobra comisión a partners |
 | Suscripción SaaS (MRR, churn) | Cohort + MRR chart | — | Plan B repo público / producto genérico, no núcleo moto |
 | Inventario / flota (motos, 4x4) | Activo ↔ disponibilidad ↔ coste | `vehicle` en reserva (modo, no inventario) | Si se gestiona parque propio |
 | Seguros / siniestros | Póliza ↔ reserva ↔ reclamación | Docs en Knowledge | Solo con datos reales de póliza |
@@ -73,7 +73,7 @@ Se guardan como *anatomía reutilizable*, no como backlog de 30 MPS.
 Para no reabrir debates: lo aprovechado ya está en la rama Aurora 1–13b.
 Detalle canónico: `docs/AURORA-CONOCIMIENTO.md`.
 
-| Anatomía | Aplicación en 30 MPS | Archivos |
+| Anatomía | Aplicación en Campo Norte | Archivos |
 |---|---|---|
 | Cola “requiere atención” | Leads/cobros/ops urgentes | `attention.ts`, `AttentionPanel` |
 | Aprobación humana | Content / propuestas IA | `approvals.ts`, `ApprovalsPanel` |
@@ -98,7 +98,7 @@ Detalle canónico: `docs/AURORA-CONOCIMIENTO.md`.
 2. Debe respetar la **regla de oro**: nada escribe al viajero solo.
 3. Preferir **módulo satélite o integración** frente a hinchar el CRM de viajes.
 4. Si el patrón es de otra economía (equity, inmobiliario, SaaS MRR), valorar
-   **repo/producto aparte** (p. ej. Plan B genérico) en lugar de contaminar 30 MPS.
+   **repo/producto aparte** (p. ej. Plan B genérico) en lugar de contaminar Campo Norte.
 5. Actualizar esta tabla al implementar o descartar con fecha y motivo.
 
 ---

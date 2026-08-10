@@ -240,7 +240,7 @@ async function classifyCustomerWithOllama(c: Client): Promise<CustomerIntelligen
       {
         role: "system",
         content: [
-          "Eres el motor de Customer Intelligence de 30 MPS Adventures (viajes premium moto/4x4).",
+          "Eres el motor de Customer Intelligence de Campo Norte (viajes premium moto/4x4).",
           "SOLO clasificas clientes para el equipo interno. PROHIBIDO redactar mensajes al cliente, emails o WhatsApp.",
           "Segmentos válidos: activo, recurrente, dormido, vip, embajador, en_riesgo, prospecto_newsletter.",
           "Status válidos: al_dia, seguimiento, dormido, alta_prioridad.",

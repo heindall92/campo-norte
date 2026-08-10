@@ -1,5 +1,5 @@
 /**
- * Catálogo de integraciones del ecosistema 30 MPS.
+ * Catálogo de integraciones del ecosistema Campo Norte.
  * Misma anatomía que la demo de referencia (tarjeta + estado + Conectar),
  * con herramientas reales del Growth OS — no las de terceros ajenos.
  */

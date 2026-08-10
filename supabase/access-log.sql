@@ -1,5 +1,5 @@
 -- Analítica propia de accesos (alternativa gratis a Vercel Analytics)
--- Ejecutar UNA vez en el SQL Editor de Supabase del proyecto 30 MPS.
+-- Ejecutar UNA vez en el SQL Editor de Supabase del proyecto demo Campo Norte.
 
 create table if not exists public.mps_access_log (
   id uuid primary key default gen_random_uuid(),

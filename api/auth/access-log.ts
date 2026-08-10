@@ -4,7 +4,7 @@
  *
  * Analítica propia (gratis): la IP sale de x-forwarded-for de Vercel,
  * nunca del body del cliente. Sustituye Vercel Analytics de pago para
- * saber si Miguel / Evolve / revisores entraron y vieron la propuesta.
+ * saber si revisores demo entraron y vieron la propuesta.
  *
  * Persistencia: Supabase `mps_access_log` con SUPABASE_SERVICE_ROLE_KEY.
  * Si falta la key, responde 503 (el cliente puede cachear en local).
@@ -107,9 +107,9 @@ function guard(headers: ReqHeaders, max: number): { ok: boolean; status: number;
 
 function orgTag(email: string): string {
   const domain = (email.split("@")[1] ?? "").toLowerCase();
-  if (domain === "30mps.com") return "30 MPS";
+  if (domain === "example.com") return "Campo Norte";
   if (domain.includes("evolve")) return "Evolve";
-  if (domain.includes("heindall") || domain.includes("yoandy")) return "Heindall";
+  if (domain.includes("camponorte") || domain.includes("demo")) return "Heindall";
   if (!domain) return "Desconocido";
   return "Externo";
 }

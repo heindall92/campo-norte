@@ -36,7 +36,7 @@ function axisTick() {
 /**
  * Flujo de caja con la estructura de la demo de referencia:
  * entradas (verde) · salidas (rojo) · previsión (ámbar).
- * Colores vía tokens --chart-bar-*; estética glass 30mps.
+ * Colores vía tokens --chart-bar-*; estética glass camponorte.
  */
 export function CashFlowChart({
   data,

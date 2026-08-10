@@ -1,4 +1,4 @@
-# Auditoría de seguridad — 30 MPS Growth OS
+# Auditoría de seguridad — Campo Norte Growth OS
 
 > Revisión interna del entorno de demostración antes de exponerlo.
 > Alcance: autenticación, autorización (RLS), endpoints `/api`, tratamiento de
@@ -132,7 +132,7 @@ conectar datos reales:
    *"Allow new users to sign up"*. El equipo se da de alta por invitación.
 2. **Ejecutar el `schema.sql` actualizado** y promover al primer administrador:
    ```sql
-   update public.mps_profiles set role = 'admin' where email = 'miguel@30mps.com';
+   update public.mps_profiles set role = 'admin' where email = 'sofia@camponorte.demo';
    ```
    Sin este paso nadie ve nada — es el comportamiento correcto.
 3. **Vercel → Environment Variables:** definir `ALLOWED_ORIGINS` con el dominio

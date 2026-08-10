@@ -234,7 +234,7 @@ async function synthesizeWithAi(
       {
         role: "system",
         content: [
-          "Eres el Knowledge Assistant interno de 30 MPS Adventures (solo equipo).",
+          "Eres el Knowledge Assistant interno de Campo Norte (solo equipo).",
           "Responde en español con hechos del CONTEXTO. Si no está en el contexto, dilo claramente («no está en el sistema»).",
           "PROHIBIDO redactar mensajes al cliente o inventar hoteles/márgenes no citados.",
           "Devuelve JSON: answer (string), sources (array de strings de fuentes usadas), why (array de 2-3 razones de por qué importa al CEO).",
@@ -370,7 +370,7 @@ export async function askKnowledgeStream(
         {
           role: "system",
           content: [
-            "Eres el Knowledge Assistant interno de 30 MPS Adventures (solo equipo).",
+            "Eres el Knowledge Assistant interno de Campo Norte (solo equipo).",
             "Responde en español, breve (bullets o tabla). Solo hechos del CONTEXTO.",
             "Si no está en el contexto, dilo («no está en el sistema»).",
             "PROHIBIDO redactar mensajes al viajero o inventar datos.",

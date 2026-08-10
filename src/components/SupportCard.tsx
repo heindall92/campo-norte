@@ -9,8 +9,8 @@ export function SupportCard({ lang }: { lang: Lang }) {
       title={lang === "es" ? "Soporte" : "Support"}
       subtitle={
         lang === "es"
-          ? "Ayuda interna del Growth OS · equipo 30 MPS"
-          : "Internal Growth OS help · 30 MPS team"
+          ? "Ayuda interna del Growth OS · equipo Campo Norte"
+          : "Internal Growth OS help · Campo Norte team"
       }
     >
       <div className="space-y-4">
@@ -26,12 +26,12 @@ export function SupportCard({ lang }: { lang: Lang }) {
         </div>
         <div className="grid gap-2 sm:grid-cols-2">
           <a
-            href="https://30mps.com"
+            href={COMPANY.website}
             target="_blank"
             rel="noreferrer"
             className="mps-choice flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-[var(--accent)]"
           >
-            <span>{lang === "es" ? "Web · 30 MPS" : "Website · 30 MPS"}</span>
+            <span>{lang === "es" ? `Web · ${COMPANY.name}` : `Website · ${COMPANY.name}`}</span>
             <ExternalLink className="h-4 w-4" />
           </a>
           <a

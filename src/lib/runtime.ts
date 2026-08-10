@@ -29,7 +29,7 @@ export function allowClientAiKeys(): boolean {
 }
 
 /**
- * ¿Login demo con usuarios embebidos (miguel@ / 30mps2026…)?
+ * ¿Login demo con usuarios embebidos (sofia@ / norte2026…)?
  *
  * Orden de decisión:
  *  1. `VITE_STRICT_AUTH=true`  → nunca.

@@ -40,7 +40,7 @@ export function blankReservation(): Reservation {
     depositPaid: 0,
     paymentChannel: "transferencia",
     paymentRefs: [],
-    tourLeader: "David Rodríguez",
+    tourLeader: "Luis Ortega",
     logisticsContacts: [
       { role: "Operador local", name: "", phone: "", email: "", notes: "" },
     ],
@@ -48,8 +48,8 @@ export function blankReservation(): Reservation {
       { day: "D1", place: "", lodging: "", meals: "" },
     ],
     prep: [
-      { label: "Pasaporte / docs", done: false, owner: "Laura Romera" },
-      { label: "Confirmación alojamiento", done: false, owner: "David Rodríguez" },
+      { label: "Pasaporte / docs", done: false, owner: "Marta Vega" },
+      { label: "Confirmación alojamiento", done: false, owner: "Luis Ortega" },
     ],
     internalNotes: "",
   };

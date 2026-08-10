@@ -1,4 +1,4 @@
--- 30 MPS Growth OS — Data Hub + Auth (Postgres / Supabase)
+-- Campo Norte Growth OS — Data Hub + Auth (Postgres / Supabase)
 -- Ejecutar en el SQL Editor de Supabase
 
 create table if not exists public.mps_hub_meta (
@@ -298,12 +298,12 @@ $$;
 --      sign up" = OFF. El equipo se crea a mano por invitación.
 --
 -- 2) Promueve al primer administrador (sin esto nadie ve nada):
---      update public.mps_profiles set role = 'admin' where email = 'miguel@30mps.com';
+--      update public.mps_profiles set role = 'admin' where email = 'sofia@camponorte.demo';
 --
 -- 3) Asigna el resto de roles:
---      update public.mps_profiles set role = 'booking' where email = 'laura@30mps.com';
---      update public.mps_profiles set role = 'ops'     where email = 'david@30mps.com';
---      update public.mps_profiles set role = 'guide'   where email = 'ramon@30mps.com';
+--      update public.mps_profiles set role = 'booking' where email = 'marta@camponorte.demo';
+--      update public.mps_profiles set role = 'ops'     where email = 'luis@camponorte.demo';
+--      update public.mps_profiles set role = 'guide'   where email = 'jorge@camponorte.demo';
 --
 -- 4) Comprueba que no queda nadie colgado con acceso:
 --      select email, role from public.mps_profiles order by role;

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sirve la demo estática 30 MPS (SPA) en 0.0.0.0:8080."""
+"""Sirve la demo estática Campo Norte (SPA) en 0.0.0.0:8080."""
 
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ class SpaHandler(SimpleHTTPRequestHandler):
         return super().do_GET()
 
     def log_message(self, fmt: str, *args) -> None:
-        print(f"[30mps] {self.address_string()} - {fmt % args}")
+        print(f"[camponorte] {self.address_string()} - {fmt % args}")
 
 
 def main() -> None:
@@ -47,7 +47,7 @@ def main() -> None:
     mimetypes.add_type("application/javascript", ".js")
     mimetypes.add_type("text/css", ".css")
     server = ThreadingHTTPServer((HOST, PORT), SpaHandler)
-    print(f"30 MPS CRM demo → http://{HOST}:{PORT}")
+    print(f"Campo Norte CRM demo → http://{HOST}:{PORT}")
     print(f"Root: {ROOT}")
     try:
         server.serve_forever()

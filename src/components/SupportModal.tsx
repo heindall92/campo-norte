@@ -82,7 +82,7 @@ export function SupportModal({
             rel="noreferrer"
             className="flex items-center justify-between rounded-xl border border-[color-mix(in_oklab,var(--accent)_40%,var(--glass-border))] px-3.5 py-2.5 text-sm font-semibold text-[var(--accent)]"
           >
-            <span>{es ? "Web · 30 MPS" : "Website · 30 MPS"}</span>
+            <span>{es ? "Web · Campo Norte" : "Website · Campo Norte"}</span>
             <ExternalLink className="h-4 w-4" />
           </a>
           <a
@@ -111,8 +111,8 @@ export function SupportModal({
 
         <p className="mt-3 border-t border-[var(--glass-border)] pt-2.5 text-center text-[10px] text-[var(--ink-muted)]">
           {es
-            ? "30 MPS · Growth OS · Licencia interna · Documentación en línea"
-            : "30 MPS · Growth OS · Internal license · Online docs"}
+            ? "Campo Norte · Growth OS · Licencia interna · Documentación en línea"
+            : "Campo Norte · Growth OS · Internal license · Online docs"}
         </p>
       </div>
     </div>

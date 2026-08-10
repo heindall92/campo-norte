@@ -2,7 +2,7 @@
  * Conexiones de equipo ↔ expediciones ↔ coste.
  *
  * No es un módulo RRHH genérico (nóminas, equity, alta SS). Es la traducción
- * a 30 MPS de lo que en la demo de referencia hace "Laboral": ligar personas
+ * a Campo Norte de lo que en la demo de referencia hace "Laboral": ligar personas
  * del equipo a la operación y al dinero.
  *
  * Fuentes reales del Hub:

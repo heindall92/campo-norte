@@ -43,6 +43,6 @@ export function blankLead(): Lead {
     vehicle: null,
     createdAt: today,
     lastTouchAt: today,
-    owner: "Miguel",
+    owner: "Sofía",
   };
 }

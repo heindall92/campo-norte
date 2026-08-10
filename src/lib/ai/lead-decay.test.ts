@@ -23,7 +23,7 @@ function lead(over: Partial<Lead> = {}): Lead {
     vehicle: null,
     createdAt: "2026-08-01",
     lastTouchAt: "2026-08-01",
-    owner: "Miguel",
+    owner: "Sofía",
     ...over,
   };
 }
@@ -101,7 +101,7 @@ describe("orden real de la cola", () => {
 describe("el cruce con la cartera cambia el score", () => {
   const client: Client = {
     id: "C-1",
-    name: "Laura Vidal",
+    name: "Marta Vidal",
     email: "test@example.com",
     phone: "",
     city: "Barcelona",
@@ -128,7 +128,7 @@ describe("el cruce con la cartera cambia el score", () => {
     brevoOpens: 9,
     referrals: 3,
     nps: 10,
-    owner: "Miguel",
+    owner: "Sofía",
     since: "2018",
     notes: "",
     history: [],

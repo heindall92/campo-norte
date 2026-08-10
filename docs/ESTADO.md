@@ -5,7 +5,18 @@
 > memoria. El chat no es memoria: este archivo sí. Si el chat y el repo se
 > contradicen, **manda el repo**.
 
-**Última actualización:** 2026-08-08 · por Cursor · tip `main` · Aurora 1–13b **fusionado**
+**Última actualización:** 2026-08-10 · por Cursor · rebrand **Campo Norte** (anonimización legal)
+
+---
+
+## 0 · Rebrand (2026-08-10)
+
+Marca y datos de la empresa real **retirados** del repo público:
+- Nombre comercial, legal, web, email, teléfono, CEO y equipo → **Campo Norte** (ficticio).
+- Login demo: `sofia@camponorte.demo` / `norte2026` (marta@ · luis@ · jorge@).
+- Eliminados PDF/PPTX/capturas del business case ajeno en `public/deck/`.
+
+Si el chat y el repo se contradicen sobre marca o personas, **manda este archivo**.
 
 ---
 
@@ -13,21 +24,18 @@
 
 | Rama | Commit | Qué contiene |
 |---|---|---|
-| `main` | tip | Producción + **patrones Aurora 1–13b** (fusión pedida por el dueño). |
-| `feat/aurora-patterns` | tip | Espejo histórico de la rama Aurora (ya en main). |
-| `cursor/aurora-patterns-2ebf` | tip | PR Cloud #6 · misma punta que se fusionó a main. |
-| Producción | — | https://30mps.vercel.app (despliega desde main) |
-| Preview Aurora | — | https://30mps-git-feat-aurora-patterns-heindall92.vercel.app |
-| Supabase | `gkskudxjuafsidqiiqpg` | **30mps** (eu-west-1). Lazo verificado. |
-| **Fuera de núcleo** | `docs/FUERA-DE-NUCLEO.md` | RRHH/equity, contabilidad, alquileres, OCR, multi-org — enlaces futuros. |
-| **Aurora playbook** | `docs/AURORA-CONOCIMIENTO.md` | Checklist canónico para futuros proyectos. |
+| `main` | tip | Producción (tras fusionar rebrand). |
+| `cursor/rebrand-camponorte-2ebf` | tip | Anonimización marca/PII → Campo Norte. |
+| `feat/aurora-patterns` | tip | Espejo histórico Aurora. |
+| Producción | — | Despliegue Vercel desde main (revisar que el tip incluya rebrand). |
+| Supabase | proyecto vinculado | Hub / Auth (credenciales en `.env`, no en docs). |
+| **Fuera de núcleo** | `docs/FUERA-DE-NUCLEO.md` | RRHH/equity, contabilidad, alquileres, OCR, multi-org. |
+| **Aurora playbook** | `docs/AURORA-CONOCIMIENTO.md` | Checklist canónico. |
 
-### Acceso al preview (móvil / pitch)
+### Acceso demo
 
-- URL: https://30mps-git-feat-aurora-patterns-heindall92.vercel.app
-- App login demo: `miguel@30mps.com` / `30mps2026` (también laura@ · david@ · ramon@, misma pass).
+- App login: `sofia@camponorte.demo` / `norte2026` (también marta@ · luis@ · jorge@, misma pass).
 - Fallback demo activo aunque haya `VITE_SUPABASE_*` (Hub semilla local).
-- Si Vercel pide login de la plataforma (Deployment Protection), autenticarse en Vercel; eso es del hosting, no de la app.
 - Cerrar demo en prod real: `VITE_STRICT_AUTH=true` o `VITE_ALLOW_DEMO_AUTH=false`.
 
 ---
@@ -101,7 +109,7 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 - Móvil — Tesorería: **PASS**. Aprobaciones: entrada añadida tras revisión fases 6–9.
 
 **Pendiente humano:** recorrer producción tras el deploy de Vercel (demo:
-miguel@ / 30mps2026 si el fallback sigue activo).
+`sofia@camponorte.demo` / `norte2026` si el fallback sigue activo).
 
 ---
 
@@ -158,7 +166,7 @@ miguel@ / 30mps2026 si el fallback sigue activo).
 
 ### Plan B — repo público (fecha límite 2026-08-22)
 
-Si no hay contacto ni entrevista de 30 MPS, se generaliza y se publica:
+Si no hay contacto ni entrevista de Campo Norte, se generaliza y se publica:
 quitar marca, temática moto/4x4 y los PDF del business case ajeno; dejar un
 CRM genérico con motor de leads reutilizable. Los tokens de la fase 1 son
 justo lo que abarata ese rebrand: se edita la capa 1, no 44 componentes.

@@ -3,7 +3,7 @@
 > Análisis comparativo. **Referencia conceptual, no copia de código.**
 > Aurora es producto de terceros; aquí solo se documentan patrones de
 > producto y decisiones de UX para reimplementarlos con criterio propio.
-> Fecha: 2026-08-08 · Autor: Claude Code (revisión: Yoandy)
+> Fecha: 2026-08-08 · Autor: equipo demo
 >
 > **Estado actual aplicado:** ver `docs/AURORA-CONOCIMIENTO.md` y
 > `docs/ESTADO.md` (fases 1–13b). La tabla §2 de abajo es del **arranque**
@@ -122,7 +122,7 @@ Nuestro `index.css` mezcla las tres capas en una sola (`--accent`, `--glass`,
 `--ok`). Funciona, pero cada cambio de tema obliga a tocar componentes.
 
 **Por qué esto es estratégico:** con tres capas, el rebrand del plan B
-(quitar identidad 30 MPS y publicar el repo genérico) pasa de ser una cacería
+(quitar identidad Campo Norte y publicar el repo genérico) pasa de ser una cacería
 por 44 componentes a **editar la capa 1**.
 
 ---

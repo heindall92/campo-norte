@@ -37,9 +37,9 @@ function dedupeKey(event: AccessEvent, userId: string, section?: string): string
 
 function orgTag(email: string): string {
   const domain = (email.split("@")[1] ?? "").toLowerCase();
-  if (domain === "30mps.com") return "30 MPS";
+  if (domain === "example.com") return "Campo Norte";
   if (domain.includes("evolve")) return "Evolve";
-  if (domain.includes("heindall") || domain.includes("yoandy")) return "Heindall";
+  if (domain.includes("camponorte") || domain.includes("demo")) return "Heindall";
   if (!domain) return "Desconocido";
   return "Externo";
 }

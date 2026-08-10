@@ -28,7 +28,7 @@ const scriptMatch = source.match(/<script>\n([\s\S]*?)\n<\/script>/);
 if (!scriptMatch) throw new Error("No se encontró el <script> en línea de la demo.");
 
 const titleMatch = source.match(/<title>([\s\S]*?)<\/title>/);
-const title = titleMatch ? titleMatch[1] : "30 MPS · demo móvil";
+const title = titleMatch ? titleMatch[1] : "Campo Norte · demo móvil";
 
 const body = source
   .replace(scriptMatch[0], '<script src="./app.js" defer></script>')

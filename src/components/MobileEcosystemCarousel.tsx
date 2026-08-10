@@ -38,11 +38,11 @@ const SLIDES: EcosystemSlide[] = [
     icon: Globe,
     titleEs: "Web oficial",
     titleEn: "Official website",
-    subEs: "Lo publicado en 30mps.com · sin vender, solo verificar",
-    subEn: "What's live on 30mps.com · verify, don't sell",
+    subEs: "Lo publicado en example.com · sin vender, solo verificar",
+    subEn: "What's live on example.com · verify, don't sell",
     ctaEs: "Abrir web",
     ctaEn: "Open site",
-    href: "https://30mps.com",
+    href: "https://example.com",
   },
   {
     id: "instagram",
@@ -55,7 +55,7 @@ const SLIDES: EcosystemSlide[] = [
     subEn: "Brand pulse · stories and daily feed",
     ctaEs: "Abrir Instagram",
     ctaEn: "Open Instagram",
-    href: "https://www.instagram.com/30mpsadventures/",
+    href: "https://example.com",
   },
   {
     id: "youtube",
@@ -68,7 +68,7 @@ const SLIDES: EcosystemSlide[] = [
     subEn: "Official channel · video content",
     ctaEs: "Abrir YouTube",
     ctaEn: "Open YouTube",
-    href: "https://www.youtube.com/c/30mpsAdventures",
+    href: "https://example.com",
   },
   {
     id: "facebook",
@@ -81,7 +81,7 @@ const SLIDES: EcosystemSlide[] = [
     subEn: "Company page · community and inbox",
     ctaEs: "Abrir Facebook",
     ctaEn: "Open Facebook",
-    href: "https://www.facebook.com/30mpsadventures",
+    href: "https://example.com",
   },
   {
     id: "support",

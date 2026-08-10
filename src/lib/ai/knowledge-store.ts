@@ -74,7 +74,7 @@ export const SEED_KNOWLEDGE_DOCS: KnowledgeDoc[] = [
       "Swakopmund: Strand Hotel Swakopmund — noche costa.",
       "Etosha: Okaukuejo / Halali (SANParks) según cupo año.",
       "Operador local: Desert Track Safaris.",
-      "Regla: no cambiar lodge base sin validar Laura (margen y seguro).",
+      "Regla: no cambiar lodge base sin validar Marta (margen y seguro).",
     ].join("\n"),
   },
   {
@@ -107,7 +107,7 @@ export const SEED_KNOWLEDGE_DOCS: KnowledgeDoc[] = [
       "Proveedor: Bat-Erdene Travel · Ulaanbaatar.",
       "Incluye: pick-up aeropuerto, briefing D0, guías locales, logística ger camps, soporte mecánico coordinación.",
       "Pago: 40 % señal / 60 % 30 días antes de salida.",
-      "Cancelación: según anexo — consultar Laura antes de confirmar cambio de fechas.",
+      "Cancelación: según anexo — consultar Marta antes de confirmar cambio de fechas.",
       "Contacto ops: ops@baterdene.mn · +976 9900 1122.",
     ].join("\n"),
   },
@@ -121,7 +121,7 @@ export const SEED_KNOWLEDGE_DOCS: KnowledgeDoc[] = [
     createdAt: "2026-01-15T10:00:00.000Z",
     updatedAt: "2026-01-15T10:00:00.000Z",
     content: [
-      "Precios orientativos / persona (validar Laura antes de publicar):",
+      "Precios orientativos / persona (validar Marta antes de publicar):",
       "Mongolia moto ≈ 6.800 € · Namibia 4x4 ≈ 7.200 € · Alaska moto ≈ 6.200 €.",
       "Colombia Coffee Tour ≈ 5.400 € · Tanzania Big Five ≈ 6.500 €.",
       "Objetivo margen ~30 %. Knowledge informa; veto de precio es humano.",

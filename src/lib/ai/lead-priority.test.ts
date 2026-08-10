@@ -16,7 +16,7 @@ function lead(over: Partial<Lead> = {}): Lead {
     vehicle: "moto",
     createdAt: "2026-08-01",
     lastTouchAt: "2026-08-01",
-    owner: "Miguel",
+    owner: "Sofía",
     ...over,
   };
 }
@@ -24,8 +24,8 @@ function lead(over: Partial<Lead> = {}): Lead {
 function client(over: Partial<Client> = {}): Client {
   return {
     id: "C-1",
-    name: "Laura Vidal",
-    email: "laura@example.com",
+    name: "Marta Vidal",
+    email: "marta@camponorte.demo",
     phone: "",
     city: "Barcelona",
     country: "España",
@@ -51,7 +51,7 @@ function client(over: Partial<Client> = {}): Client {
     brevoOpens: 5,
     referrals: 2,
     nps: 9,
-    owner: "Miguel",
+    owner: "Sofía",
     since: "2019",
     notes: "",
     history: [{ route: "MONGOLIA", date: "2024-09-07", vehicle: "moto", amount: 5_700 }],
@@ -148,6 +148,6 @@ describe("rankLeads · parecido", () => {
       now,
     });
     expect(ranked[0]?.lead.id).toBe("SIM");
-    expect(ranked[0]?.why).toMatch(/Laura Vidal|parecido|like/i);
+    expect(ranked[0]?.why).toMatch(/Marta Vidal|parecido|like/i);
   });
 });

@@ -21,7 +21,7 @@ const es: Dict = {
   nav_content: "Fábrica de contenido",
   nav_knowledge: "Asistente de conocimiento",
   nav_automations: "Ecosistema CRM",
-  nav_pitch: "Propuesta Miguel",
+  nav_pitch: "Propuesta Sofía",
   nav_slides: "Presentación",
   nav_hub: "Base de datos",
   nav_settings: "Ajustes",
@@ -105,7 +105,7 @@ const en: Dict = {
   nav_content: "Content Factory",
   nav_knowledge: "Knowledge Assistant",
   nav_automations: "CRM ecosystem",
-  nav_pitch: "Miguel proposal",
+  nav_pitch: "Sofía proposal",
   nav_slides: "Pitch deck",
   nav_hub: "Data Hub",
   nav_settings: "Settings",
@@ -186,8 +186,8 @@ export type Slide = { title: string; body: string; bullets?: string[] };
 export const SLIDES: Record<Lang, Slide[]> = {
   es: [
     {
-      title: "Qué quiere Miguel de verdad",
-      body: "No otra herramienta más. Un sistema interno que le quite trabajo repetitivo sin masificar ni perder el trato humano de 30 MPS.",
+      title: "Qué quiere Sofía de verdad",
+      body: "No otra herramienta más. Un sistema interno que le quite trabajo repetitivo sin masificar ni perder el trato humano de Campo Norte.",
       bullets: [
         "Hoy pierde horas ordenando leads, siguiendo y pensando contenido",
         "El viaje es 5★ — el cuello es el día a día, no la calidad",
@@ -300,22 +300,22 @@ export const SLIDES: Record<Lang, Slide[]> = {
     },
     {
       title: "Cierre (entrevista)",
-      body: "No vengo a sustituir el trato humano. Vengo a quitar lo repetitivo de detrás para que Miguel y el equipo dediquen más tiempo a la confianza y la experiencia premium.",
+      body: "No vengo a sustituir el trato humano. Vengo a quitar lo repetitivo de detrás para que Sofía y el equipo dediquen más tiempo a la confianza y la experiencia premium.",
       bullets: [
         "El sistema informa y prioriza",
-        "Las personas construyen la confianza 30 MPS",
+        "Las personas construyen la confianza Campo Norte",
         "Se construye para quedaroslo — y poder traspasarlo",
       ],
     },
   ],
   en: [
     {
-      title: "What Miguel really wants",
-      body: "Not another loose tool. Growth infrastructure that cuts founder dependency without massifying or losing the human care that defines 30 MPS.",
+      title: "What Sofía really wants",
+      body: "Not another loose tool. Growth infrastructure that cuts founder dependency without massifying or losing the human care that defines Campo Norte.",
       bullets: [
         "CEO too operational today (triage, follow-up, content)",
         "5★ product — the bottleneck is system, not trip quality",
-        "Simple, measurable, maintainable part-time (Growth Builder)",
+        "Simple, measurable, maintainable part-time",
       ],
     },
     {
@@ -328,7 +328,7 @@ export const SLIDES: Record<Lang, Slide[]> = {
       ],
     },
     {
-      title: "30 MPS Growth OS",
+      title: "Campo Norte Growth OS",
       body: "One phased platform — not three loose projects. Turns sheets + inbox + Brevo into decisions and prioritized sales action.",
       bullets: [
         "Data Hub · Dashboard · Lead + Customer Intelligence",
@@ -424,11 +424,11 @@ export const SLIDES: Record<Lang, Slide[]> = {
     },
     {
       title: "Closing message",
-      body: "I don’t propose replacing human care. I propose organizing what happens backstage so Miguel and the team spend more time on trust and the premium experience.",
+      body: "I don’t propose replacing human care. I propose organizing what happens backstage so Sofía and the team spend more time on trust and the premium experience.",
       bullets: [
         "The system informs and prioritizes",
-        "People build 30 MPS trust",
-        "Growth Builder builds the pillars — and can hand them over",
+        "People build Campo Norte trust",
+        "The system builds the pillars — and can hand them over",
       ],
     },
   ],

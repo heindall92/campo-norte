@@ -189,7 +189,7 @@ export function downloadInvoicePdf(inv: Invoice) {
     `Estado AEAT: ${inv.aeatStatus}`,
     `Calificación operación: ${inv.operationClass} · ClaveRégimen: ${inv.regimeKey}`,
     "Marco: LGT art. 29.2.j) · Ley 11/2021 · RD 1007/2023 · Orden HAC/1177/2024 · RD-ley 15/2025.",
-    "Documento generado por el Growth OS interno 30 MPS. Validar con gestoría antes de uso oficial.",
+    "Documento generado por el Growth OS interno Campo Norte. Validar con gestoría antes de uso oficial.",
   ];
   vf.forEach((line) => {
     const lines = doc.splitTextToSize(line, 174);

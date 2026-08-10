@@ -1,7 +1,6 @@
 /**
- * 30 MPS Adventures — supuestos del business case (demo interna).
- * Cifras del anexo: ficticias (brief). SUPUESTO = no viene en el documento.
- * Confidencial · proceso de selección Evolve / Growth Builder.
+ * Campo Norte — supuestos del business case (demo interna ficticia).
+ * Cifras del anexo: inventadas para la demo. SUPUESTO = estimación de producto.
  */
 
 export const MPS_ANNEX = {
@@ -19,23 +18,23 @@ export const MPS_ANNEX = {
 } as const;
 
 export const COMPANY = {
-  name: "30 MPS Adventures",
-  legal: "30 MPS Adventures, S.L.",
+  name: "Campo Norte",
+  legal: "Campo Norte Expediciones, S.L.",
   tagline: "El mundo no está hecho de destinos, sino de caminos.",
   promise: "Nosotros lo organizamos todo. Tú conduces.",
   founded: 2015,
-  website: "https://30mps.com",
-  email: "ride@30mps.com",
-  phone: "+34 667 11 37 84",
-  ceo: "Miguel Checa",
-  ceoTitle: "Fundador y Managing Director",
+  website: "https://example.com",
+  email: "hola@camponorte.demo",
+  phone: "+34 900 00 00 01",
+  ceo: "Sofía Navarro",
+  ceoTitle: "Fundadora y directora",
 } as const;
 
 export const TEAM = [
-  { name: "Miguel Checa", role: "Fundador · vende y cuida la relación con el cliente" },
-  { name: "Laura Romera", role: "Office · reservas y día a día" },
-  { name: "David Rodríguez", role: "Tour Manager · África y Oriente Medio" },
-  { name: "Ramón Faro", role: "Guía moto · alta montaña" },
+  { name: "Sofía Navarro", role: "Fundadora · vende y cuida la relación con el cliente" },
+  { name: "Marta Vega", role: "Office · reservas y día a día" },
+  { name: "Luis Ortega", role: "Tour Manager · África y Oriente Medio" },
+  { name: "Jorge Peña", role: "Guía moto · alta montaña" },
 ] as const;
 
 export const MPS_ASSUMPTIONS = [
@@ -63,7 +62,7 @@ export const MPS_ASSUMPTIONS = [
     id: "reactivation_yield",
     label: "Meta: volver a llenar con antiguos",
     value: "10–15 reservas/año desde dormidos",
-    rationale: "Unos 53–80k €. La llamada la hace Miguel o el equipo — nunca un robot.",
+    rationale: "Unos 53–80k €. La llamada la hace Sofía o el equipo — nunca un robot.",
   },
   {
     id: "lead_volume",
@@ -79,7 +78,7 @@ export const MPS_ASSUMPTIONS = [
   },
   {
     id: "founder_hours",
-    label: "Horas de Miguel en ordenar + seguir + contenido",
+    label: "Horas de Sofía en ordenar + seguir + contenido",
     value: "12–18 h/semana (estimado)",
     rationale: "Todo pasa por el fundador. Objetivo: devolverle 6–10 h/semana para vender y acompañar.",
   },
@@ -98,4 +97,4 @@ export const MPS_ASSUMPTIONS = [
 ] as const;
 
 export const GOLDEN_RULE =
-  "Todo es interno: la tecnología nunca habla con el cliente. 30 MPS vende trato humano; las máquinas trabajan detrás.";
+  "Todo es interno: la tecnología nunca habla con el cliente. Campo Norte vende trato humano; las máquinas trabajan detrás.";

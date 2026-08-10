@@ -1,5 +1,5 @@
 /**
- * Metas de negocio a 6 meses — lenguaje para Miguel, no jerga técnica.
+ * Metas de negocio a 6 meses — lenguaje para el equipo, no jerga técnica.
  */
 
 import type { Client, Expedition, Lead } from "@/lib/demo-data";
@@ -15,7 +15,7 @@ export interface BusinessKpiDef {
   en: { title: string; detail: string };
 }
 
-/** Los 6 números que Miguel mira en 6 meses. Sin hablar de IA ni de tech. */
+/** Los 6 números que Sofía mira en 6 meses. Sin hablar de IA ni de tech. */
 export const BUSINESS_KPIS_6M: BusinessKpiDef[] = [
   {
     id: "origin_95",
@@ -37,14 +37,14 @@ export const BUSINESS_KPIS_6M: BusinessKpiDef[] = [
     target: 60,
     unit: "pct",
     es: {
-      title: "Bajar un 60 % el tiempo de papeles de Miguel",
+      title: "Bajar un 60 % el tiempo de papeles de Sofía",
       detail:
-        "Menos ordenar Excel, menos peinar el correo, menos «pregúntale a Miguel». Medimos horas la semana 1 y lo revisamos cada mes.",
+        "Menos ordenar Excel, menos peinar el correo, menos «pregúntale a Sofía». Medimos horas la semana 1 y lo revisamos cada mes.",
     },
     en: {
-      title: "Cut Miguel’s paperwork time by 60%",
+      title: "Cut Sofía's paperwork time by 60%",
       detail:
-        "Less sorting sheets, less inbox triage, less “ask Miguel”. We measure hours in week 1 and review monthly.",
+        "Less sorting sheets, less inbox triage, less “ask Sofía”. We measure hours in week 1 and review monthly.",
     },
   },
   {
@@ -139,7 +139,7 @@ function dormantPool(clients: Client[]): Client[] {
 
 /**
  * Snapshot vivo desde Hub + expediciones.
- * El tiempo de papeles de Miguel se mide a mano (semana 1).
+ * El tiempo de papeles de Sofía se mide a mano (semana 1).
  */
 export function computeBusinessKpis(
   lang: Lang,

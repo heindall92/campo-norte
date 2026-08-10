@@ -83,8 +83,8 @@ function stubSupabase(seed: { leads?: Lead[]; clients?: Client[] } = {}) {
 function baseClient(over: Partial<Client> = {}): Client {
   return {
     id: "C-1",
-    name: "Laura Vidal",
-    email: "laura@example.com",
+    name: "Marta Vidal",
+    email: "marta@camponorte.demo",
     phone: "+34 600 00 00 00",
     city: "Barcelona",
     country: "España",
@@ -110,7 +110,7 @@ function baseClient(over: Partial<Client> = {}): Client {
     brevoOpens: 9,
     referrals: 3,
     nps: 10,
-    owner: "Miguel",
+    owner: "Sofía",
     since: "2018",
     notes: "",
     history: [],
@@ -146,7 +146,7 @@ afterEach(() => {
 
 describe("POST /api/leads/ingest", () => {
   it("acepta el formulario público de la propia app (mismo origen)", async () => {
-    process.env.ALLOWED_ORIGINS = "https://30mps.vercel.app";
+    process.env.ALLOWED_ORIGINS = "https://example.com";
     const { fetchMock, leads } = stubSupabase();
     vi.stubGlobal("fetch", fetchMock);
     const { res, out } = makeRes();
@@ -154,7 +154,7 @@ describe("POST /api/leads/ingest", () => {
     await handler(
       {
         method: "POST",
-        headers: { origin: "https://30mps.vercel.app", "x-forwarded-for": "10.2.2.2" },
+        headers: { origin: "https://example.com", "x-forwarded-for": "10.2.2.2" },
         body: { name: "Ana", email: "form@example.com" },
       },
       res,
@@ -166,7 +166,7 @@ describe("POST /api/leads/ingest", () => {
   });
 
   it("rechaza un origen que no es la app", async () => {
-    process.env.ALLOWED_ORIGINS = "https://30mps.vercel.app";
+    process.env.ALLOWED_ORIGINS = "https://example.com";
     process.env.VERCEL_ENV = "production";
     const { fetchMock } = stubSupabase();
     vi.stubGlobal("fetch", fetchMock);
@@ -283,10 +283,10 @@ describe("POST /api/leads/ingest", () => {
   });
 
   it("un cliente conocido entra con más puntuación que un desconocido", async () => {
-    const conocido = stubSupabase({ clients: [baseClient({ email: "laura@example.com" })] });
+    const conocido = stubSupabase({ clients: [baseClient({ email: "marta@camponorte.demo" })] });
     vi.stubGlobal("fetch", conocido.fetchMock);
     const a = makeRes();
-    await handler(post({ name: "Laura Vidal", email: "laura@example.com" }), a.res);
+    await handler(post({ name: "Marta Vidal", email: "marta@camponorte.demo" }), a.res);
 
     const anonimo = stubSupabase();
     vi.stubGlobal("fetch", anonimo.fetchMock);

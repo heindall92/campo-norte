@@ -54,7 +54,7 @@ function signInLocalDemo(normalized: string, password: string): AppUser {
   const match = findCrmUser(normalized, password);
   if (!match) {
     throw new Error(
-      "Email o contraseña incorrectos. Demo: miguel@30mps.com / 30mps2026",
+      "Email o contraseña incorrectos. Demo: sofia@camponorte.demo / norte2026",
     );
   }
   localStorage.setItem(LOCAL_AUTH_KEY, JSON.stringify(match));
@@ -191,7 +191,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         } catch {
           throw new Error(
-            `${error.message} · Demo equipo: miguel@30mps.com / 30mps2026`,
+            `${error.message} · Demo equipo: sofia@camponorte.demo / norte2026`,
           );
         }
       }

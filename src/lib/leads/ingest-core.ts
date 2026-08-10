@@ -119,9 +119,9 @@ export function inferOriginFromForm(payload: WebFormLeadPayload): LeadOrigin {
   return "unknown";
 }
 
-/** Reparto por reglas: referidos y leads calientes a Miguel; el resto a Laura. */
+/** Reparto por reglas: referidos y leads calientes a Sofía; el resto a Marta. */
 export function pickOwner(origin: LeadOrigin, score: number): string {
-  if (origin === "referral" || score >= 85) return "Miguel";
+  if (origin === "referral" || score >= 85) return "Sofía";
   return "Laura";
 }
 

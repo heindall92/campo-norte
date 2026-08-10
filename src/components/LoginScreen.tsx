@@ -11,8 +11,8 @@ const LOGIN_VIDEO_SRC = "/media/login-home.mp4"; // Hero Login (comprimido)
 export function LoginScreen() {
   const { signIn, supabaseReady } = useAuth();
   const demoAuth = allowLocalDemoAuth();
-  const [email, setEmail] = useState(LOCAL_TEAM_USERS[0]?.email ?? "miguel@30mps.com");
-  const [password, setPassword] = useState(demoAuth ? "30mps2026" : "");
+  const [email, setEmail] = useState(LOCAL_TEAM_USERS[0]?.email ?? "sofia@camponorte.demo");
+  const [password, setPassword] = useState(demoAuth ? "norte2026" : "");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -60,10 +60,10 @@ export function LoginScreen() {
           <div className="mb-[clamp(1rem,2.5vh,1.75rem)] flex flex-col items-center text-center">
             <div className="mb-3 flex h-12 w-12 flex-col items-center justify-center rounded-2xl bg-[var(--accent)] shadow-lg shadow-black/30 sm:mb-4 sm:h-14 sm:w-14">
               <span className="font-[family-name:var(--mps-display)] text-base font-bold leading-none text-white sm:text-lg">
-                30
+                CN
               </span>
               <span className="text-[7px] font-bold tracking-[0.14em] text-white/95 sm:text-[8px]">
-                MPS
+                NORTE
               </span>
             </div>
             <h1
@@ -91,7 +91,7 @@ export function LoginScreen() {
                   ? demoAuth
                     ? "Supabase + demo equipo"
                     : "Acceso seguro (Supabase)"
-                  : "Demo · equipo 30 MPS"}
+                  : "Demo · equipo Campo Norte"}
               </span>
             </p>
 
@@ -106,12 +106,12 @@ export function LoginScreen() {
               <div className="mb-5 rounded-xl border border-[color-mix(in_oklab,var(--accent)_35%,transparent)] bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] px-3 py-2.5 text-xs leading-snug text-[var(--ink)] sm:mb-6 sm:text-sm">
                 <p className="font-semibold text-[var(--accent)]">Acceso demo del equipo</p>
                 <p className="mt-1 text-[var(--ink-muted)]">
-                  Email: <code className="text-[var(--accent)]">miguel@30mps.com</code>
+                  Email: <code className="text-[var(--accent)]">sofia@camponorte.demo</code>
                   {" · "}
-                  Pass: <code className="text-[var(--accent)]">30mps2026</code>
+                  Pass: <code className="text-[var(--accent)]">norte2026</code>
                 </p>
                 <p className="mt-1 text-[11px] text-[var(--ink-muted)]">
-                  También: laura@ · david@ · ramon@30mps.com (misma contraseña)
+                  También: marta@ · luis@ · jorge@camponorte.demo (misma contraseña)
                 </p>
               </div>
             )}
@@ -190,7 +190,7 @@ export function LoginScreen() {
                   ))}
                 </ul>
                 <p className="mt-2">
-                  Password: <code className="text-[var(--accent)]">30mps2026</code>
+                  Password: <code className="text-[var(--accent)]">norte2026</code>
                   {!isProdBuild() && (
                     <>
                       {" · "}

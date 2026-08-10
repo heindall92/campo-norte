@@ -136,7 +136,7 @@ export function AiAssistantHost({ lang }: Props) {
         open={open}
         thinking={asking}
         step={step}
-        title={lang === "es" ? "Asistente 30 MPS" : "30 MPS assistant"}
+        title={lang === "es" ? "Asistente Campo Norte" : "Campo Norte assistant"}
         subtitle={
           asking
             ? undefined

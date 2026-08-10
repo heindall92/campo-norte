@@ -24,19 +24,19 @@ export type PitchSlide = {
  */
 const es: PitchSlide[] = [
   {
-    kicker: "Propuesta · 30 MPS Adventures",
+    kicker: "Producto · Campo Norte",
     title: "Crecer sin perder lo que os hace únicos",
     subtitle:
-      "Un sistema interno para ordenar el negocio, liberar tiempo de Miguel y llegar al millón — sin que ninguna máquina hable con el viajero.",
+      "Un sistema interno para ordenar el negocio, liberar tiempo de Sofía y llegar al millón — sin que ninguna máquina hable con el viajero.",
     blocks: [
       {
         type: "text",
-        text: "Yoandy Ramírez Delgado · Growth Builder · propuesta freelance",
+        text: "Equipo demo · Growth OS · demo de producto",
       },
       {
         type: "bullets",
         items: [
-          "Ya hay un demo vivo para enseñar en la reunión: 30mps.vercel.app",
+          "Ya hay un demo vivo para enseñar en la reunión: example.com",
           "Login del equipo · leads · clientes · reservas · números · facturas · contenido",
           "Regla de oro: los sistemas preparan; las personas firman la relación",
         ],
@@ -50,14 +50,14 @@ const es: PitchSlide[] = [
     blocks: [
       {
         type: "quote",
-        text: "El producto es 5 estrellas. El cuello de botella es el día a día: datos sueltos y todo pasando por Miguel.",
+        text: "El producto es 5 estrellas. El cuello de botella es el día a día: datos sueltos y todo pasando por Sofía.",
       },
       {
         type: "bullets",
         items: [
           "Los viajes se venden solos por calidad — el sistema detrás no acompaña",
-          "Excel + correo de Miguel + newsletter = nadie ve el negocio entero",
-          "Miguel tria leads, hace seguimiento y piensa contenido: horas que deberían ir a cerrar y cuidar",
+          "Excel + correo de Sofía + newsletter = nadie ve el negocio entero",
+          "Sofía tria leads, hace seguimiento y piensa contenido: horas que deberían ir a cerrar y cuidar",
         ],
       },
     ],
@@ -123,7 +123,7 @@ const es: PitchSlide[] = [
         rows: [
           ["No sabemos de dónde vienen los interesados", "Alta", "Origen en cada lead · importar Excel"],
           ["No vemos margen ni ocupación clara", "Alta", "Dashboard con hueco a 1M y margen por ruta"],
-          ["Miguel demasiado operativo", "Crítica", "Avisos internos + lista corta de trabajo"],
+          ["Sofía demasiado operativo", "Crítica", "Avisos internos + lista corta de trabajo"],
           ["Clientes que no vuelven", "Alta", "Cola «llamar este mes» · WhatsApp / llamada humana"],
           ["No sabemos a quién priorizar", "Media", "Ranking con razones en lenguaje claro"],
           ["Facturas y gestoría a mano", "Media", "Export listo para la gestoría · Veri*FACTU"],
@@ -156,7 +156,7 @@ const es: PitchSlide[] = [
   },
   {
     kicker: "Demo · 90 segundos",
-    title: "Qué enseñar en la reunión con Miguel",
+    title: "Qué enseñar en la reunión con el equipo",
     blocks: [
       {
         type: "steps",
@@ -168,7 +168,7 @@ const es: PitchSlide[] = [
           "Clientes: un VIP con valor · botón WhatsApp (lo pulsa una persona)",
           "Reservas: estado de salidas y preparación logística",
           "Facturas: frase de 10 s para gestoría + export",
-          "Contenido: un borrador con voz 30 MPS · Copiar y pegar",
+          "Contenido: un borrador con voz Campo Norte · Copiar y pegar",
           "Automatizaciones: el flujo formulario → aviso interno (sin tocar al cliente)",
           "Esta presentación + propuesta escrita si quiere llevársela",
         ],
@@ -195,7 +195,7 @@ const es: PitchSlide[] = [
         type: "bullets",
         items: [
           "Cola del día: sin origen · muy calientes · reservas en preparación · VIP / dormidos",
-          "Laura o Miguel pueden importar y exportar sin pedir a un técnico",
+          "Marta o Sofía pueden importar y exportar sin pedir a un técnico",
         ],
       },
     ],
@@ -243,7 +243,7 @@ const es: PitchSlide[] = [
       },
       {
         type: "quote",
-        text: "El sistema prepara la lista. Miguel o Laura escriben desde su propio correo o WhatsApp.",
+        text: "El sistema prepara la lista. Sofía o Marta escriben desde su propio correo o WhatsApp.",
       },
     ],
   },
@@ -253,7 +253,7 @@ const es: PitchSlide[] = [
     blocks: [
       {
         type: "text",
-        text: "Frase de 10 segundos para Miguel: este módulo prepara las facturas con el régimen de agencias de viajes y deja el camino listo para Veri*FACTU (2027).",
+        text: "Frase de 10 segundos para el equipo: este módulo prepara las facturas con el régimen de agencias de viajes y deja el camino listo para Veri*FACTU (2027).",
       },
       {
         type: "bullets",
@@ -267,14 +267,14 @@ const es: PitchSlide[] = [
   },
   {
     kicker: "Tiempo del equipo",
-    title: "Menos «pregúntale a Miguel» · más borradores listos",
+    title: "Menos «pregúntale a Sofía» · más borradores listos",
     blocks: [
       {
         type: "cards",
         items: [
           {
             title: "Fábrica de contenido",
-            body: "Borradores con voz 30 MPS («Namibia no se cuenta. Se conduce.»). Una persona copia a newsletter o redes.",
+            body: "Borradores con voz Campo Norte («Namibia no se cuenta. Se conduce.»). Una persona copia a newsletter o redes.",
             tone: "brand",
           },
           {
@@ -345,7 +345,7 @@ const es: PitchSlide[] = [
             tone: "warn",
           },
           {
-            title: "Marca 30 MPS",
+            title: "Marca Campo Norte",
             body: "Cero mensajes automáticos al cliente. Badge visible: «Sin mensajes al cliente».",
             tone: "brand",
           },
@@ -361,7 +361,7 @@ const es: PitchSlide[] = [
         type: "steps",
         items: [
           "Hecho · demo en internet (login, base, CRM, facturas, legal)",
-          "Semana 1 · sesión con Miguel y Laura · importar Excel / Brevo reales",
+          "Semana 1 · sesión con Sofía y Marta · importar Excel / Brevo reales",
           "Semanas 2–4 · formulario web entra solo · origen en cada lead",
           "Semanas 4–8 · afinar la lista de dormidos y leads calientes con datos reales",
           "Semanas 8–12 · contratos de datos · formación · grabación de traspaso",
@@ -373,7 +373,7 @@ const es: PitchSlide[] = [
           "¿Quién será el dueño interno de esta base?",
           "¿Qué rutas se llenan casi solas?",
           "¿Cuánto entra por recomendación hoy?",
-          "¿Qué parte del booking come más tiempo a Laura?",
+          "¿Qué parte del booking come más tiempo a Marta?",
         ],
       },
     ],
@@ -389,25 +389,25 @@ const es: PitchSlide[] = [
       },
       {
         type: "text",
-        text: "Yoandy Ramírez Delgado · Growth Builder · 30mps.vercel.app",
+        text: "Equipo demo · Growth OS · example.com",
       },
     ],
-    footer: "yoandyramirez.com · linkedin.com/in/yoandyrd92",
+    footer: "demo interno",
   },
 ];
 
 const en: PitchSlide[] = [
   {
-    kicker: "Proposal · 30 MPS Adventures",
+    kicker: "Product · Campo Norte",
     title: "Grow without losing what makes you unique",
     subtitle:
-      "An internal system to organise the business, free Miguel’s time and reach €1M — without any machine messaging the traveller.",
+      "An internal system to organise the business, free Sofía's time and reach €1M — without any machine messaging the traveller.",
     blocks: [
-      { type: "text", text: "Yoandy Ramírez Delgado · Growth Builder · freelance proposal" },
+      { type: "text", text: "Equipo demo · Growth OS · product demo" },
       {
         type: "bullets",
         items: [
-          "Live demo for the meeting: 30mps.vercel.app",
+          "Live demo for the meeting: example.com",
           "Team login · leads · clients · bookings · numbers · invoices · content",
           "Golden rule: systems prepare; people own the relationship",
         ],
@@ -421,14 +421,14 @@ const en: PitchSlide[] = [
     blocks: [
       {
         type: "quote",
-        text: "The product is 5 stars. The bottleneck is daily ops: scattered data and everything through Miguel.",
+        text: "The product is 5 stars. The bottleneck is daily ops: scattered data and everything through Sofía.",
       },
       {
         type: "bullets",
         items: [
           "Trips sell on quality — the system behind doesn’t keep up",
-          "Sheets + Miguel’s inbox + newsletter = nobody sees the whole business",
-          "Miguel sorts leads, follows up and drafts content — hours that should close and care",
+          "Sheets + Sofía's inbox + newsletter = nobody sees the whole business",
+          "Sofía sorts leads, follows up and drafts content — hours that should close and care",
         ],
       },
     ],
@@ -494,7 +494,7 @@ const en: PitchSlide[] = [
         rows: [
           ["Don’t know where prospects come from", "High", "Origin on every lead · import sheets"],
           ["No clear margin / occupancy", "High", "Dashboard: €1M gap + margin by route"],
-          ["Miguel too operational", "Critical", "Internal alerts + short work list"],
+          ["Sofía too operational", "Critical", "Internal alerts + short work list"],
           ["Clients who don’t return", "High", "“Call this month” queue · human WhatsApp/call"],
           ["Don’t know who to prioritise", "Medium", "Ranking with plain-language reasons"],
           ["Invoices / tax pack by hand", "Medium", "Export for the accountant · Veri*FACTU"],
@@ -521,7 +521,7 @@ const en: PitchSlide[] = [
   },
   {
     kicker: "Demo · 90 seconds",
-    title: "What to show Miguel in the meeting",
+    title: "What to show Sofía in the meeting",
     blocks: [
       {
         type: "steps",
@@ -533,7 +533,7 @@ const en: PitchSlide[] = [
           "Clients: a VIP · WhatsApp button (a person presses it)",
           "Bookings: departure status + prep checklist",
           "Invoices: 10s line for the accountant + export",
-          "Content: a 30 MPS voice draft · Copy",
+          "Content: a Campo Norte voice draft · Copy",
           "Automations: form → internal alert (never to the traveller)",
           "This deck + written proposal if he wants it",
         ],
@@ -595,20 +595,20 @@ const en: PitchSlide[] = [
     blocks: [
       {
         type: "text",
-        text: "10s line for Miguel: prepares invoices under the travel-agency scheme and the path to Veri*FACTU (2027).",
+        text: "10s line for Sofía: prepares invoices under the travel-agency scheme and the path to Veri*FACTU (2027).",
       },
     ],
   },
   {
     kicker: "Team time",
-    title: "Fewer “ask Miguel” moments · more ready drafts",
+    title: "Fewer “ask Sofía” moments · more ready drafts",
     blocks: [
       {
         type: "cards",
         items: [
           {
             title: "Content factory",
-            body: "Drafts in 30 MPS voice. A person pastes to newsletter or social.",
+            body: "Drafts in Campo Norte voice. A person pastes to newsletter or social.",
             tone: "brand",
           },
           {
@@ -679,7 +679,7 @@ const en: PitchSlide[] = [
             tone: "warn",
           },
           {
-            title: "30 MPS brand",
+            title: "Campo Norte brand",
             body: "Zero auto messages to clients. Visible badge: “No client messages”.",
             tone: "brand",
           },
@@ -695,7 +695,7 @@ const en: PitchSlide[] = [
         type: "steps",
         items: [
           "Done · live demo (login, base, CRM, invoices, legal)",
-          "Week 1 · session with Miguel & Laura · import real sheets / Brevo",
+          "Week 1 · session with Sofía & Marta · import real sheets / Brevo",
           "Weeks 2–4 · web form feeds in · origin on every lead",
           "Weeks 4–8 · refine dormant + hot lists with real data",
           "Weeks 8–12 · data agreements · training · recorded handover",
@@ -714,10 +714,10 @@ const en: PitchSlide[] = [
       },
       {
         type: "text",
-        text: "Yoandy Ramírez Delgado · Growth Builder · 30mps.vercel.app",
+        text: "Equipo demo · Growth OS · example.com",
       },
     ],
-    footer: "yoandyramirez.com · linkedin.com/in/yoandyrd92",
+    footer: "demo interno",
   },
 ];
 
