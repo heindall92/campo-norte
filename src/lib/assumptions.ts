@@ -4,6 +4,14 @@
  * Confidencial · proceso de selección Evolve / Growth Builder.
  */
 
+/** Nombre del producto (repo / UI). El cliente demo sigue siendo COMPANY. */
+export const PRODUCT = {
+  name: "Campo Norte",
+  slug: "campo-norte",
+  taglineEs: "CRM interno · dinero, clientes y operaciones",
+  taglineEn: "Internal CRM · money, clients and operations",
+} as const;
+
 export const MPS_ANNEX = {
   revenueCurrent: 800_000,
   revenueTarget2027: 1_000_000,

@@ -1,12 +1,12 @@
-# 30 MPS Adventures — Growth OS / CRM interno
+# Campo Norte
 
-> **Confidencial** · Growth Builder (Evolve) · Business case IA y automatización
+> **Confidencial** · CRM interno · demo de negocio sobre [30 MPS Adventures](https://30mps.com)
 
-Plataforma para **Miguel Checa** (Fundador / Managing Director de [30 MPS Adventures](https://30mps.com)): CRM operativo + Data Hub + cuadro de mando, reservas/logística, facturación ES y automatizaciones internas.
+**Campo Norte** es el producto (CRM operativo + Data Hub + cuadro de mando, reservas/logística, facturación, tesorería y automatizaciones internas). La demo actual usa datos y el caso de **Miguel Checa / 30 MPS Adventures**.
 
 **Regla de oro:** nada habla automáticamente con el viajero. La tecnología trabaja detrás; la confianza la cierran personas.
 
-Repo: [`heindall92/30mps`](https://github.com/heindall92/30mps) (**privado** · licencia comercial de pago).
+Repo: [`heindall92/campo-norte`](https://github.com/heindall92/campo-norte) (**privado** · licencia comercial de pago).
 
 **Licencia:** ver [`LICENSE`](./LICENSE) y [`NOTICE`](./NOTICE). Uso sin contrato/pago = no autorizado.
 

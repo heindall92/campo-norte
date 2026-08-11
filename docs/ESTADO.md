@@ -5,7 +5,7 @@
 > memoria. El chat no es memoria: este archivo sí. Si el chat y el repo se
 > contradicen, **manda el repo**.
 
-**Última actualización:** 2026-08-08 · por Cursor · tip `main` · Aurora 1–13b **fusionado**
+**Última actualización:** 2026-08-11 · por Cursor · tip `feat/aurora-patterns` · producto **Campo Norte** · Aurora 1–13b en main
 
 ---
 
@@ -14,13 +14,17 @@
 | Rama | Commit | Qué contiene |
 |---|---|---|
 | `main` | tip | Producción + **patrones Aurora 1–13b** (fusión pedida por el dueño). |
-| `feat/aurora-patterns` | tip | Espejo histórico de la rama Aurora (ya en main). |
+| `feat/aurora-patterns` | tip | Espejo / trabajo sobre Aurora (incluye rename Campo Norte). |
 | `cursor/aurora-patterns-2ebf` | tip | PR Cloud #6 · misma punta que se fusionó a main. |
-| Producción | — | https://30mps.vercel.app (despliega desde main) |
+| Repo GitHub | `heindall92/campo-norte` | Antes `heindall92/30mps` (renombrado). |
+| Producción | — | https://30mps.vercel.app (proyecto Vercel aún `30mps`) |
 | Preview Aurora | — | https://30mps-git-feat-aurora-patterns-heindall92.vercel.app |
-| Supabase | `gkskudxjuafsidqiiqpg` | **30mps** (eu-west-1). Lazo verificado. |
+| Supabase | `gkskudxjuafsidqiiqpg` | Proyecto Supabase aún llamado **30mps**. |
 | **Fuera de núcleo** | `docs/FUERA-DE-NUCLEO.md` | RRHH/equity, contabilidad, alquileres, OCR, multi-org — enlaces futuros. |
 | **Aurora playbook** | `docs/AURORA-CONOCIMIENTO.md` | Checklist canónico para futuros proyectos. |
+
+**Nombre de producto:** `Campo Norte` (`PRODUCT` en `assumptions.ts`).  
+**Cliente demo:** sigue siendo 30 MPS Adventures (`COMPANY`).
 
 ### Acceso al preview (móvil / pitch)
 

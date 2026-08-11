@@ -1,9 +1,9 @@
 {
-  "name": "30mps",
+  "name": "campo-norte",
   "private": true,
   "version": "1.0.0",
   "license": "UNLICENSED",
-  "description": "30 MPS Adventures — Growth OS / CRM interno (licencia comercial de pago)",
+  "description": "Campo Norte — CRM interno (demo 30 MPS Adventures · licencia comercial de pago)",
   "type": "module",
   "scripts": {
     "dev": "vite",

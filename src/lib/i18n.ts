@@ -3,7 +3,7 @@ export type Lang = "es" | "en";
 type Dict = Record<string, string>;
 
 const es: Dict = {
-  brand_sub: "Adventures · Growth OS",
+  brand_sub: "Campo Norte · CRM interno",
   internal_only: "Solo equipo interno",
   demo_badge: "Demo · datos ficticios",
   live_badge_local: "Hub local · datos vivos",
@@ -87,7 +87,7 @@ const es: Dict = {
 };
 
 const en: Dict = {
-  brand_sub: "Adventures · Growth OS",
+  brand_sub: "Campo Norte · internal CRM",
   internal_only: "Internal team only",
   demo_badge: "Demo · fictional data",
   live_badge_local: "Local Hub · live data",

@@ -1,4 +1,4 @@
-import { COMPANY } from "@/lib/assumptions";
+import { COMPANY, PRODUCT } from "@/lib/assumptions";
 import { LOCAL_TEAM_USERS, useAuth } from "@/lib/auth";
 import { allowLocalDemoAuth, isProdBuild } from "@/lib/runtime";
 import { getSupabaseEnv } from "@/lib/supabase/client";
@@ -60,23 +60,20 @@ export function LoginScreen() {
           <div className="mb-[clamp(1rem,2.5vh,1.75rem)] flex flex-col items-center text-center">
             <div className="mb-3 flex h-12 w-12 flex-col items-center justify-center rounded-2xl bg-[var(--accent)] shadow-lg shadow-black/30 sm:mb-4 sm:h-14 sm:w-14">
               <span className="font-[family-name:var(--mps-display)] text-base font-bold leading-none text-white sm:text-lg">
-                30
-              </span>
-              <span className="text-[7px] font-bold tracking-[0.14em] text-white/95 sm:text-[8px]">
-                MPS
+                CN
               </span>
             </div>
             <h1
               className="font-[family-name:var(--mps-display)] text-[clamp(1.6rem,2.4vw+0.8rem,2.35rem)] leading-tight !text-white"
               style={{ color: "#ffffff", textShadow: "0 2px 18px rgba(0,0,0,0.65)" }}
             >
-              {COMPANY.name}
+              {PRODUCT.name}
             </h1>
             <p
               className="mt-1.5 text-[clamp(0.8rem,0.4vw+0.7rem,0.95rem)] !text-white/85"
               style={{ color: "rgba(255,255,255,0.85)", textShadow: "0 1px 10px rgba(0,0,0,0.5)" }}
             >
-              Growth OS · acceso interno del equipo
+              {PRODUCT.taglineEs} · demo {COMPANY.name}
             </p>
           </div>
 
@@ -167,7 +164,7 @@ export function LoginScreen() {
               disabled={loading || authBlocked}
               className="w-full rounded-xl bg-[var(--accent)] py-4 text-sm font-bold text-white transition hover:opacity-95 disabled:opacity-60"
             >
-              {loading ? "Entrando…" : "Entrar al Growth OS"}
+              {loading ? "Entrando…" : `Entrar a ${PRODUCT.name}`}
             </button>
 
             {demoAuth && (
