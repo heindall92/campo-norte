@@ -1,4 +1,4 @@
-# Demo de la vista móvil — 30 MPS Growth OS
+# Demo de la vista móvil — Campo Norte
 
 `index.html` es una maqueta **interactiva y autocontenida** (sin build, sin dependencias) de la app móvil
 del CRM. Sirve para enseñar la experiencia de campo en una reunión sin levantar el proyecto Vite.
@@ -54,5 +54,5 @@ public/mobile-demo/app.js       el mismo script, servido como archivo
 ```
 
 Vite copia `public/` a `dist/`, así que tras `npm run build` la demo queda en
-`https://30mps.vercel.app/mobile-demo/`. Edita siempre el fuente de `docs/` y vuelve a ejecutar el
+`https://campo-norte.vercel.app/mobile-demo/`. Edita siempre el fuente de `docs/` y vuelve a ejecutar el
 comando; verificado sirviéndolo con la cabecera CSP real: sin violaciones ni errores de consola.

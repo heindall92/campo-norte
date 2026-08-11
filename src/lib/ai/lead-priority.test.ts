@@ -16,7 +16,7 @@ function lead(over: Partial<Lead> = {}): Lead {
     vehicle: "moto",
     createdAt: "2026-08-01",
     lastTouchAt: "2026-08-01",
-    owner: "Miguel",
+    owner: "Ana",
     ...over,
   };
 }
@@ -51,7 +51,7 @@ function client(over: Partial<Client> = {}): Client {
     brevoOpens: 5,
     referrals: 2,
     nps: 9,
-    owner: "Miguel",
+    owner: "Ana",
     since: "2019",
     notes: "",
     history: [{ route: "MONGOLIA", date: "2024-09-07", vehicle: "moto", amount: 5_700 }],

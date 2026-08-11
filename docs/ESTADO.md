@@ -5,7 +5,7 @@
 > memoria. El chat no es memoria: este archivo sí. Si el chat y el repo se
 > contradicen, **manda el repo**.
 
-**Última actualización:** 2026-08-11 · por Cursor · tip `feat/aurora-patterns` · producto **Campo Norte** · Aurora 1–13b en main
+**Última actualización:** 2026-08-11 · por Cursor · tip `feat/aurora-patterns` · **sin marca 30 MPS** (solo Campo Norte)
 
 ---
 
@@ -13,26 +13,21 @@
 
 | Rama | Commit | Qué contiene |
 |---|---|---|
-| `main` | tip | Producción + **patrones Aurora 1–13b** (fusión pedida por el dueño). |
-| `feat/aurora-patterns` | tip | Espejo / trabajo sobre Aurora (incluye rename Campo Norte). |
-| `cursor/aurora-patterns-2ebf` | tip | PR Cloud #6 · misma punta que se fusionó a main. |
-| Repo GitHub | `heindall92/campo-norte` | Antes `heindall92/30mps` (renombrado). |
-| Producción | — | https://30mps.vercel.app (proyecto Vercel aún `30mps`) |
-| Preview Aurora | — | https://30mps-git-feat-aurora-patterns-heindall92.vercel.app |
-| Supabase | `gkskudxjuafsidqiiqpg` | Proyecto Supabase aún llamado **30mps**. |
-| **Fuera de núcleo** | `docs/FUERA-DE-NUCLEO.md` | RRHH/equity, contabilidad, alquileres, OCR, multi-org — enlaces futuros. |
-| **Aurora playbook** | `docs/AURORA-CONOCIMIENTO.md` | Checklist canónico para futuros proyectos. |
+| `main` | tip | Producción + patrones Aurora 1–13b. |
+| `feat/aurora-patterns` | tip | Rename Campo Norte + **purga legal de identidad 30 MPS**. |
+| Repo GitHub | `heindall92/campo-norte` | Renombrado desde `heindall92/30mps`. |
+| Producción Vercel | aún slug `30mps` | URL real hoy: https://30mps.vercel.app — **renombrar proyecto en Vercel** a `campo-norte`. |
+| Supabase | `gkskudxjuafsidqiiqpg` | Display name aún «30mps» en el dashboard — **renombrar allí**. |
+| **Fuera de núcleo** | `docs/FUERA-DE-NUCLEO.md` | RRHH/equity, contabilidad, alquileres, OCR, multi-org. |
+| **Aurora playbook** | `docs/AURORA-CONOCIMIENTO.md` | Checklist canónico. |
 
-**Nombre de producto:** `Campo Norte` (`PRODUCT` en `assumptions.ts`).  
-**Cliente demo:** sigue siendo 30 MPS Adventures (`COMPANY`).
+**Producto y demo:** `Campo Norte` / `Campo Norte Expediciones, S.L.` (`PRODUCT` + `COMPANY`).  
+**Sin** referencias a 30 MPS Adventures, Miguel Checa, 30mps.com ni emails `@30mps.com`.
 
-### Acceso al preview (móvil / pitch)
+### Acceso demo
 
-- URL: https://30mps-git-feat-aurora-patterns-heindall92.vercel.app
-- App login demo: `miguel@30mps.com` / `30mps2026` (también laura@ · david@ · ramon@, misma pass).
-- Fallback demo activo aunque haya `VITE_SUPABASE_*` (Hub semilla local).
-- Si Vercel pide login de la plataforma (Deployment Protection), autenticarse en Vercel; eso es del hosting, no de la app.
-- Cerrar demo en prod real: `VITE_STRICT_AUTH=true` o `VITE_ALLOW_DEMO_AUTH=false`.
+- Login: `ana@campo-norte.demo` / `camponorte2026` (también laura@ · david@ · ramon@).
+- Cerrar demo en prod: `VITE_STRICT_AUTH=true` o `VITE_ALLOW_DEMO_AUTH=false`.
 
 ---
 
@@ -105,7 +100,7 @@ Referencia conceptual: no hay código, marca ni assets de terceros.
 - Móvil — Tesorería: **PASS**. Aprobaciones: entrada añadida tras revisión fases 6–9.
 
 **Pendiente humano:** recorrer producción tras el deploy de Vercel (demo:
-miguel@ / 30mps2026 si el fallback sigue activo).
+ana@ / camponorte2026 si el fallback sigue activo).
 
 ---
 
@@ -162,7 +157,7 @@ miguel@ / 30mps2026 si el fallback sigue activo).
 
 ### Plan B — repo público (fecha límite 2026-08-22)
 
-Si no hay contacto ni entrevista de 30 MPS, se generaliza y se publica:
+Si no hay contacto ni entrevista de Campo Norte, se generaliza y se publica:
 quitar marca, temática moto/4x4 y los PDF del business case ajeno; dejar un
 CRM genérico con motor de leads reutilizable. Los tokens de la fase 1 son
 justo lo que abarata ese rebrand: se edita la capa 1, no 44 componentes.

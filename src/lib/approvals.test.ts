@@ -37,7 +37,7 @@ function draft(over: Partial<ContentDraft> = {}): ContentDraft {
     channel: "Brevo",
     channelKind: "email_brevo",
     audience: "Suscriptores",
-    owner: "Miguel",
+    owner: "Ana",
     variables: [],
     arguments: [],
     updatedAt: NOW.toISOString(),
@@ -60,9 +60,9 @@ describe("regla de oro: nada se ejecuta sin OK humano", () => {
 
   it("aprobar registra quién y cuándo", () => {
     const items = [pending({ id: "a1" })];
-    const next = approve(items, "a1", "miguel@30mps.com", NOW);
+    const next = approve(items, "a1", "ana@campo-norte.demo", NOW);
     expect(next[0]!.status).toBe("aprobada");
-    expect(next[0]!.resolvedBy).toBe("miguel@30mps.com");
+    expect(next[0]!.resolvedBy).toBe("ana@campo-norte.demo");
     expect(next[0]!.resolvedAt).toBe(NOW.toISOString());
   });
 

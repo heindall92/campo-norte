@@ -1,8 +1,8 @@
-# 30 MPS Growth OS
+# Campo Norte
 
-**Versión para la entrevista con Miguel** (~5 páginas)  
+**Versión para la entrevista con la fundadora** (~5 páginas)  
 **Propuesta Growth Builder – orden, tiempo y crecimiento**  
-**Para:** Miguel Checa · Fundador · 30 MPS Adventures  
+**Para:** Ana Torres · Fundador · Campo Norte  
 **Autor:** Yoandy Ramírez Delgado · Confidencial
 
 > *«El mundo no está hecho de destinos, sino de caminos.»*
@@ -24,7 +24,7 @@ No una lista de herramientas. Un **sistema interno** que:
 
 ---
 
-## 1. Cómo entiendo 30 MPS
+## 1. Cómo entiendo Campo Norte
 
 Boutique premium moto / 4x4. Vendéis confianza y caminos, no folletos. Tú eres parte del producto. Las reseñas son 5★ → el problema no es el viaje, es el **día a día detrás**: datos sueltos y demasiado pasando por ti.
 
@@ -38,7 +38,7 @@ Objetivo del caso: acercaros a ~1M € sin masificar la marca.
 |---|---|---|
 | No hay un sitio único ni origen de leads | Muy alto | **Ahora** |
 | Datos en Excel, correo y newsletter | Muy alto | **Ahora** |
-| Miguel demasiado operativo | Crítico | **Ahora** |
+| Ana demasiado operativo | Crítico | **Ahora** |
 | No se ve margen / ocupación clara | Muy alto | **Pronto** |
 | No se prioriza a quién llamar | Medio–alto | **Pronto** |
 | Clientes que no vuelven | Muy alto | **Pronto** |
@@ -48,7 +48,7 @@ Objetivo del caso: acercaros a ~1M € sin masificar la marca.
 
 ## 3. Objetivos de negocio
 
-Más ingresos · mejor ocupación · mejor margen · menos horas tuyas en admin · menos «pregúntale a Miguel» · más clientes que repiten · decisiones con números cada día.
+Más ingresos · mejor ocupación · mejor margen · menos horas tuyas en admin · menos «pregúntale a la fundadora» · más clientes que repiten · decisiones con números cada día.
 
 ---
 
@@ -68,7 +68,7 @@ Eso es el Growth OS: base del negocio · pantalla diaria · ranking de leads · 
 | **2 · Claridad** | Pantalla diaria | Hueco a 1M, procedencia, margen |
 | **3 · Prioridad** | Ranking de interesados | Tiempo humano al mejor lead |
 | **4 · Recurrencia** | VIP / dormidos / en riesgo | Lista «llamar este mes» |
-| **5 · Memoria** | Preguntas internas con fuentes | Menos interrupciones a Miguel |
+| **5 · Memoria** | Preguntas internas con fuentes | Menos interrupciones a la fundadora |
 | **6 · Contenido** | Borradores NL / redes | Una persona publica; no un bot |
 
 ---
@@ -88,7 +88,7 @@ Eso es el Growth OS: base del negocio · pantalla diaria · ranking de leads · 
 
 Base de datos sencilla · automatizaciones (Make / n8n) · newsletter en lectura · panel web interno · IA solo para clasificar y redactar borradores **internos**.
 
-Sin chatbots al cliente. Sin sustituir el trato 30 MPS.
+Sin chatbots al cliente. Sin sustituir el trato Campo Norte.
 
 ---
 
@@ -123,14 +123,14 @@ Modelos de ocupación / cancelaciones · precio con veto humano · sugerir desti
 
 ## 11. Visión 2030
 
-No automatizar por automatizar. Construir una casa ordenada para que 30 MPS **crezca sin perder** confianza, atención personalizada y excelencia operativa. La tech quita lo repetitivo; el equipo hace lo memorable.
+No automatizar por automatizar. Construir una casa ordenada para que Campo Norte **crezca sin perder** confianza, atención personalizada y excelencia operativa. La tech quita lo repetitivo; el equipo hace lo memorable.
 
 ---
 
 ## 12. Qué necesito · qué pregunto · cierre
 
-**Necesito:** acceso de lectura a newsletter / hojas / clientes · formulario o web · Drive si aplica · 45 min/semana con Miguel o Laura.
+**Necesito:** acceso de lectura a newsletter / hojas / clientes · formulario o web · Drive si aplica · 45 min/semana con la fundadora o Laura.
 
 **Pregunto:** quién será el dueño interno · cómo partís el hueco a 1M · qué rutas no se tocan · qué dejáis en Excel · qué canal intuís · qué significa «premiumizar» para vosotros.
 
-> No propongo sustituir el trato humano. Propongo quitar lo repetitivo **detrás del escenario** para que Miguel y el equipo dediquen más tiempo a la confianza y la experiencia premium. La IA informa; **las personas construyen la confianza**.
+> No propongo sustituir el trato humano. Propongo quitar lo repetitivo **detrás del escenario** para que la fundadora y el equipo dediquen más tiempo a la confianza y la experiencia premium. La IA informa; **las personas construyen la confianza**.

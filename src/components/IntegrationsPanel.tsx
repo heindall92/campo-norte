@@ -29,7 +29,7 @@ interface IntegrationsPanelProps {
 
 /**
  * Catálogo de integraciones — patrón de la demo de referencia,
- * cableado a Stripe/Brevo/Supabase/WhatsApp/n8n del ecosistema 30 MPS.
+ * cableado a Stripe/Brevo/Supabase/WhatsApp/n8n del ecosistema Campo Norte.
  */
 export function IntegrationsPanel({ lang = "es", className }: IntegrationsPanelProps) {
   const [tick, setTick] = useState(0);

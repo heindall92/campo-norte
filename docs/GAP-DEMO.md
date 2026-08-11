@@ -122,7 +122,7 @@ Nuestro `index.css` mezcla las tres capas en una sola (`--accent`, `--glass`,
 `--ok`). Funciona, pero cada cambio de tema obliga a tocar componentes.
 
 **Por qué esto es estratégico:** con tres capas, el rebrand del plan B
-(quitar identidad 30 MPS y publicar el repo genérico) pasa de ser una cacería
+(quitar identidad Campo Norte y publicar el repo genérico) pasa de ser una cacería
 por 44 componentes a **editar la capa 1**.
 
 ---

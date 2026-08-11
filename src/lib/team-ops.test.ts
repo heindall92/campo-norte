@@ -21,7 +21,7 @@ function reservation(over: Partial<Reservation> = {}): Reservation {
     depositPaid: 2000,
     paymentChannel: "transferencia",
     paymentRefs: [],
-    tourLeader: "Ramón Faro",
+    tourLeader: "Ramón Gil",
     logisticsContacts: [{ role: "Hotel", name: "Hotel Local", phone: "+976" }],
     itinerary: [
       { day: "1", place: "UB", lodging: "A", meals: "B" },
@@ -38,7 +38,7 @@ describe("buildTeamOps", () => {
   it("conecta el tour leader del equipo y estima coste por días", () => {
     const snap = buildTeamOps([reservation()]);
     expect(snap.byMember).toHaveLength(1);
-    expect(snap.byMember[0]?.name).toBe("Ramón Faro");
+    expect(snap.byMember[0]?.name).toBe("Ramón Gil");
     expect(snap.byMember[0]?.role).toBe("guide");
     expect(snap.pendingCost).toBe(TEAM_DAY_RATE.guide * 3);
     expect(snap.costByDepartureMonth["2026-09"]).toBe(TEAM_DAY_RATE.guide * 3);
@@ -52,7 +52,7 @@ describe("buildTeamOps", () => {
   it("separa coste cerrado del pendiente", () => {
     const snap = buildTeamOps([
       reservation({ id: "R1", status: "cerrado" }),
-      reservation({ id: "R2", status: "prep_viaje", tourLeader: "David Rodríguez" }),
+      reservation({ id: "R2", status: "prep_viaje", tourLeader: "David Ruiz" }),
     ]);
     expect(snap.closedCost).toBe(TEAM_DAY_RATE.guide * 3);
     expect(snap.pendingCost).toBe(TEAM_DAY_RATE.ops * 3);

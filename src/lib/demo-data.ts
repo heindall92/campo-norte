@@ -253,7 +253,7 @@ export const LEADS: Lead[] = [
     vehicle: "moto",
     createdAt: "2026-07-22",
     lastTouchAt: "2026-07-28",
-    owner: "Miguel",
+    owner: "Ana",
   },
   {
     id: "L-1041",
@@ -298,7 +298,7 @@ export const LEADS: Lead[] = [
     vehicle: "moto",
     createdAt: "2026-07-12",
     lastTouchAt: "2026-07-25",
-    owner: "Miguel",
+    owner: "Ana",
   },
   {
     id: "L-1031",
@@ -323,12 +323,12 @@ export const LEADS: Lead[] = [
     campaign: null,
     status: "nuevo",
     score: 26,
-    scoreReasons: ["Sin origen", "Solo email en bandeja Miguel", "Falta contexto"],
+    scoreReasons: ["Sin origen", "Solo email en bandeja la fundadora", "Falta contexto"],
     interestRoute: null,
     vehicle: null,
     createdAt: "2026-07-18",
     lastTouchAt: "2026-07-18",
-    owner: "Miguel (bandeja)",
+    owner: "Ana (bandeja)",
   },
   {
     id: "L-1024",
@@ -358,7 +358,7 @@ export const LEADS: Lead[] = [
     vehicle: "moto",
     createdAt: "2026-07-10",
     lastTouchAt: "2026-07-28",
-    owner: "Miguel",
+    owner: "Ana",
   },
 ];
 
@@ -392,7 +392,7 @@ export const CLIENTS: Client[] = [
     brevoOpens: 14,
     referrals: 1,
     nps: 10,
-    owner: "Miguel",
+    owner: "Ana",
     since: "09/2021",
     notes: "Pidió Patagonia en 2023; muy buena relación. Preferir llamada, no NL fría.",
     history: [
@@ -400,7 +400,7 @@ export const CLIENTS: Client[] = [
       { route: "NEPAL_MUSTANG", date: "2023-09-14", vehicle: "moto", amount: 5_800 },
     ],
     reactivationPriority: 96,
-    reactivationWhy: "2 expediciones, NPS 10, 34 meses sin viaje — llamada de Miguel",
+    reactivationWhy: "2 expediciones, NPS 10, 34 meses sin viaje — llamada de la fundadora",
     lastOutboundAt: null,
     returnProbability: 88,
     contactThisMonth: true,
@@ -435,7 +435,7 @@ export const CLIENTS: Client[] = [
     brevoOpens: 42,
     referrals: 4,
     nps: 10,
-    owner: "Miguel",
+    owner: "Ana",
     since: "06/2018",
     notes: "Núcleo fiel 10+. Embajadora natural. Reserva Mongolia con saldo pendiente.",
     history: [
@@ -451,14 +451,14 @@ export const CLIENTS: Client[] = [
   },
   {
     id: "C-041",
-    name: "Miguel Torres",
+    name: "Marcos Torres",
     email: "miguel.torres@example.com",
     phone: "+34 600 11 22 03",
     city: "Valencia",
     country: "España",
     dni: "",
     address: "C/ Colón 22, 46004 Valencia",
-    contactPerson: "Miguel Torres",
+    contactPerson: "Marcos Torres",
     emergencyPhone: "+34 600 11 22 93",
     segment: "dormido",
     status: "seguimiento",
@@ -554,7 +554,7 @@ export const CLIENTS: Client[] = [
     brevoOpens: 22,
     referrals: 0,
     nps: 8,
-    owner: "Miguel",
+    owner: "Ana",
     since: "05/2022",
     notes: "Ficha incompleta de origen histórico. Completar antes de llamar.",
     history: [{ route: "ARGENTINA_PUNA", date: "2022-07-01", vehicle: "4x4", amount: 4_900 }],
@@ -594,7 +594,7 @@ export const CLIENTS: Client[] = [
     brevoOpens: 18,
     referrals: 3,
     nps: 10,
-    owner: "Miguel",
+    owner: "Ana",
     since: "04/2022",
     notes: "Trajo 3 amigos. Señal PayPal Tanzania. Embajador Content Factory.",
     history: [
@@ -826,7 +826,7 @@ export const CONTENT_DRAFTS: ContentDraft[] = [
     channel: "Brevo · newsletter",
     channelKind: "email_brevo",
     audience: "Suscriptores + viajeros Namibia + dormidos África",
-    owner: "Miguel / Laura",
+    owner: "Ana / Laura",
     subject: "Namibia no se cuenta. Se conduce.",
     excerpt:
       "Tono Masters of the Roads. Tres momentos del viaje + CTA suave. Edición humana antes de publicar en Brevo.",
@@ -839,15 +839,15 @@ Tres notas del Tour Leader (David):
 2) Swakopmund — cena de cierre, tres referidos espontáneos.
 3) Lo que no se publica: la confianza del día a día en el 4x4.
 
-Si te late África otra vez (o por primera vez), responde a este correo o escribe a ride@30mps.com. Lo cerramos contigo.
+Si te late África otra vez (o por primera vez), responde a este correo o escribe a hola@campo-norte.demo. Lo cerramos contigo.
 
 Nosotros lo organizamos todo. Tú conduces.
 
-— Equipo 30 MPS Adventures`,
+— Equipo Campo Norte`,
     variables: ["{nombre}", "{destino}", "{proxima_salida}"],
     arguments: [
       "Namibia 12/12 y margen ~32 %: prueba social real",
-      "Ahorra a Miguel la página en blanco (12–18 h/sem en contenido)",
+      "Ahorra a la fundadora la página en blanco (12–18 h/sem en contenido)",
       "Brevo es el canal de envío; el CRM solo prepara la plantilla",
       "Segmenta dormidos África sin spam automático",
     ],
@@ -870,19 +870,19 @@ Nosotros lo organizamos todo. Tú conduces.
 
 Ya han pasado unos días desde {destino}. Esperamos que el polvo (o la arena) se haya asentado y que el recuerdo siga vivo.
 
-Nos encantaría saber cómo lo viviste — una nota tuya vale más que mil métricas. Si conoces a alguien que encaje con 30 MPS, cuéntanoslo: los mejores viajes casi siempre empiezan por un referido.
+Nos encantaría saber cómo lo viviste — una nota tuya vale más que mil métricas. Si conoces a alguien que encaje con Campo Norte, cuéntanoslo: los mejores viajes casi siempre empiezan por un referido.
 
 Cuando quieras mirar la siguiente ruta, aquí estamos.
-ride@30mps.com · +34 667 11 37 84
+hola@campo-norte.demo · +34 600 123 456
 
 Un abrazo,
 {owner}
-30 MPS Adventures`,
+Campo Norte`,
     variables: ["{nombre}", "{destino}", "{owner}", "{fecha_viaje}"],
     arguments: [
       "El momento post-viaje es el de mayor NPS y referidos",
       "Plantilla editable evita emails fríos o genéricos",
-      "No es secuencia automática: Laura/Miguel eligen cuándo enviar",
+      "No es secuencia automática: Laura/Ana eligen cuándo enviar",
       "Conecta con Customer Intelligence (embajador / recurrente)",
     ],
     updatedAt: "2026-07-25",
@@ -895,12 +895,12 @@ Un abrazo,
     status: "en_revision",
     channel: "WhatsApp (el equipo pega y envía)",
     channelKind: "whatsapp_script",
-    audience: "Clientes dormidos priorizados (Isabel, Miguel T., Nuria…)",
-    owner: "Miguel",
-    subject: "Hola {nombre}, soy Miguel de 30 MPS",
+    audience: "Clientes dormidos priorizados (Isabel, Marcos T., Nuria…)",
+    owner: "Ana",
+    subject: "Hola {nombre}, soy Ana de Campo Norte",
     excerpt:
-      "Guion corto para pegar en WhatsApp. La IA no envía: solo prepara el texto. Miguel llama o escribe.",
-    body: `Hola {nombre}, soy Miguel de 30 MPS.
+      "Guion corto para pegar en WhatsApp. La IA no envía: solo prepara el texto. Ana llama o escribe.",
+    body: `Hola {nombre}, soy Ana de Campo Norte.
 
 Vi que hace tiempo que no salimos juntos a la carretera ({ultimo_viaje}). Estaba pensando en ti con {destino_interes}.
 
@@ -909,7 +909,7 @@ Vi que hace tiempo que no salimos juntos a la carretera ({ultimo_viaje}). Estaba
 Un abrazo`,
     variables: ["{nombre}", "{ultimo_viaje}", "{destino_interes}"],
     arguments: [
-      "Reactivación es palanca #1 hacia 1M € — pero 30 MPS vende trato humano",
+      "Reactivación es palanca #1 hacia 1M € — pero Campo Norte vende trato humano",
       "El CRM abre wa.me con el texto listo; la persona pulsa enviar",
       "Evita el error de ‘secuencia WhatsApp automática’ que rompería la marca",
       "Prioridad sale de Customer Intelligence (score reactivación)",
@@ -929,12 +929,12 @@ Un abrazo`,
     subject: "Documentación para {destino}",
     excerpt:
       "Recordatorio amable de pasaporte/seguro/vacunas. Pegable en WhatsApp desde la ficha de reserva.",
-    body: `Hola {nombre}, te escribe Laura de 30 MPS.
+    body: `Hola {nombre}, te escribe Laura de Campo Norte.
 
 Para tu salida a {destino} ({fecha_salida}) nos faltan todavía:
 {lista_docs}
 
-Cuando puedas, mándanos fotos/PDF por este mismo chat o a ride@30mps.com.
+Cuando puedas, mándanos fotos/PDF por este mismo chat o a hola@campo-norte.demo.
 Sin eso no podemos cerrar lodges y transfers con el operador.
 
 Gracias — cualquier duda, aquí estamos.`,
@@ -988,7 +988,7 @@ Owner comercial: {owner}`,
       "{owner}",
     ],
     arguments: [
-      "Reduce pings a Miguel preguntando ‘¿está todo listo?’",
+      "Reduce pings a la fundadora preguntando ‘¿está todo listo?’",
       "Une Reservas & logística con el canal interno del equipo",
       "Plantilla editable = cada TL ve el formato que necesita",
       "Cumple la regla de oro: cero mensajes automáticos al viajero",
@@ -1004,7 +1004,7 @@ Owner comercial: {owner}`,
     channel: "LinkedIn + Instagram",
     channelKind: "rrss",
     audience: "Audiencia RRSS · prospectos premium moto",
-    owner: "Miguel",
+    owner: "Ana",
     subject: "Mongolia no es un destino. Es una línea en el mapa.",
     excerpt:
       "Carrusel 5 slides: hook → ruta → ritual → ops → CTA. Estilo sobrio, sin emojis forzados.",
@@ -1021,13 +1021,13 @@ SLIDE 4 — Ops
 Lodges, comidas y operador local ya cerrados en el CRM.
 
 SLIDE 5 — CTA
-Próxima salida Mongolia · 30mps.com
+Próxima salida Mongolia · campo-norte.demo
 
 Pie LinkedIn: 1 pregunta al final. Sin hashtags basura.`,
     variables: ["{destino}", "{utm_campaign}", "{url}"],
     arguments: [
       "Producto hero de marca con UTM medible",
-      "Slide ops diferencia a 30 MPS de agencias solo Instagram",
+      "Slide ops diferencia a Campo Norte de agencias solo Instagram",
       "Revisión humana obligatoria antes de publicar",
     ],
     updatedAt: "2026-07-26",
@@ -1046,7 +1046,7 @@ Pie LinkedIn: 1 pregunta al final. Sin hashtags basura.`,
     excerpt:
       "Pack triple: post ~800 palabras, guion 8 min y resumen ops. El equipo elige qué publicar.",
     body: `A) BLOG (~800 palabras)
-Estructura: apertura real → 3 días clave → qué organiza 30 MPS → para quién es → CTA.
+Estructura: apertura real → 3 días clave → qué organiza Campo Norte → para quién es → CTA.
 
 B) GUION YOUTUBE (8 min)
 0:00 Hook · 0:40 Promesa · 2:00 Día tipo · 4:30 Ops · 6:30 Testimonio · 7:20 CTA
@@ -1086,8 +1086,8 @@ Puedes responder a este correo cuando esté transferido o usar el enlace de pago
 Si hay cualquier duda con fechas o documentación, dímelo y lo vemos.
 
 Gracias,
-Laura · 30 MPS Adventures
-ride@30mps.com`,
+Laura · Campo Norte
+hola@campo-norte.demo`,
     variables: ["{nombre}", "{destino}", "{saldo}", "{factura_numero}", "{medio_pago}"],
     arguments: [
       "Une Facturas Veri*FACTU con comunicación humana de cobro",
@@ -1103,7 +1103,7 @@ export const AUTOMATIONS: AutomationJob[] = [
   {
     id: "A-01",
     name: "Captura web → ficha lead + UTM + campaña",
-    from: "30mps.com / formularios",
+    from: "campo-norte.demo / formularios",
     to: "Data Hub · CRM",
     status: "ok",
     lastRun: "hace 3 min",
@@ -1126,13 +1126,13 @@ export const AUTOMATIONS: AutomationJob[] = [
     to: "Lead Intelligence → owner",
     status: "ok",
     lastRun: "hace 3 min",
-    note: "Reglas + señales Brevo. Score auditables. Aviso interno a Miguel/Laura.",
+    note: "Reglas + señales Brevo. Score auditables. Aviso interno a la fundadora/Laura.",
     trigger: "Alta o actualización de lead",
     cadence: "Tras cada alta · re-score diario",
     arguments: [
-      "Miguel no puede triar 25–40 leads/mes a ojo: el score ordena la cola",
+      "Ana no puede triar 25–40 leads/mes a ojo: el score ordena la cola",
       "Razones visibles (referido, clic NL, destino) = confianza del CEO",
-      "Owner asignado por reglas (VIP/referido → Miguel; resto → Laura)",
+      "Owner asignado por reglas (VIP/referido → Ana; resto → Laura)",
     ],
     neverDoes: "No cualifica ni responde al lead automáticamente",
     runs30d: 112,
@@ -1167,7 +1167,7 @@ export const AUTOMATIONS: AutomationJob[] = [
     cadence: "Por reserva · recordatorios T-30/T-14/T-7",
     arguments: [
       "«Nosotros lo organizamos todo» exige trazabilidad de lodges, comidas y operadores",
-      "Tour Leader (Ramón/David) ve contactos y stops sin preguntar a Miguel",
+      "Tour Leader (Ramón/David) ve contactos y stops sin preguntar a la fundadora",
       "Docs pendientes bloquean prep_viaje → alerta interna, no al cliente",
     ],
     neverDoes: "No escribe al viajero ni al hotel en su nombre",
@@ -1213,7 +1213,7 @@ export const AUTOMATIONS: AutomationJob[] = [
     id: "A-07",
     name: "Cola dormidos / VIP → aviso interno",
     from: "Customer Intelligence",
-    to: "Slack / email Miguel·Laura",
+    to: "Slack / email Ana·Laura",
     status: "ok",
     lastRun: "hace 6 h",
     note: "Lista priorizada con motivo. La llamada la hace una persona.",
@@ -1234,11 +1234,11 @@ export const AUTOMATIONS: AutomationJob[] = [
     to: "Borradores NL / IG / resumen interno",
     status: "ok",
     lastRun: "hace 1 d",
-    note: "IA genera borrador; equipo edita tono 30 MPS y publica en Brevo/RRSS.",
+    note: "IA genera borrador; equipo edita tono Campo Norte y publica en Brevo/RRSS.",
     trigger: "Reserva/expedición = cerrado + NPS opcional",
     cadence: "Por salida cerrada",
     arguments: [
-      "Miguel gasta 12–18 h/sem en contenido: este flujo le devuelve horas",
+      "Ana gasta 12–18 h/sem en contenido: este flujo le devuelve horas",
       "Material real del viaje (ocupación, anécdotas ops) > copy genérico",
       "Publicación siempre con revisión humana de marca",
     ],
@@ -1288,11 +1288,11 @@ export const AUTOMATIONS: AutomationJob[] = [
     to: "Asistente Knowledge (solo equipo)",
     status: "ok",
     lastRun: "hace 20 min",
-    note: "Responde con fuentes. Para Laura/David/Miguel — no expuesto al cliente.",
+    note: "Responde con fuentes. Para Laura/David/Ana — no expuesto al cliente.",
     trigger: "Pregunta interna o indexación nocturna",
     cadence: "Index diario · Q&A bajo demanda",
     arguments: [
-      "El conocimiento no puede vivir solo en la cabeza de Miguel",
+      "El conocimiento no puede vivir solo en la cabeza de la fundadora",
       "Respuestas citan hoja/ficha: auditables",
       "Acelera onboarding de Tour Leaders y office",
     ],
@@ -1310,7 +1310,7 @@ export const AUTOMATIONS: AutomationJob[] = [
     trigger: "Click en ficha cliente / reserva",
     cadence: "Bajo demanda",
     arguments: [
-      "30 MPS vende trato humano: la tech acorta el camino hasta la conversación",
+      "Campo Norte vende trato humano: la tech acorta el camino hasta la conversación",
       "Contexto (saldo, docs, último viaje) en pantalla antes de marcar",
       "Misma UX que un CRM serio de operaciones, no un chatbot",
     ],
@@ -1338,7 +1338,7 @@ export const KNOWLEDGE_ANSWERS: KnowledgeItem[] = [
     why: [
       "El CEO decide precio y repetición de ruta con margen real, no con intuición",
       "Objetivo de negocio ~30 %: Namibia está por encima — argumento para repetir y comunicar",
-      "Sin esta respuesta en Knowledge, Miguel vuelve a Excel y pierde horas",
+      "Sin esta respuesta en Knowledge, Ana vuelve a Excel y pierde horas",
     ],
   },
   {
@@ -1355,7 +1355,7 @@ export const KNOWLEDGE_ANSWERS: KnowledgeItem[] = [
   {
     category: "clientes",
     q: "¿A quién reactivar primero este mes?",
-    a: "Isabel Navarro (prioridad 96), Miguel Torres (84), Nuria Pons (72). Criterio: LTV × meses dormido × engagement Brevo. La llamada la hace Miguel o quien él delegue — no un bot.",
+    a: "Isabel Navarro (prioridad 96), Marcos Torres (84), Nuria Pons (72). Criterio: LTV × meses dormido × engagement Brevo. La llamada la hace Ana o quien ella delegue — no un bot.",
     sources: ["Customer Intelligence", "Eventos Brevo (lectura)", "Segmento dormidos"],
     why: [
       "≈55–65 % de clientes con un solo viaje: reactivación es palanca #1 a 1M €",
@@ -1381,7 +1381,7 @@ export const KNOWLEDGE_ANSWERS: KnowledgeItem[] = [
     sources: ["Reservas & logística R-4821", "Checklist prep viaje"],
     why: [
       "«Nosotros lo organizamos todo» debe ser consultable en 10 segundos",
-      "Tour Leader (Ramón) no depende del WhatsApp de Miguel",
+      "Tour Leader (Ramón) no depende del WhatsApp de la fundadora",
       "Es la fuente de verdad que alimenta Content Factory y Knowledge",
     ],
   },
@@ -1399,10 +1399,10 @@ export const KNOWLEDGE_ANSWERS: KnowledgeItem[] = [
   {
     category: "ops",
     q: "¿Quién es el Tour Leader y el operador local de Namibia jun 2026?",
-    a: "Tour Leader: David Rodríguez. Operador Windhoek: Desert Track Safaris (+264 61 220 110). Lodge Sossusvlei: Sossus Dune Lodge. Viaje cerrado (R-4823) — útil como playbook para la siguiente edición.",
+    a: "Tour Leader: David Ruiz. Operador Windhoek: Desert Track Safaris (+264 61 220 110). Lodge Sossusvlei: Sossus Dune Lodge. Viaje cerrado (R-4823) — útil como playbook para la siguiente edición.",
     sources: ["R-4823", "TEAM assumptions", "Historial Ana Beltrán"],
     why: [
-      "El conocimiento no puede vivir solo en la cabeza de Miguel",
+      "El conocimiento no puede vivir solo en la cabeza de la fundadora",
       "Acelera onboarding de office y TL nuevos",
       "Base para RAG interno Fase 5",
     ],
@@ -1437,7 +1437,7 @@ export const KNOWLEDGE_ANSWERS: KnowledgeItem[] = [
     why: [
       "La gestoría necesita respuestas citadas, no humo",
       "Evita facturar en régimen general por error",
-      "Argumenta el módulo Facturas en la demo ante Miguel",
+      "Argumenta el módulo Facturas en la demo ante Ana",
     ],
   },
   {
@@ -1454,10 +1454,10 @@ export const KNOWLEDGE_ANSWERS: KnowledgeItem[] = [
   {
     category: "contenido",
     q: "¿Qué plantilla uso para reactivar un dormido por WhatsApp?",
-    a: "Content Factory D-05 «WhatsApp · Guion reactivación dormido». Variables {nombre}, {ultimo_viaje}, {destino_interes}. Copiar → pegar en WhatsApp. Miguel envía; la IA no escribe al cliente.",
+    a: "Content Factory D-05 «WhatsApp · Guion reactivación dormido». Variables {nombre}, {ultimo_viaje}, {destino_interes}. Copiar → pegar en WhatsApp. Ana envía; la IA no escribe al cliente.",
     sources: ["Content Factory D-05", "Customer Intelligence", "Regla de oro"],
     why: [
-      "Evita mensajes improvisados que rompen el tono 30 MPS",
+      "Evita mensajes improvisados que rompen el tono Campo Norte",
       "Une CI (quién) + Content (qué decir) + acción humana",
       "Es el argumento central frente a ‘automatizar WhatsApp’",
     ],
@@ -1469,14 +1469,14 @@ export const KNOWLEDGE_ANSWERS: KnowledgeItem[] = [
     sources: ["Content Factory", "Automatización A-08", "Knowledge ops"],
     why: [
       "Una salida debe dejar activo reutilizable",
-      "Reduce las 12–18 h/sem de Miguel en contenido",
+      "Reduce las 12–18 h/sem de la fundadora en contenido",
       "Prueba social real > copy genérico",
     ],
   },
   {
     category: "stack",
     q: "¿Qué stack propone el Growth OS y por qué no un bot al cliente?",
-    a: "Airtable/Postgres + n8n/Make + Brevo (lectura/envío manual) + panel web interno + SIF/Veri*FACTU. 30 MPS vende trato humano: la tech trabaja detrás. Toda interacción con el viajero es persona (Miguel/Laura/TL).",
+    a: "Airtable/Postgres + n8n/Make + Brevo (lectura/envío manual) + panel web interno + SIF/Veri*FACTU. Campo Norte vende trato humano: la tech trabaja detrás. Toda interacción con el viajero es persona (Ana/Laura/TL).",
     sources: ["assumptions.stack", "GOLDEN_RULE", "PROPUESTA.md"],
     why: [
       "Alinea con el JD Growth Builder y capacidad part-time",
@@ -1490,7 +1490,7 @@ export const KNOWLEDGE_ANSWERS: KnowledgeItem[] = [
     a: "Ecosistema CRM → editor estilo n8n: crear/editar/duplicar/exportar JSON. Nodos con values, form y API. Ejemplo: captura web → set values → HTTP Hub → IF → CRM / aviso interno. Nunca nodo de envío automático al cliente.",
     sources: ["N8nFlowBuilder", "flow-data.ts", "A-01…A-12"],
     why: [
-      "Miguel ve que no son 4 zaps opacos",
+      "Ana ve que no son 4 zaps opacos",
       "Export JSON = puente real a n8n/Make",
       "Argumenta mantenibilidad part-time del Growth Builder",
     ],

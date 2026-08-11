@@ -149,7 +149,7 @@ function formatEur(n: number, lang: Lang): string {
     : `€${rounded.toLocaleString("en-US")}`;
 }
 
-/** Eje encaje 0–100: ¿parece cliente 30 MPS? */
+/** Eje encaje 0–100: ¿parece cliente Campo Norte? */
 export function fitAxis(lead: Lead, linked: Client | null): number {
   let fit = 20;
   fit += ((ORIGIN_WEIGHT[lead.origin] ?? 0) / 22) * 30;

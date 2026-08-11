@@ -1,10 +1,9 @@
 /**
- * 30 MPS Adventures — supuestos del business case (demo interna).
- * Cifras del anexo: ficticias (brief). SUPUESTO = no viene en el documento.
- * Confidencial · proceso de selección Evolve / Growth Builder.
+ * Campo Norte — supuestos del business case (demo interna ficticia).
+ * Cifras de ejemplo. No representan a ninguna empresa real.
  */
 
-/** Nombre del producto (repo / UI). El cliente demo sigue siendo COMPANY. */
+/** Nombre del producto (repo / UI). */
 export const PRODUCT = {
   name: "Campo Norte",
   slug: "campo-norte",
@@ -12,6 +11,7 @@ export const PRODUCT = {
   taglineEn: "Internal CRM · money, clients and operations",
 } as const;
 
+/** Métricas demo del caso de negocio (antes MPS_ANNEX). */
 export const MPS_ANNEX = {
   revenueCurrent: 800_000,
   revenueTarget2027: 1_000_000,
@@ -22,28 +22,28 @@ export const MPS_ANNEX = {
   clientsReal: 300,
   subscribers: 1_000,
   marginTargetPct: 30,
-  /** Mitad moto, mitad coche según brief */
+  /** Mitad moto, mitad coche según el caso demo */
   motoShareApprox: 0.5,
 } as const;
 
 export const COMPANY = {
-  name: "30 MPS Adventures",
-  legal: "30 MPS Adventures, S.L.",
-  tagline: "El mundo no está hecho de destinos, sino de caminos.",
-  promise: "Nosotros lo organizamos todo. Tú conduces.",
-  founded: 2015,
-  website: "https://30mps.com",
-  email: "ride@30mps.com",
-  phone: "+34 667 11 37 84",
-  ceo: "Miguel Checa",
-  ceoTitle: "Fundador y Managing Director",
+  name: "Campo Norte",
+  legal: "Campo Norte Expediciones, S.L.",
+  tagline: "Orden detrás del escenario. Experiencia delante.",
+  promise: "Nosotros organizamos. Tú vives el viaje.",
+  founded: 2018,
+  website: "https://campo-norte.demo",
+  email: "hola@campo-norte.demo",
+  phone: "+34 600 123 456",
+  ceo: "Ana Torres",
+  ceoTitle: "Fundadora y Directora",
 } as const;
 
 export const TEAM = [
-  { name: "Miguel Checa", role: "Fundador · vende y cuida la relación con el cliente" },
-  { name: "Laura Romera", role: "Office · reservas y día a día" },
-  { name: "David Rodríguez", role: "Tour Manager · África y Oriente Medio" },
-  { name: "Ramón Faro", role: "Guía moto · alta montaña" },
+  { name: "Ana Torres", role: "Fundadora · vende y cuida la relación con el cliente" },
+  { name: "Laura Vega", role: "Office · reservas y día a día" },
+  { name: "David Ruiz", role: "Tour Manager · operaciones de ruta" },
+  { name: "Ramón Gil", role: "Guía · alta montaña" },
 ] as const;
 
 export const MPS_ASSUMPTIONS = [
@@ -71,7 +71,7 @@ export const MPS_ASSUMPTIONS = [
     id: "reactivation_yield",
     label: "Meta: volver a llenar con antiguos",
     value: "10–15 reservas/año desde dormidos",
-    rationale: "Unos 53–80k €. La llamada la hace Miguel o el equipo — nunca un robot.",
+    rationale: "Unos 53–80k €. La llamada la hace Ana o el equipo — nunca un robot.",
   },
   {
     id: "lead_volume",
@@ -83,13 +83,13 @@ export const MPS_ASSUMPTIONS = [
     id: "gap_attribution",
     label: "Hoy no sabemos de dónde vienen",
     value: "Más del 70 % sin origen claro",
-    rationale: "El brief dice que el seguimiento de origen es casi inexistente. Es el primer agujero a tapar.",
+    rationale: "El seguimiento de origen es el primer agujero a tapar en el caso demo.",
   },
   {
     id: "founder_hours",
-    label: "Horas de Miguel en ordenar + seguir + contenido",
+    label: "Horas de la fundadora en ordenar + seguir + contenido",
     value: "12–18 h/semana (estimado)",
-    rationale: "Todo pasa por el fundador. Objetivo: devolverle 6–10 h/semana para vender y acompañar.",
+    rationale: "Todo pasa por la dirección. Objetivo: devolverle 6–10 h/semana para vender y acompañar.",
   },
   {
     id: "freelance_capacity",
@@ -106,4 +106,4 @@ export const MPS_ASSUMPTIONS = [
 ] as const;
 
 export const GOLDEN_RULE =
-  "Todo es interno: la tecnología nunca habla con el cliente. 30 MPS vende trato humano; las máquinas trabajan detrás.";
+  "Todo es interno: la tecnología nunca habla con el cliente. Campo Norte vende trato humano; las máquinas trabajan detrás.";

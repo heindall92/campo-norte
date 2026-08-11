@@ -35,7 +35,7 @@ export function emptyProfile(userId: string, seed?: { name?: string; email?: str
     fullName: seed?.name ?? "",
     jobTitle: seed?.roleLabel ?? "",
     about: "",
-    company: "30 MPS Adventures",
+    company: "Campo Norte",
     department: "",
     email: seed?.email ?? "",
     phone: "",

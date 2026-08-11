@@ -235,7 +235,7 @@ git push origin HEAD
   - Admin ve Usuarios en Cuenta; ops no.
 
 - [ ] **Step 3: Si todo OK, confirmar deploy Vercel**
-  - Revisar https://30mps.vercel.app en móvil real o DevTools.
+  - Revisar https://campo-norte.vercel.app en móvil real o DevTools.
 
 ---
 

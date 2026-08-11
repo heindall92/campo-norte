@@ -306,7 +306,7 @@ function buildGraphFor(a: AutomationJob, index: number): FlowGraph {
     x: 40 + step * 4,
     y: baseY - 55,
     config: cfg({
-      values: { channel: "internal", audience: "Miguel/Laura" },
+      values: { channel: "internal", audience: "Ana/Laura" },
       crmLink: { module: "ninguno", entityField: "", action: "notify_team" },
     }),
   });
@@ -374,7 +374,7 @@ export const FLOW_TEMPLATES: {
   },
   {
     id: "tpl-dormido",
-    name: "Cola dormidos → aviso Miguel",
+    name: "Cola dormidos → aviso Ana",
     description: "Cron diario + score reactivación + notify (sin WA auto)",
     modules: ["clientes"],
     build: () => templateChain("Dormidos", "clientes", "crm_client", "cron"),
@@ -549,7 +549,7 @@ export function buildLeadCaptureOllamaFlow(): FlowGraph {
     "Avisar responsable",
     1040,
     40,
-    "Notificación interna Miguel/Laura · sin canal al cliente",
+    "Notificación interna la fundadora/Laura · sin canal al cliente",
     { never_client: "true" },
   );
   const n8 = mk(
@@ -636,7 +636,7 @@ export function exportAllFlowsJson(flows: FlowGraph[]) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `30mps-crm-flows-${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = `campo-norte-crm-flows-${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }

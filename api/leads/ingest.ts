@@ -7,7 +7,7 @@
  * Supabase. Nada sale hacia el viajero: solo se crea la ficha y se ordena la cola.
  *
  * Autenticación, dos caminos:
- *   1. Integraciones externas (el formulario de 30mps.com, n8n, Make):
+ *   1. Integraciones externas (el formulario de campo-norte.demo, n8n, Make):
  *        x-mps-key: <LEADS_INGEST_SECRET>                     — clave compartida
  *        x-mps-signature: sha256=<hex hmac del cuerpo crudo>  — firma, preferible
  *   2. El formulario público de esta misma app (/captura): se acepta por origen.

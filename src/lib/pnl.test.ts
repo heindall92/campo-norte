@@ -53,7 +53,7 @@ function reservation(over: Partial<Reservation> = {}): Reservation {
     depositPaid: 2000,
     paymentChannel: "transferencia",
     paymentRefs: [],
-    tourLeader: "Ramón Faro",
+    tourLeader: "Ramón Gil",
     logisticsContacts: [],
     itinerary: [
       { day: "1", place: "A", lodging: "a", meals: "b" },

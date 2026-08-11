@@ -563,7 +563,7 @@ function SettingsPanel({
           <input
             className={fieldCls}
             value={biz.whatsappAlias}
-            placeholder="30mps"
+            placeholder="campo-norte"
             onChange={(e) =>
               setBiz({ ...biz, whatsappAlias: e.target.value.replace(/^@+/, "") })
             }
@@ -1336,7 +1336,7 @@ function HubPanel({ lang }: { lang: Lang }) {
             type="button"
             onClick={() =>
               downloadTextFile(
-                `30mps-leads-${new Date().toISOString().slice(0, 10)}.csv`,
+                `campo-norte-leads-${new Date().toISOString().slice(0, 10)}.csv`,
                 hub.getLeadsCsv(),
                 "text/csv;charset=utf-8",
               )
@@ -1350,7 +1350,7 @@ function HubPanel({ lang }: { lang: Lang }) {
             type="button"
             onClick={() =>
               downloadTextFile(
-                `30mps-clients-${new Date().toISOString().slice(0, 10)}.csv`,
+                `campo-norte-clients-${new Date().toISOString().slice(0, 10)}.csv`,
                 hub.getClientsCsv(),
                 "text/csv;charset=utf-8",
               )
@@ -1364,7 +1364,7 @@ function HubPanel({ lang }: { lang: Lang }) {
             type="button"
             onClick={() =>
               downloadTextFile(
-                `30mps-hub-backup-${new Date().toISOString().slice(0, 10)}.json`,
+                `campo-norte-hub-backup-${new Date().toISOString().slice(0, 10)}.json`,
                 JSON.stringify(hub.exportSnapshot(), null, 2),
                 "application/json",
               )
@@ -1607,14 +1607,14 @@ function HubPanel({ lang }: { lang: Lang }) {
                   "Puntuación clara → Inteligencia de leads",
                   "Reserva + logística → operaciones",
                   "Factura REAV 05 → gestoría",
-                  "Aviso interno → Miguel / Laura llaman",
+                  "Aviso interno → Ana / Laura llaman",
                 ]
               : [
                   "Web / Brevo / Excel → Data Hub",
                   "Explainable score → Lead Intelligence",
                   "Booking + logistics → ops",
                   "REAV 05 invoice → tax advisor",
-                  "Internal ping → Miguel / Laura call",
+                  "Internal ping → Ana / Laura call",
                 ]
             ).map((step, i) => (
               <li key={step} className="flex gap-2">
@@ -3688,14 +3688,14 @@ function ProposalPanel({ lang }: { lang: Lang }) {
           {es ? (
             <>
               <strong className="text-[var(--ink)]">{COMPANY.ceo}</strong>, esto no es «más software».
-              Es un sistema interno para que 30 MPS sepa de dónde vienen los clientes, a quién llamar
+              Es un sistema interno para que Campo Norte sepa de dónde vienen los clientes, a quién llamar
               hoy, y cuánto deja cada salida — sin que ninguna máquina hable con el viajero.{" "}
               <strong className="text-[var(--ink)]">{GOLDEN_RULE}</strong>
             </>
           ) : (
             <>
               <strong className="text-[var(--ink)]">{COMPANY.ceo}</strong>, this is not “more software”.
-              It’s an internal system so 30 MPS knows where clients come from, who to call today, and
+              It’s an internal system so Campo Norte knows where clients come from, who to call today, and
               what each departure earns — without any machine messaging the traveller.{" "}
               <strong className="text-[var(--ink)]">{GOLDEN_RULE}</strong>
             </>
@@ -3708,14 +3708,14 @@ function ProposalPanel({ lang }: { lang: Lang }) {
         <ul className="space-y-3 text-sm leading-relaxed text-[var(--ink)] md:text-base">
           {(es
             ? [
-                "Los datos viven en Excel, el correo de Miguel y la newsletter. Nadie ve el negocio entero en una sola pantalla.",
+                "Los datos viven en Excel, el correo de la fundadora y la newsletter. Nadie ve el negocio entero en una sola pantalla.",
                 "No sabemos de verdad de dónde llega cada interesado (web, recomendación, email…). Sin eso, no se puede mejorar lo que funciona.",
-                "Miguel pierde muchas horas ordenando leads, haciendo seguimiento y pensando contenido — tiempo que debería ir a cerrar viajes y cuidar clientes.",
+                "Ana pierde muchas horas ordenando leads, haciendo seguimiento y pensando contenido — tiempo que debería ir a cerrar viajes y cuidar clientes.",
               ]
             : [
-                "Data lives in sheets, Miguel’s inbox and the newsletter. Nobody sees the whole business on one screen.",
+                "Data lives in sheets, Ana’s inbox and the newsletter. Nobody sees the whole business on one screen.",
                 "We don’t really know where each lead comes from (web, referral, email…). Without that, you can’t double down on what works.",
-                "Miguel burns hours sorting leads, chasing follow-ups and drafting content — time that should go to closing trips and caring for clients.",
+                "Ana burns hours sorting leads, chasing follow-ups and drafting content — time that should go to closing trips and caring for clients.",
               ]
           ).map((item) => (
             <li key={item} className="flex gap-3">
@@ -3737,7 +3737,7 @@ function ProposalPanel({ lang }: { lang: Lang }) {
               [
                 "2 · Prioridad",
                 "A quién llamar hoy",
-                "El sistema ordena leads y clientes dormidos. Miguel o Laura llaman; la máquina solo prepara la lista.",
+                "El sistema ordena leads y clientes dormidos. Ana o Laura llaman; la máquina solo prepara la lista.",
               ],
               [
                 "3 · Claridad",
@@ -3754,7 +3754,7 @@ function ProposalPanel({ lang }: { lang: Lang }) {
               [
                 "2 · Priority",
                 "Who to call today",
-                "The system ranks leads and dormant clients. Miguel or Laura call; the machine only prepares the list.",
+                "The system ranks leads and dormant clients. Ana or Laura call; the machine only prepares the list.",
               ],
               [
                 "3 · Clarity",
@@ -3772,7 +3772,7 @@ function ProposalPanel({ lang }: { lang: Lang }) {
       </div>
 
       <Card
-        title={es ? "Lo que Miguel mide en 6 meses" : "What Miguel measures in 6 months"}
+        title={es ? "Lo que la fundadora mide en 6 meses" : "What Ana measures in 6 months"}
         subtitle={
           es
             ? "Metas de negocio (no de tecnología). Los números vivos salen del Hub."
@@ -3838,13 +3838,13 @@ function ProposalPanel({ lang }: { lang: Lang }) {
               {(es
                 ? [
                     "En las reuniones ya no preguntáis «¿esto de dónde salió?»",
-                    "Miguel trabaja una lista corta, no el buzón entero",
-                    "Laura o Miguel llaman de verdad a esa lista (persona, no robot)",
+                    "Ana trabaja una lista corta, no el buzón entero",
+                    "Laura o Ana llaman de verdad a esa lista (persona, no robot)",
                   ]
                 : [
                     "Meetings stop asking “where did this come from?”",
-                    "Miguel works a short list, not the whole inbox",
-                    "Laura or Miguel actually call that list (a person, not a bot)",
+                    "Ana works a short list, not the whole inbox",
+                    "Laura or Ana actually call that list (a person, not a bot)",
                   ]
               ).map((li) => (
                 <li key={li}>{li}</li>
@@ -3874,13 +3874,13 @@ function ProposalPanel({ lang }: { lang: Lang }) {
             <>
               Ningún sistema escribe al viajero. Ni WhatsApp automático, ni email robot, ni chat.
               La tecnología ordena, avisa al equipo y prepara borradores.{" "}
-              <strong>Quien firma la relación con el cliente es siempre una persona de 30 MPS.</strong>
+              <strong>Quien firma la relación con el cliente es siempre una persona de Campo Norte.</strong>
             </>
           ) : (
             <>
               No system writes to the traveller. No auto-WhatsApp, no robot email, no chatbot. Tech
               sorts, alerts the team and drafts copy.{" "}
-              <strong>A 30 MPS person always owns the client relationship.</strong>
+              <strong>A Campo Norte person always owns the client relationship.</strong>
             </>
           )}
         </p>
@@ -3890,16 +3890,16 @@ function ProposalPanel({ lang }: { lang: Lang }) {
         <p className="text-sm leading-relaxed text-[var(--ink)] md:text-base">
           {es ? (
             <>
-              No vengo a sustituir el trato humano que hace única a 30 MPS. Vengo a quitaros de encima
+              No vengo a sustituir el trato humano que hace única a Campo Norte. Vengo a quitaros de encima
               el trabajo repetitivo de detrás: ordenar leads, recordar a quién llamar, ver el margen
-              y preparar textos. Así Miguel y el equipo pueden dedicar más horas a lo que de verdad
+              y preparar textos. Así Ana y el equipo pueden dedicar más horas a lo que de verdad
               vende: <strong>confianza, camino y experiencia premium</strong>.
             </>
           ) : (
             <>
-              I’m not here to replace the human care that makes 30 MPS unique. I’m here to take the
+              I’m not here to replace the human care that makes Campo Norte unique. I’m here to take the
               repetitive backstage work off your plate: sorting leads, remembering who to call,
-              seeing margin and drafting copy. So Miguel and the team spend more hours on what
+              seeing margin and drafting copy. So Ana and the team spend more hours on what
               actually sells: <strong>trust, the road and a premium experience</strong>.
             </>
           )}
@@ -3932,7 +3932,7 @@ function ProposalPanel({ lang }: { lang: Lang }) {
 }
 
 /** Slides exportadas a pixel (carpeta /slides) + PDF descargable */
-const PITCH_PDF_URL = "/deck/30MPS_BusinessCase_YoandyRamirez.pdf";
+const PITCH_PDF_URL = "/deck/CampoNorte_BusinessCase_YoandyRamirez.pdf";
 const PITCH_SLIDE_IMAGES = Array.from(
   { length: 17 },
   (_, i) => `/deck/slides/${String(i + 1).padStart(2, "0")}.jpg`,
@@ -3964,7 +3964,7 @@ function SlidesPanel({ lang }: { lang: Lang }) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
-            Propuesta empresarial · 30 MPS
+            Propuesta empresarial · Campo Norte
           </p>
           <h2 className="mt-0.5 truncate font-[family-name:var(--mps-display)] text-lg text-[var(--ink)] md:text-xl">
             {lang === "es"
@@ -3978,7 +3978,7 @@ function SlidesPanel({ lang }: { lang: Lang }) {
           </p>
           <a
             href={PITCH_PDF_URL}
-            download="30MPS_BusinessCase_YoandyRamirez.pdf"
+            download="CampoNorte_BusinessCase_YoandyRamirez.pdf"
             className="inline-flex items-center gap-2 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-strong)] px-3 py-1.5 text-xs font-semibold text-[var(--ink)] hover:border-[var(--accent)]"
           >
             <Download className="h-3.5 w-3.5" />
@@ -4191,7 +4191,7 @@ export function MpsCrmApp() {
             <div className="flex flex-col items-center gap-2">
               <div
                 className="flex h-11 w-11 flex-col items-center justify-center rounded-xl bg-[var(--accent)] text-center shadow-md"
-                title="30 MPS Adventures"
+                title="Campo Norte"
               >
                 <span className="font-[family-name:var(--mps-display)] text-base leading-none font-bold text-white">
                   30
@@ -4223,7 +4223,7 @@ export function MpsCrmApp() {
                 </div>
                 <div className="min-w-0">
                   <p className="font-[family-name:var(--mps-display)] text-xl tracking-tight text-white">
-                    30 MPS
+                    Campo Norte
                   </p>
                   <p className="mt-0.5 text-[11px] leading-snug text-[var(--sidebar-muted)]">
                     {t(lang, "brand_sub")}

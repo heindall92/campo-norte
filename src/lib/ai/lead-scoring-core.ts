@@ -4,7 +4,7 @@
  * Vive aparte de `lead-scoring.ts` a propósito: ese archivo habla con Ollama y
  * arrastra `import.meta.env`, que no existe en Node. Este solo hace cuentas, así
  * que lo pueden importar tanto la app como las funciones de `api/`, y el score
- * que ve Miguel en pantalla es exactamente el que calcula el servidor.
+ * que ve Ana en pantalla es exactamente el que calcula el servidor.
  *
  * Importes relativos con extensión `.js` (no el alias `@/`) porque el
  * typecheck de `api/` usa resolución de Node, donde el alias no existe.

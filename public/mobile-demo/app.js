@@ -62,7 +62,7 @@
       hero_eyebrow: 'Próxima salida', hero_cta: 'Ver reserva', hero_seats: 'plazas',
       days: 'días',
       today: 'Prioridad de hoy', today_all: 'Ver leads',
-      quick: 'Accesos rápidos', eco: 'Ecosistema 30 MPS',
+      quick: 'Accesos rápidos', eco: 'Ecosistema Campo Norte',
       kpi_leads: 'Leads esta semana', kpi_leads_foot: '+3 hoy · origen conocido 91 %',
       kpi_occ: 'Ocupación salidas', kpi_occ_foot: '63 de 68 plazas',
       kpi_pending: 'Saldo pendiente', kpi_pending_foot: 'Laura Vidal · Mongolia',
@@ -114,7 +114,7 @@
       hero_eyebrow: 'Next departure', hero_cta: 'Open booking', hero_seats: 'seats',
       days: 'days',
       today: "Today's priority", today_all: 'View leads',
-      quick: 'Quick access', eco: '30 MPS ecosystem',
+      quick: 'Quick access', eco: 'Campo Norte ecosystem',
       kpi_leads: 'Leads this week', kpi_leads_foot: '+3 today · 91% with source',
       kpi_occ: 'Departure occupancy', kpi_occ_foot: '63 of 68 seats',
       kpi_pending: 'Outstanding balance', kpi_pending_foot: 'Laura Vidal · Mongolia',
@@ -213,25 +213,25 @@
   };
 
   const LEADS = [
-    { id: 'L-1042', name: 'María Gálvez', score: 94, status: 'cualificado', origin: 'referral', route: 'MONGOLIA', vehicle: 'moto', owner: 'Miguel', when: { es: 'hace 3 días', en: '3 days ago' },
+    { id: 'L-1042', name: 'María Gálvez', score: 94, status: 'cualificado', origin: 'referral', route: 'MONGOLIA', vehicle: 'moto', owner: 'Ana', when: { es: 'hace 3 días', en: '3 days ago' },
       why: { es: ['Referida por cliente de 3+ expediciones', 'Interés Mongolia en moto', 'Presupuesto alineado con ticket medio'], en: ['Referred by a 3+ expedition client', 'Wants Mongolia by motorcycle', 'Budget matches average ticket'] } },
     { id: 'L-1041', name: 'Jordi Puig', score: 83, status: 'en_contacto', origin: 'brevo_click', route: 'NAMIBIA', vehicle: '4x4', owner: 'Laura', when: { es: 'hace 4 días', en: '4 days ago' },
       why: { es: ['Clic en CTA Namibia', 'Abrió 5 de 7 newsletters', 'Viajó a Costa Rica en 2024'], en: ['Clicked the Namibia CTA', 'Opened 5 of 7 newsletters', 'Travelled to Costa Rica in 2024'] } },
     { id: 'L-1038', name: 'Elena Ruiz', score: 76, status: 'nuevo', origin: 'web_form', route: 'ARGENTINA_PUNA', vehicle: '4x4', owner: '—', when: { es: 'hace 5 días', en: '5 days ago' },
       why: { es: ['Formulario completo', 'UTM Instagram Stories', 'Pregunta por La Puna en 4x4'], en: ['Complete web form', 'Instagram Stories UTM', 'Asks about La Puna in 4x4'] } },
-    { id: 'L-1035', name: 'Carlos Méndez', score: 69, status: 'en_contacto', origin: 'feria', route: 'ALASKA', vehicle: 'moto', owner: 'Miguel', when: { es: 'hace 6 días', en: '6 days ago' },
+    { id: 'L-1035', name: 'Carlos Méndez', score: 69, status: 'en_contacto', origin: 'feria', route: 'ALASKA', vehicle: 'moto', owner: 'Ana', when: { es: 'hace 6 días', en: '6 days ago' },
       why: { es: ['Lead de feria AdventureTravel-26', 'Interés Alaska', 'Sin historial previo'], en: ['Lead from AdventureTravel-26 fair', 'Interest in Alaska', 'No previous history'] } },
     { id: 'L-1031', name: 'Ana Beltrán', score: 48, status: 'nuevo', origin: 'instagram', route: null, vehicle: null, owner: '—', when: { es: 'hace 4 días', en: '4 days ago' },
       why: { es: ['DM sin formulario', 'Origen parcial', 'Sin ruta clara'], en: ['DM without a form', 'Partial source', 'No clear route'] } },
     { id: 'L-1028', name: 'Pablo Soto', score: 26, status: 'nuevo', origin: 'unknown', route: null, vehicle: null, owner: '—', when: { es: 'hace 13 días', en: '13 days ago' },
-      why: { es: ['Sin origen conocido', 'Solo un email en la bandeja de Miguel', 'Falta contexto para priorizar'], en: ['Unknown source', 'Just an email in Miguel’s inbox', 'Not enough context to rank'] } },
+      why: { es: ['Sin origen conocido', 'Solo un email en la bandeja de la fundadora', 'Falta contexto para priorizar'], en: ['Unknown source', 'Just an email in Ana’s inbox', 'Not enough context to rank'] } },
   ];
 
   const CLIENTS = [
-    { id: 'C-012', name: 'Isabel Navarro', city: 'Madrid', segment: 'dormido', trips: 2, ltv: 11200, nps: 10, next: 'MONGOLIA', owner: 'Miguel', priority: 96, month: true,
-      note: { es: '34 meses sin viajar, NPS 10. Llamada de Miguel, no newsletter fría.', en: '34 months without travelling, NPS 10. Call from Miguel, not a cold newsletter.' },
+    { id: 'C-012', name: 'Isabel Navarro', city: 'Madrid', segment: 'dormido', trips: 2, ltv: 11200, nps: 10, next: 'MONGOLIA', owner: 'Ana', priority: 96, month: true,
+      note: { es: '34 meses sin viajar, NPS 10. Llamada de la fundadora, no newsletter fría.', en: '34 months without travelling, NPS 10. Call from Ana, not a cold newsletter.' },
       history: [{ r: 'MONGOLIA', d: '2021', a: 5400 }, { r: 'NEPAL_MUSTANG', d: '2023', a: 5800 }] },
-    { id: 'C-003', name: 'Laura Vidal', city: 'Barcelona', segment: 'vip', trips: 11, ltv: 58000, nps: 10, next: 'ALASKA', owner: 'Miguel', priority: 88, month: true, due: 4800,
+    { id: 'C-003', name: 'Laura Vidal', city: 'Barcelona', segment: 'vip', trips: 11, ltv: 58000, nps: 10, next: 'ALASKA', owner: 'Ana', priority: 88, month: true, due: 4800,
       note: { es: '11 expediciones. Saldo de 4.800 € en Mongolia sep 2026.', en: '11 expeditions. €4,800 outstanding on Mongolia Sep 2026.' },
       history: [{ r: 'ALASKA', d: '2024', a: 6100 }, { r: 'MONGOLIA', d: '2025', a: 5900 }] },
     { id: 'C-055', name: 'Carlos Méndez', city: 'Bilbao', segment: 'embajador', trips: 3, ltv: 16800, nps: 9, next: 'TANZANIA', owner: 'Laura', priority: 64, month: false,
@@ -243,17 +243,17 @@
     { id: 'C-120', name: 'Nuria Pons', city: 'Palma', segment: 'en_riesgo', trips: 1, ltv: 4900, nps: 6, next: null, owner: 'Laura', priority: 72, month: true,
       note: { es: 'Una expedición y NPS 6: revisar qué falló antes de volver a ofrecer.', en: 'One expedition and NPS 6: review what went wrong before offering again.' },
       history: [{ r: 'COSTA_RICA', d: '2024', a: 4900 }] },
-    { id: 'C-041', name: 'Miguel Torres', city: 'Valencia', segment: 'dormido', trips: 1, ltv: 5600, nps: 8, next: 'COLOMBIA', owner: 'Miguel', priority: 58, month: false,
+    { id: 'C-041', name: 'Marcos Torres', city: 'Valencia', segment: 'dormido', trips: 1, ltv: 5600, nps: 8, next: 'COLOMBIA', owner: 'Ana', priority: 58, month: false,
       note: { es: 'Preguntó por Colombia en enero y no hubo seguimiento.', en: 'Asked about Colombia in January with no follow-up.' },
       history: [{ r: 'ARGENTINA_PUNA', d: '2023', a: 5600 }] },
-    { id: 'C-088', name: 'Sergio Molina', city: 'Sevilla', segment: 'activo', trips: 1, ltv: 5400, nps: 9, next: 'COLOMBIA', owner: 'Miguel', priority: 51, month: false, due: 7800,
+    { id: 'C-088', name: 'Sergio Molina', city: 'Sevilla', segment: 'activo', trips: 1, ltv: 5400, nps: 9, next: 'COLOMBIA', owner: 'Ana', priority: 51, month: false, due: 7800,
       note: { es: 'Colombia ago 2026 con documentación pendiente.', en: 'Colombia Aug 2026 with documents pending.' },
       history: [{ r: 'COSTA_RICA', d: '2025', a: 5400 }] },
   ];
 
   const RESERVATIONS = [
     { id: 'R-4821', client: 'Laura Vidal', route: 'MONGOLIA', trip: 'Mongolia · Chinggis Khan · sep 2026', vehicle: 'moto', status: 'prep_viaje',
-      departure: '2026-09-08', pax: 1, total: 6800, paid: 2000, leader: 'Ramón Faro',
+      departure: '2026-09-08', pax: 1, total: 6800, paid: 2000, leader: 'Ramón Gil',
       itinerary: [
         { day: 'D0–D1', place: 'Ulaanbaatar', detail: { es: 'Kempinski Khan Palace · cena de bienvenida', en: 'Kempinski Khan Palace · welcome dinner' } },
         { day: 'D2–D4', place: 'Terelj / Gorkhi', detail: { es: 'Ger camp Terelj Nomads · pensión completa', en: 'Terelj Nomads ger camp · full board' } },
@@ -264,21 +264,21 @@
         { role: { es: 'Mecánico de ruta', en: 'Route mechanic' }, name: 'Tuguldur Garage', phone: '+976 8811 3344' },
       ] },
     { id: 'R-4822', client: 'Sergio Molina', route: 'COLOMBIA', trip: 'Colombia · Coffee Tour · ago 2026', vehicle: '4x4', status: 'docs_pendientes',
-      departure: '2026-08-18', pax: 2, total: 10800, paid: 3000, leader: 'David Rodríguez',
+      departure: '2026-08-18', pax: 2, total: 10800, paid: 3000, leader: 'David Ruiz',
       itinerary: [
         { day: 'D1', place: 'Bogotá', detail: { es: 'Recogida y briefing de seguridad', en: 'Pick-up and safety briefing' } },
         { day: 'D2–D5', place: { es: 'Eje cafetero', en: 'Coffee region' }, detail: { es: 'Haciendas · rutas 4x4 de montaña', en: 'Haciendas · mountain 4x4 routes' } },
       ],
       contacts: [{ role: { es: 'Operador local', en: 'Local operator' }, name: 'Andes Overland', phone: '+57 310 555 2211' }] },
     { id: 'R-4820', client: 'Carlos Méndez', route: 'TANZANIA', trip: 'Tanzania · Big Five · oct 2026', vehicle: '4x4', status: 'reservado',
-      departure: '2026-10-12', pax: 1, total: 7400, paid: 1500, leader: 'David Rodríguez',
+      departure: '2026-10-12', pax: 1, total: 7400, paid: 1500, leader: 'David Ruiz',
       itinerary: [
         { day: 'D1–D2', place: 'Arusha', detail: { es: 'Hotel base · revisión de vehículos', en: 'Base hotel · vehicle check' } },
         { day: 'D3–D7', place: 'Serengeti', detail: { es: 'Campamentos · guía de fauna', en: 'Camps · wildlife guide' } },
       ],
       contacts: [{ role: { es: 'Operador local', en: 'Local operator' }, name: 'Kilimanjaro Fleet', phone: '+255 754 220 118' }] },
     { id: 'R-4823', client: 'Ana Beltrán', route: 'NAMIBIA', trip: 'Namibia · paraíso África · jun 2026', vehicle: '4x4', status: 'cerrado',
-      departure: '2026-06-05', pax: 1, total: 6200, paid: 6200, leader: 'David Rodríguez',
+      departure: '2026-06-05', pax: 1, total: 6200, paid: 6200, leader: 'David Ruiz',
       itinerary: [{ day: 'D1–D9', place: 'Windhoek → Sossusvlei', detail: { es: 'Expedición completada y facturada', en: 'Expedition completed and invoiced' } }],
       contacts: [{ role: { es: 'Operador local', en: 'Local operator' }, name: 'Namib Tracks', phone: '+264 61 300 442' }] },
   ];
@@ -292,7 +292,7 @@
 
   const AUTOMATIONS = [
     { id: 'A-01', name: { es: 'Formulario web → ficha + aviso interno', en: 'Web form → record + internal alert' }, on: true,
-      sub: { es: 'Crea el lead, puntúa con IA y avisa a Miguel en 40 s', en: 'Creates the lead, scores it and pings Miguel in 40s' } },
+      sub: { es: 'Crea el lead, puntúa con IA y avisa a la fundadora en 40 s', en: 'Creates the lead, scores it and pings Ana in 40s' } },
     { id: 'A-02', name: { es: 'Cola de reactivación mensual', en: 'Monthly reactivation queue' }, on: true,
       sub: { es: 'Lista «llamar este mes» · la llamada la hace una persona', en: '“Call this month” list · a human makes the call' } },
     { id: 'A-03', name: { es: 'Checklist de documentos por salida', en: 'Per-departure document checklist' }, on: true,
@@ -309,7 +309,7 @@
   ];
 
   const ECO = [
-    { id: 'web', icon: 'globe', from: '#1d4ed8', to: '#0ea5e9', title: { es: 'Web oficial', en: 'Official site' }, sub: { es: 'Lo publicado en 30mps.com', en: "What's live on 30mps.com" } },
+    { id: 'web', icon: 'globe', from: '#1d4ed8', to: '#0ea5e9', title: { es: 'Web oficial', en: 'Official site' }, sub: { es: 'Lo publicado en campo-norte.demo', en: "What's live on campo-norte.demo" } },
     { id: 'ig', icon: 'camera', from: '#be2f6b', to: '#f59e0b', title: { es: 'Instagram', en: 'Instagram' }, sub: { es: 'Pulso de marca y stories', en: 'Brand pulse and stories' } },
     { id: 'yt', icon: 'play', from: '#b91c1c', to: '#f97316', title: { es: 'YouTube', en: 'YouTube' }, sub: { es: 'Rutas en vídeo', en: 'Routes on video' } },
     { id: 'support', icon: 'help', from: '#0f766e', to: '#22c55e', title: { es: 'Soporte y licencia', en: 'Support & license' }, sub: { es: 'Uso interno · documentación', en: 'Internal use · docs' } },
@@ -346,14 +346,14 @@
       rows: [[{ es: 'En revisión', en: 'In review' }, '3'], [{ es: 'Listos para Brevo', en: 'Ready for Brevo' }, '2'], [{ es: 'Publicados este mes', en: 'Published this month' }, '6'], [{ es: 'Canal principal', en: 'Main channel' }, 'Email / Brevo']] },
     knowledge: { title: { es: 'Asistente de conocimiento', en: 'Knowledge assistant' }, sub: { es: 'Responde con documentos internos y datos del Hub.', en: 'Answers from internal docs and live Hub data.' },
       rows: [[{ es: 'Documentos indexados', en: 'Indexed documents' }, '24'], [{ es: 'Preguntas este mes', en: 'Questions this month' }, '61'], [{ es: 'Motor', en: 'Engine' }, 'RAG local + Ollama'], [{ es: 'Envía al viajero', en: 'Writes to traveller' }, 'No']] },
-    pitch: { title: { es: 'Propuesta', en: 'Proposal' }, sub: { es: 'Business case de Growth Builder para Miguel.', en: 'Growth Builder business case for Miguel.' },
+    pitch: { title: { es: 'Propuesta', en: 'Proposal' }, sub: { es: 'Business case de Growth Builder para la fundadora.', en: 'Growth Builder business case for Ana.' },
       rows: [[{ es: 'Metas a 6 meses', en: '6-month goals' }, '6'], [{ es: 'Origen conocido', en: 'Known source' }, '95 %'], [{ es: 'Menos papeleo', en: 'Less paperwork' }, '−60 %'], [{ es: 'Reactivación', en: 'Reactivation' }, '15 %']] },
     slides: { title: { es: 'Presentación', en: 'Slides' }, sub: { es: '15 diapositivas del pitch, listas para proyectar.', en: '15 pitch slides, ready to project.' },
       rows: [[{ es: 'Diapositivas', en: 'Slides' }, '15'], [{ es: 'Formato', en: 'Format' }, '16:9 · PPTX'], [{ es: 'Última edición', en: 'Last edit' }, '28/07/2026']] },
     users: { title: { es: 'Usuarios y roles', en: 'Users and roles' }, sub: { es: 'Quién entra y qué puede tocar.', en: 'Who signs in and what they can touch.' },
-      rows: [['Miguel Checa', 'Admin'], ['Laura Sanz', { es: 'Operaciones', en: 'Operations' }], ['David Rodríguez', 'Tour leader'], ['Yoandy R.', 'Growth Builder']] },
+      rows: [['Ana Torres', 'Admin'], ['Laura Sanz', { es: 'Operaciones', en: 'Operations' }], ['David Ruiz', 'Tour leader'], ['Yoandy R.', 'Growth Builder']] },
     settings: { title: { es: 'Ajustes del negocio', en: 'Business settings' }, sub: { es: 'Datos fiscales, WhatsApp saliente y proveedores de IA.', en: 'Tax data, outbound WhatsApp and AI providers.' },
-      rows: [[{ es: 'Razón social', en: 'Legal name' }, '30 MPS Adventures S.L.'], [{ es: 'Régimen IVA', en: 'VAT scheme' }, 'REAV · clave 05'], [{ es: 'Proveedor IA', en: 'AI provider' }, 'Ollama (local)'], [{ es: 'Claves en cliente', en: 'Client-side keys' }, 'No']] },
+      rows: [[{ es: 'Razón social', en: 'Legal name' }, 'Campo Norte S.L.'], [{ es: 'Régimen IVA', en: 'VAT scheme' }, 'REAV · clave 05'], [{ es: 'Proveedor IA', en: 'AI provider' }, 'Ollama (local)'], [{ es: 'Claves en cliente', en: 'Client-side keys' }, 'No']] },
   };
 
   const ACCENTS = [
@@ -481,7 +481,7 @@
       el.appbar.innerHTML = `<div class="appbar-row">
         <button class="avatar" type="button" data-tab="account" aria-label="${t('acc_title')}">MC</button>
         <button class="greet" type="button" data-tab="account">
-          <small>${t('greet')}</small><strong>Miguel</strong>
+          <small>${t('greet')}</small><strong>Ana</strong>
         </button>
         <button class="icon-btn" type="button" data-refresh aria-label="Hub">${icon('refresh')}</button>
         <button class="icon-btn" type="button" data-sheet="notif" aria-label="${t('notif_title')}">${icon('bell')}${S.unread ? '<i class="badge-dot"></i>' : ''}</button>
@@ -711,9 +711,9 @@
     return `
       <div class="card profile">
         <span class="avatar">MC</span>
-        <strong>Miguel Checa</strong>
+        <strong>Ana Torres</strong>
         <small>${S.lang === 'es' ? 'Fundador · Managing Director' : 'Founder · Managing Director'}</small>
-        <small>miguel@30mps.com</small>
+        <small>ana@campo-norte.demo</small>
         <div class="profile-stats">
           <div><b>41</b><span>${t('st_trips')}</span></div>
           <div><b>36</b><span>${t('st_leads')}</span></div>
@@ -879,7 +879,7 @@
             { d: '09:12:04', b: S.lang === 'es' ? 'Formulario recibido' : 'Form received', s: 'elena.ruiz@example.com · UTM Instagram' },
             { d: '09:12:06', b: S.lang === 'es' ? 'Ficha creada en el Hub' : 'Record created in the Hub', s: 'L-1038 · Argentina · La Puna' },
             { d: '09:12:31', b: S.lang === 'es' ? 'Scoring IA' : 'AI scoring', s: '76 · ' + (S.lang === 'es' ? 'formulario completo + ruta clara' : 'complete form + clear route') },
-            { d: '09:12:44', b: S.lang === 'es' ? 'Aviso interno a Miguel' : 'Internal alert to Miguel', s: S.lang === 'es' ? 'Nada enviado al viajero' : 'Nothing sent to the traveller', last: true },
+            { d: '09:12:44', b: S.lang === 'es' ? 'Aviso interno a la fundadora' : 'Internal alert to Ana', s: S.lang === 'es' ? 'Nada enviado al viajero' : 'Nothing sent to the traveller', last: true },
           ].map((s) => `<div class="tl-item">
             <span class="tl-mark"><i class="tl-dot"></i>${s.last ? '' : '<i class="tl-line"></i>'}</span>
             <span class="tl-body"><span class="tl-day">${s.d}</span><b>${s.b}</b><small>${s.s}</small></span>
@@ -1080,7 +1080,7 @@
   function sheetHelp() {
     openSheet(t('s_help'), `
       <div class="card kv">
-        <span class="kv-row"><span>${S.lang === 'es' ? 'Producto' : 'Product'}</span><span>Growth OS · 30 MPS</span></span>
+        <span class="kv-row"><span>${S.lang === 'es' ? 'Producto' : 'Product'}</span><span>Campo Norte</span></span>
         <span class="kv-row"><span>${S.lang === 'es' ? 'Licencia' : 'License'}</span><span>${S.lang === 'es' ? 'Comercial de pago' : 'Paid commercial'}</span></span>
         <span class="kv-row"><span>${S.lang === 'es' ? 'Uso' : 'Use'}</span><span>${S.lang === 'es' ? 'Solo equipo interno' : 'Internal team only'}</span></span>
         <span class="kv-row"><span>Growth Builder</span><span>Yoandy Ramírez</span></span>
@@ -1269,7 +1269,7 @@
       if (id === 'support') return sheetHelp();
       if (id === 'settings') return push('settings');
       toast(S.lang === 'es' ? 'Enlace externo' : 'External link',
-        S.lang === 'es' ? 'En la app real abre 30mps.com y redes.' : 'In the real app this opens 30mps.com and socials.');
+        S.lang === 'es' ? 'En la app real abre campo-norte.demo y redes.' : 'In the real app this opens campo-norte.demo and socials.');
       return;
     }
 

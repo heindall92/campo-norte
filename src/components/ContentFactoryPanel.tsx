@@ -107,7 +107,7 @@ export function ContentFactoryPanel({ lang }: { lang: Lang }) {
       "",
       active.body,
       "",
-      `— 30 MPS · plantilla ${active.id} · revisar antes de enviar`,
+      `— Campo Norte · plantilla ${active.id} · revisar antes de enviar`,
     ].join("\n");
     try {
       await navigator.clipboard.writeText(text);

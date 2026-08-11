@@ -1,6 +1,6 @@
 # Aurora → conocimiento reutilizable
 
-> **Memoria canónica** del análisis Join Aurora / joinaurora.io aplicado a 30 MPS
+> **Memoria canónica** del análisis Join Aurora / joinaurora.io aplicado a Campo Norte
 > y guardado para **futuros proyectos** (Plan B genérico, otro vertical, otro CRM).
 >
 > - **No** se copia código, marca, assets ni textos de terceros.
@@ -34,9 +34,9 @@ compartidos de trial. Credenciales de terceros **no** se versionan aquí.
 
 ---
 
-## 2 · Los 5 patrones núcleo (P1–P5) — estado en 30 MPS
+## 2 · Los 5 patrones núcleo (P1–P5) — estado en Campo Norte
 
-| ID | Patrón | Estado 30 MPS | Dónde vive |
+| ID | Patrón | Estado Campo Norte | Dónde vive |
 |---|---|---|---|
 | P1 | Cola «Requiere tu atención» (vista derivada) | ✅ | `attention.ts`, `AttentionPanel` |
 | P2 | KPI + delta + sparkline + IA | ✅ (adaptado) | `StatCard`, `Sparkline`, dashboard |
@@ -91,7 +91,7 @@ Contacto → Factura → Movimiento bancario (conciliación)
                   → P&G / gráfico gastos
 Todo lo vencido → Requiere atención
 ```
-En 30 MPS el eco es: cliente ↔ factura Veri*FACTU ↔ reserva/pago (`paymentRef`).
+En Campo Norte el eco es: cliente ↔ factura Veri*FACTU ↔ reserva/pago (`paymentRef`).
 
 ### 3.5 Fórmulas útiles (copiar con dato real)
 
@@ -127,7 +127,7 @@ Ver detalle en `docs/FUERA-DE-NUCLEO.md`. Resumen:
 | Multi-org | Una org hoy |
 | Runway/burn con banco | Sin feed bancario |
 | OAuth Stripe/Brevo real | Catálogo sí; cableado APIs = otro proyecto |
-| Paleta / tipografía Aurora | Identidad 30 MPS superior para el vertical |
+| Paleta / tipografía Aurora | Identidad Campo Norte superior para el vertical |
 | Densidad escritorio 7 columnas | Nuestro caso fuerte es móvil |
 | Arquitectura 7 módulos con submenús | Equipo pequeño; barra propia |
 
@@ -167,7 +167,7 @@ derivada; quitar marca vertical en capa 1 de tokens.
 
 ---
 
-## 7 · Qué queda opcional en 30 MPS (no bloquea pitch)
+## 7 · Qué queda opcional en Campo Norte (no bloquea pitch)
 
 - Streaming nativo Claude/Gemini (hoy fallback bloque)
 - Conciliación explícita movimiento↔factura con dato bancario real

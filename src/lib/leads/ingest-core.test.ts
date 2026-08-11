@@ -88,9 +88,9 @@ describe("inferOriginFromForm", () => {
 });
 
 describe("reparto y campaña", () => {
-  it("los referidos y los leads calientes van a Miguel", () => {
-    expect(pickOwner("referral", 40)).toBe("Miguel");
-    expect(pickOwner("web_form", 90)).toBe("Miguel");
+  it("los referidos y los leads calientes van a la fundadora", () => {
+    expect(pickOwner("referral", 40)).toBe("Ana");
+    expect(pickOwner("web_form", 90)).toBe("Ana");
     expect(pickOwner("web_form", 60)).toBe("Laura");
   });
 

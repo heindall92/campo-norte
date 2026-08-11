@@ -11,8 +11,8 @@ const LOGIN_VIDEO_SRC = "/media/login-home.mp4"; // Hero Login (comprimido)
 export function LoginScreen() {
   const { signIn, supabaseReady } = useAuth();
   const demoAuth = allowLocalDemoAuth();
-  const [email, setEmail] = useState(LOCAL_TEAM_USERS[0]?.email ?? "miguel@30mps.com");
-  const [password, setPassword] = useState(demoAuth ? "30mps2026" : "");
+  const [email, setEmail] = useState(LOCAL_TEAM_USERS[0]?.email ?? "ana@campo-norte.demo");
+  const [password, setPassword] = useState(demoAuth ? "camponorte2026" : "");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -88,7 +88,7 @@ export function LoginScreen() {
                   ? demoAuth
                     ? "Supabase + demo equipo"
                     : "Acceso seguro (Supabase)"
-                  : "Demo · equipo 30 MPS"}
+                  : "Demo · equipo Campo Norte"}
               </span>
             </p>
 
@@ -103,12 +103,12 @@ export function LoginScreen() {
               <div className="mb-5 rounded-xl border border-[color-mix(in_oklab,var(--accent)_35%,transparent)] bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] px-3 py-2.5 text-xs leading-snug text-[var(--ink)] sm:mb-6 sm:text-sm">
                 <p className="font-semibold text-[var(--accent)]">Acceso demo del equipo</p>
                 <p className="mt-1 text-[var(--ink-muted)]">
-                  Email: <code className="text-[var(--accent)]">miguel@30mps.com</code>
+                  Email: <code className="text-[var(--accent)]">ana@campo-norte.demo</code>
                   {" · "}
-                  Pass: <code className="text-[var(--accent)]">30mps2026</code>
+                  Pass: <code className="text-[var(--accent)]">camponorte2026</code>
                 </p>
                 <p className="mt-1 text-[11px] text-[var(--ink-muted)]">
-                  También: laura@ · david@ · ramon@30mps.com (misma contraseña)
+                  También: laura@ · david@ · ramon@campo-norte.demo (misma contraseña)
                 </p>
               </div>
             )}
@@ -187,7 +187,7 @@ export function LoginScreen() {
                   ))}
                 </ul>
                 <p className="mt-2">
-                  Password: <code className="text-[var(--accent)]">30mps2026</code>
+                  Password: <code className="text-[var(--accent)]">camponorte2026</code>
                   {!isProdBuild() && (
                     <>
                       {" · "}

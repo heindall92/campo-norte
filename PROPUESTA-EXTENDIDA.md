@@ -1,8 +1,8 @@
-# 30 MPS Growth OS — Informe extendido
+# Campo Norte — Informe extendido
 
 **Versión de estudio / consultoría (complemento a la ejecutiva)**  
 **Propuesta de Transformación Digital e IA · Growth Builder**  
-**Para:** Miguel Checa · 30 MPS Adventures, S.L.  
+**Para:** Ana Torres · Campo Norte Expediciones, S.L.  
 **Autor:** Yoandy Ramírez Delgado  
 **Confidencial · NDA candidatos · Escuela Evolve 2026**
 
@@ -38,17 +38,17 @@
 
 El caso pregunta qué construir con IA y automatización para llegar al millón en 2027 y sentar premiumización. La trampa: no gana quien monte el stack más espectacular, sino quien piense como quien **construye un negocio** respetando la marca.
 
-La respuesta no es “tres proyectos”. Es **una plataforma**: **30 MPS Growth OS**.
+La respuesta no es “tres proyectos”. Es **una plataforma**: **Campo Norte**.
 
 ---
 
 ## 2. Entendimiento del negocio
 
-30 MPS Adventures (desde 2015) diseña expediciones premium en moto y 4x4 (Mongolia, Namibia, La Puna, Alaska, Costa Rica, Nepal…). Grupos reducidos, logística cuidada, “nosotros organizamos; tú conduces”.
+Campo Norte (desde 2015) diseña expediciones premium en moto y 4x4 (Mongolia, Namibia, La Puna, Alaska, Costa Rica, Nepal…). Grupos reducidos, logística cuidada, “nosotros organizamos; tú conduces”.
 
 - No vende destinos: vende **caminos y confianza**.  
 - El cliente de valor es exigente; valora trato personal.  
-- Miguel Checa (fundador/MD) es parte del producto comercial.  
+- Ana Torres (fundador/MD) es parte del producto comercial.  
 - Laura (booking), David y Ramón completan ops/guía.  
 - Principios de marca: responder en el día, sin letra pequeña, antes un cliente menos que uno insatisfecho.
 
@@ -123,8 +123,8 @@ Una imagen vale más que diez slides de logos de vendors.
 
 **Problema:** no hay memoria única.  
 **Qué almacena:** ID, nombre, fecha, origen, campaña, destino, moto/4x4, estado, score, valor esperado, nuevo/recurrente, última interacción, responsable, vínculo a reserva/expedición.  
-**Cómo se conecta:** webhooks formulario, API Brevo, CSV/Sheets, etiqueta bandeja Miguel.  
-**Qué gana 30 MPS:** atribución; base del resto del OS.  
+**Cómo se conecta:** webhooks formulario, API Brevo, CSV/Sheets, etiqueta bandeja la fundadora.  
+**Qué gana Campo Norte:** atribución; base del resto del OS.  
 **Éxito:** origen ≥80% en 60 días; meta 6 meses **95%**.
 
 ---
@@ -263,7 +263,7 @@ Evolución natural cuando haya datos limpios.
 
 ## 18. Visión 2030
 
-El objetivo de este proyecto no es automatizar procesos por automatizar. Es construir una plataforma que permita a 30 MPS crecer **sin perder** lo que la hace diferente: una experiencia premium basada en la confianza, la atención personalizada y la excelencia operativa. La tecnología debe eliminar tareas repetitivas, aportar información para mejores decisiones y liberar tiempo para crear experiencias memorables.
+El objetivo de este proyecto no es automatizar procesos por automatizar. Es construir una plataforma que permita a Campo Norte crecer **sin perder** lo que la hace diferente: una experiencia premium basada en la confianza, la atención personalizada y la excelencia operativa. La tecnología debe eliminar tareas repetitivas, aportar información para mejores decisiones y liberar tiempo para crear experiencias memorables.
 
 ---
 
@@ -275,7 +275,7 @@ El objetivo de este proyecto no es automatizar procesos por automatizar. Es cons
 
 ### Cierre
 
-> No propongo sustituir el trato humano. Propongo automatizar todo lo que ocurre detrás del escenario para que el equipo dedique más tiempo a crear experiencias premium. La IA aporta información y eficiencia; las personas siguen construyendo la confianza que diferencia a 30 MPS.
+> No propongo sustituir el trato humano. Propongo automatizar todo lo que ocurre detrás del escenario para que el equipo dedique más tiempo a crear experiencias premium. La IA aporta información y eficiencia; las personas siguen construyendo la confianza que diferencia a Campo Norte.
 
 ---
 

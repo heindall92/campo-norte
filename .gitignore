@@ -60,3 +60,9 @@ Propuesta Empresarial 30MPS Yoandy Ramirez Delgado.pptx
 
 # Capturas y specs con rutas locales de la máquina de desarrollo
 /docs/superpowers/specs/assets/c__Users_*
+
+# Material con marca de terceros / NDA
+/30MPS_*.pdf
+/CampoNorte_*.pdf
+.vercel/
+

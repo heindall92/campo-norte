@@ -13,7 +13,7 @@ formulario  →  POST /api/leads/ingest  →  Supabase  →  la app lo muestra
                        ├─ deduplica por email (segundo envío = fusión, no ficha nueva)
                        ├─ cruza con la cartera de clientes
                        ├─ puntúa con el MISMO motor que la interfaz
-                       ├─ asigna responsable (referido o ≥85 → Miguel; resto → Laura)
+                       ├─ asigna responsable (referido o ≥85 → Ana; resto → Laura)
                        └─ deja constancia en mps_run_log
 
 todas las mañanas  →  GET /api/cron/rescore
@@ -102,7 +102,7 @@ GitHub Actions, `pg_cron` o un curl. No hay que tocar código.
 envía, y verás el score que ha calculado el servidor con sus razones. El lead
 aparece en el CRM.
 
-**Integración externa** (lo que haría el formulario de 30mps.com):
+**Integración externa** (lo que haría el formulario de campo-norte.demo):
 
 ```bash
 curl -X POST https://<tu-app>/api/leads/ingest \
@@ -155,5 +155,5 @@ Si lo enseñas en una reunión, esta es la frontera honesta:
 > «Los datos de la pantalla son de prueba y la app lo dice en la cabecera. Lo que
 > es real es el motor: envío este formulario desde el móvil… y aquí está el lead,
 > puntuado, con sus razones y con responsable asignado. El formulario de
-> 30mps.com solo tiene que apuntar a este mismo endpoint: es configuración, no
+> campo-norte.demo solo tiene que apuntar a este mismo endpoint: es configuración, no
 > desarrollo.»

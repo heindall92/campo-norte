@@ -1,8 +1,8 @@
 # Campo Norte
 
-> **Confidencial** · CRM interno · demo de negocio sobre [30 MPS Adventures](https://30mps.com)
+> **Confidencial** · CRM interno · demo de negocio sobre [Campo Norte](https://campo-norte.demo)
 
-**Campo Norte** es el producto (CRM operativo + Data Hub + cuadro de mando, reservas/logística, facturación, tesorería y automatizaciones internas). La demo actual usa datos y el caso de **Miguel Checa / 30 MPS Adventures**.
+**Campo Norte** es el producto (CRM operativo + Data Hub + cuadro de mando, reservas/logística, facturación, tesorería y automatizaciones internas). La demo actual usa datos y el caso de **Ana Torres / Campo Norte**.
 
 **Regla de oro:** nada habla automáticamente con el viajero. La tecnología trabaja detrás; la confianza la cierran personas.
 
@@ -30,7 +30,7 @@ npm run preview    # o: python3 serve.py  → http://0.0.0.0:8080
 
 ## Legal · privacidad · cookies
 
-Ruta pública: [`/legal`](https://30mps.vercel.app/legal) (Aviso legal · Privacidad · Cookies).
+Ruta pública: [`/legal`](https://campo-norte.vercel.app/legal) (Aviso legal · Privacidad · Cookies).
 
 - Demo mañana: no crítico (solo equipo interno + datos semilla).
 - Producción real: validar textos con asesoría, firmar DPA Vercel/Supabase y mantener registro art. 30 RGPD.
@@ -44,7 +44,7 @@ Ruta pública: [`/legal`](https://30mps.vercel.app/legal) (Aviso legal · Privac
 3. **Eventos:** crear/editar/borrar leads, clientes, reservas, facturas, import CSV, WhatsApp/llamada → alimentan la bandeja de notificaciones.
 4. **Reservas:** selector de estado + acciones editar / WhatsApp / llamar / borrar.
 
-Demo local (`npm run dev`): `miguel@30mps.com` / `30mps2026`
+Demo local (`npm run dev`): `ana@campo-norte.demo` / `camponorte2026`
 
 **Antes de producción real:** pon `VITE_STRICT_AUTH=true` (bloquea login demo) y usa Supabase Auth (`VITE_SUPABASE_*`). Mientras el pitch viva en Vercel sin Supabase, el login demo sigue activo a propósito.
 

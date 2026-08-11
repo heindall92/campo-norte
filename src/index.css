@@ -63,7 +63,7 @@ html[data-theme="light"] {
   --chip: rgba(255, 255, 255, 0.9);
   --chart: #2563eb;
   --chart-2: #0ea5e9;
-  /* Series económicas (estructura Aurora, paleta 30mps) */
+  /* Series económicas (estructura Aurora, paleta campo-norte) */
   --chart-in: var(--mps-green-600);
   --chart-out: var(--mps-red-600);
   --chart-forecast: var(--mps-amber-600);

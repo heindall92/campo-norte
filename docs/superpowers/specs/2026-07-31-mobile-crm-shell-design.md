@@ -2,7 +2,7 @@
 
 **Fecha:** 2026-07-31  
 **Estado:** Aprobado (+ referencias premium transfer/gráficas/confirmaciones)  
-**Producto:** 30 MPS Adventures / Growth OS  
+**Producto:** Campo Norte / Growth OS  
 **Alcance:** Shell de navegación móvil; no rediseña paneles internos ni el login.
 
 ---

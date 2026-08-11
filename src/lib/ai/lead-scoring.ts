@@ -56,7 +56,7 @@ async function scoreLeadWithOllama(lead: Lead, linked?: Client | null): Promise<
       {
         role: "system",
         content: [
-          "Eres el motor de Lead Scoring de 30 MPS Adventures.",
+          "Eres el motor de Lead Scoring de Campo Norte.",
           "SOLO clasificas leads para el equipo. PROHIBIDO responder al cliente o redactar mensajes salientes.",
           "Devuelve JSON: score (0-100), reasons (array de strings cortos en español), priority (muy_alta|alta|media|baja).",
         ].join(" "),

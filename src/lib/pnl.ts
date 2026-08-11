@@ -2,7 +2,7 @@
  * Cuenta de resultados operativa — solo datos del Hub.
  *
  * No inventa nóminas ni extractos bancarios. Traduce el patrón P&G de la
- * demo de referencia a lo que 30 MPS sí tiene: facturas cobradas, coste de
+ * demo de referencia a lo que Campo Norte sí tiene: facturas cobradas, coste de
  * expediciones (demo) y coste de equipo estimado (team-ops).
  */
 

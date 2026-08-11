@@ -138,7 +138,7 @@ export const RESERVATIONS: Reservation[] = [
     depositPaid: 2_000,
     paymentChannel: "stripe",
     paymentRefs: ["pi_3MpsLv_deposit", "TRF-ES-88421"],
-    tourLeader: "Ramón Faro",
+    tourLeader: "Ramón Gil",
     logisticsContacts: [
       {
         role: "Operador local Ulaanbaatar",
@@ -190,12 +190,12 @@ export const RESERVATIONS: Reservation[] = [
       },
     ],
     prep: [
-      { label: "Pasaporte + visado Mongolia", done: true, owner: "Laura Romera" },
-      { label: "Licencia moto + seguro viaje", done: true, owner: "Laura Romera" },
-      { label: "Briefing mecánico / packing list", done: false, owner: "Ramón Faro" },
-      { label: "Confirmación hoteles + ger camps", done: true, owner: "David Rodríguez" },
+      { label: "Pasaporte + visado Mongolia", done: true, owner: "Laura Vega" },
+      { label: "Licencia moto + seguro viaje", done: true, owner: "Laura Vega" },
+      { label: "Briefing mecánico / packing list", done: false, owner: "Ramón Gil" },
+      { label: "Confirmación hoteles + ger camps", done: true, owner: "David Ruiz" },
       { label: "Transfer aeropuerto UB", done: true, owner: "Bat-Erdene Travel" },
-      { label: "Saldo restante cobrado", done: false, owner: "Laura Romera" },
+      { label: "Saldo restante cobrado", done: false, owner: "Laura Vega" },
     ],
     internalNotes: "VIP 11 expediciones. Preferencia habitación silenciosa. No enviar NL automática.",
   },
@@ -216,7 +216,7 @@ export const RESERVATIONS: Reservation[] = [
     depositPaid: 3_000,
     paymentChannel: "transferencia",
     paymentRefs: ["SEPA-ES91-20260601"],
-    tourLeader: "David Rodríguez",
+    tourLeader: "David Ruiz",
     logisticsContacts: [
       {
         role: "Operador Eje Cafetero",
@@ -254,9 +254,9 @@ export const RESERVATIONS: Reservation[] = [
       },
     ],
     prep: [
-      { label: "Pasaportes pareja", done: true, owner: "Laura Romera" },
+      { label: "Pasaportes pareja", done: true, owner: "Laura Vega" },
       { label: "Vacunas / seguro", done: false, owner: "Cliente" },
-      { label: "Confirmación finca + menús", done: true, owner: "David Rodríguez" },
+      { label: "Confirmación finca + menús", done: true, owner: "David Ruiz" },
       { label: "4x4 rental + combustible plan", done: false, owner: "Andes 4x4 Ops" },
     ],
     internalNotes: "Pareja. Señal por transferencia SEPA. Falta documentación pax 2.",
@@ -278,7 +278,7 @@ export const RESERVATIONS: Reservation[] = [
     depositPaid: 6_200,
     paymentChannel: "transferencia",
     paymentRefs: ["SEPA-ES91-20251120", "SEPA-ES91-20260401"],
-    tourLeader: "David Rodríguez",
+    tourLeader: "David Ruiz",
     logisticsContacts: [
       {
         role: "Operador Windhoek",
@@ -314,9 +314,9 @@ export const RESERVATIONS: Reservation[] = [
       },
     ],
     prep: [
-      { label: "Documentación completa", done: true, owner: "Laura Romera" },
-      { label: "Factura REAV emitida + cobro", done: true, owner: "Laura Romera" },
-      { label: "Post-viaje NPS", done: true, owner: "Miguel Checa" },
+      { label: "Documentación completa", done: true, owner: "Laura Vega" },
+      { label: "Factura REAV emitida + cobro", done: true, owner: "Laura Vega" },
+      { label: "Post-viaje NPS", done: true, owner: "Ana Torres" },
     ],
     internalNotes: "Viaje cerrado. Factura F-2026-0148 cobrada. Candidata referidos.",
   },
@@ -337,7 +337,7 @@ export const RESERVATIONS: Reservation[] = [
     depositPaid: 1_500,
     paymentChannel: "paypal",
     paymentRefs: ["PAYID-MPS-7400-DEP"],
-    tourLeader: "David Rodríguez",
+    tourLeader: "David Ruiz",
     logisticsContacts: [
       {
         role: "Operador Arusha",
@@ -368,10 +368,10 @@ export const RESERVATIONS: Reservation[] = [
       },
     ],
     prep: [
-      { label: "Depósito PayPal recibido", done: true, owner: "Laura Romera" },
+      { label: "Depósito PayPal recibido", done: true, owner: "Laura Vega" },
       { label: "Vacuna fiebre amarilla", done: false, owner: "Cliente" },
-      { label: "Bloqueo lodges", done: true, owner: "David Rodríguez" },
-      { label: "Saldo 30 días antes", done: false, owner: "Laura Romera" },
+      { label: "Bloqueo lodges", done: true, owner: "David Ruiz" },
+      { label: "Saldo 30 días antes", done: false, owner: "Laura Vega" },
     ],
     internalNotes: "Embajador. Señal PayPal. Recordar saldo por transferencia.",
   },
@@ -535,7 +535,7 @@ export function buildGestoriaExportCsv(invoices: Invoice[] = INVOICES): string {
 export function downloadGestoriaPack(invoices: Invoice[] = INVOICES) {
   const csv = buildGestoriaExportCsv(invoices);
   const legalIndex = [
-    "# Paquete gestoría 30 MPS Adventures",
+    "# Paquete gestoría Campo Norte",
     `# Generado: ${new Date().toISOString()}`,
     "# Incluye: libro facturas (CSV ;), claves REAV 05, hash Veri*FACTU demo, conciliación pagos",
     "# Normas de referencia: LGT 29.2.j) · Ley 11/2021 · RD 1007/2023 · Orden HAC/1177/2024 · RD-ley 15/2025 · LIVA 141-147 · RD 1619/2012",
@@ -548,7 +548,7 @@ export function downloadGestoriaPack(invoices: Invoice[] = INVOICES) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `30mps-gestoria-facturas-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `campo-norte-gestoria-facturas-${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
