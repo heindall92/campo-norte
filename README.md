@@ -1,10 +1,31 @@
-# Campo Norte — Growth OS / CRM interno
+# Campo Norte — WMS OS / Ecosistema de almacén
 
-Demo de CRM operativo para expediciones (marca y personas **ficticias**).
+Demo de torre de control logística para hubs tipo hipermercado (Andalucía) y centros europeos.
+Construido sobre la base Campo Norte (auth, roles, Data Hub, shell, finanzas).
 
-**Regla de oro:** nada habla automáticamente con el viajero. La tecnología trabaja detrás; la confianza la cierran personas.
+**Regla de oro:** la torre orquesta huecos, gente y euros; decide la planta.
 
 **Licencia:** ver [`LICENSE`](./LICENSE) y [`NOTICE`](./NOTICE).
+
+---
+
+## Fase 1 (esta rama)
+
+Módulos WMS vivos con semilla demo:
+
+| Módulo | Qué controla |
+|---|---|
+| Torre de control | Ocupación, stock, flota, gente, costes |
+| Stock | SKU / categorías / ABC / mínimos |
+| Huecos | Mapa de ubicaciones por zona y pasillo |
+| Palets | SSCC, lote, caducidad, hueco |
+| Flota eléctrica | Batería, horas, coste/h, operario |
+| Recepción | ASN / muelle / putaway |
+| Expedición | Olas a tienda / prioridad / cut-off |
+| Operarios | Turnos, productividad, extras, €/h |
+| Costes | Mano de obra, energía, flota, merma vs presupuesto |
+
+Se conservan módulos útiles del CRM original (facturas, tesorería, aprobaciones, conocimiento, hub).
 
 ---
 
@@ -15,43 +36,22 @@ npm install
 npm run dev        # http://localhost:5173
 ```
 
-Producción estática:
-
-```bash
-npm run build
-npm run preview    # o: python3 serve.py  → http://0.0.0.0:8080
-```
-
 ---
 
 ## Auth demo (sin Supabase)
 
 | Email | Rol | Pass |
 |---|---|---|
-| `sofia@camponorte.demo` | Admin | `norte2026` |
-| `marta@camponorte.demo` | Booking | `norte2026` |
-| `luis@camponorte.demo` | Ops | `norte2026` |
-| `jorge@camponorte.demo` | Guía | `norte2026` |
-
-Antes de un despliegue real: `VITE_STRICT_AUTH=true` + Supabase Auth.
-
----
-
-## Data Hub
-
-| Modo | Cuándo | Dónde viven los datos |
-|---|---|---|
-| **Local** (por defecto) | Sin `.env` | `localStorage` |
-| **Supabase / Postgres** | `VITE_DATA_MODE=supabase` | Tablas `mps_*` |
-
-Ver [`.env.example`](./.env.example) y [`supabase/schema.sql`](./supabase/schema.sql).
+| `sofia@camponorte.demo` | Dirección | `norte2026` |
+| `marta@camponorte.demo` | Office | `norte2026` |
+| `luis@camponorte.demo` | Almacén | `norte2026` |
+| `jorge@camponorte.demo` | Planta | `norte2026` |
 
 ---
 
 ## Identidad demo
 
-- **Marca:** Campo Norte (ficticia)
-- **Razón social demo:** Campo Norte Expediciones, S.L.
-- **Contacto demo:** `hola@camponorte.demo` · `+34 900 00 00 01`
-- Los datos de clientes/leads del seed son inventados.
-EOF
+- **Marca:** Campo Norte
+- **Razón social demo:** Campo Norte Logística, S.L.
+- **Hub demo:** CN-SEV-01 Sevilla + cámara Huelva
+- Datos de stock/operarios/flota: inventados para la demo

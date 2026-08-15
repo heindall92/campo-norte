@@ -4,13 +4,24 @@ export type NotificationKind =
   | "reservation"
   | "invoice"
   | "import"
-  | "system";
+  | "system"
+  | "stock"
+  | "fleet"
+  | "ops";
 
 export type NotificationTone = "ok" | "info" | "warn" | "danger";
 
 export type AppSection =
   | "hub"
   | "dashboard"
+  | "stock"
+  | "huecos"
+  | "palets"
+  | "flota"
+  | "recepcion"
+  | "expedicion"
+  | "operarios"
+  | "costes"
   | "leads"
   | "clientes"
   | "reservas"

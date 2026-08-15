@@ -8,28 +8,40 @@ export function isPrivilegedAdmin(role: UserRole | undefined | null): boolean {
 
 export const ROLE_DESCRIPTION: Record<UserRole, { es: string; en: string }> = {
   admin: {
-    es: "CEO / founder · acceso total y gestión de usuarios del CRM",
-    en: "CEO / founder · full access and CRM user management",
+    es: "Dirección · acceso total al ecosistema WMS y usuarios",
+    en: "Leadership · full WMS ecosystem and user management",
   },
   ops: {
-    es: "Ops / Tour Manager · leads, clientes, reservas y automatizaciones",
-    en: "Ops / Tour Manager · leads, clients, bookings and automations",
+    es: "Jefe de almacén · stock, huecos, flota, recepción y expedición",
+    en: "Warehouse lead · stock, slots, fleet, inbound and outbound",
   },
   booking: {
-    es: "Office / Booking · clientes, reservas, facturas y contenido",
-    en: "Office / Booking · clients, bookings, invoices and content",
+    es: "Office · costes, facturas, tesorería y control administrativo",
+    en: "Office · costs, invoices, treasury and admin control",
   },
   guide: {
-    es: "Guía · reservas y conocimiento operativo (sesión limitada)",
-    en: "Guide · bookings and ops knowledge (limited session)",
+    es: "Operario de planta · huecos, palets, flota asignada y conocimiento",
+    en: "Floor operator · slots, pallets, assigned fleet and knowledge",
   },
 };
+
+const WMS_CORE: AppSection[] = [
+  "dashboard",
+  "stock",
+  "huecos",
+  "palets",
+  "flota",
+  "recepcion",
+  "expedicion",
+  "operarios",
+  "costes",
+];
 
 /** Secciones del menú visibles por rol (capa multicapa). */
 export const ROLE_ALLOWED_SECTIONS: Record<UserRole, readonly AppSection[]> = {
   admin: [
+    ...WMS_CORE,
     "hub",
-    "dashboard",
     "leads",
     "clientes",
     "reservas",
@@ -46,32 +58,31 @@ export const ROLE_ALLOWED_SECTIONS: Record<UserRole, readonly AppSection[]> = {
     "usuarios",
   ],
   ops: [
+    ...WMS_CORE,
     "hub",
-    "dashboard",
-    "leads",
-    "clientes",
-    "reservas",
+    "aprobaciones",
     "equipo",
     "conocimiento",
     "automatizaciones",
-    "propuesta",
-    "slides",
     "ajustes",
   ],
   booking: [
-    "hub",
     "dashboard",
+    "stock",
+    "costes",
+    "recepcion",
+    "expedicion",
+    "operarios",
+    "hub",
     "clientes",
-    "reservas",
     "facturas",
     "tesoreria",
     "aprobaciones",
     "equipo",
-    "contenido",
     "conocimiento",
     "ajustes",
   ],
-  guide: ["hub", "reservas", "conocimiento", "slides", "ajustes"],
+  guide: ["dashboard", "huecos", "palets", "flota", "recepcion", "expedicion", "conocimiento", "ajustes"],
 };
 
 export function canAccessSection(role: UserRole, section: AppSection): boolean {
