@@ -7,11 +7,11 @@
 - Roles: Dirección / Almacén / Office / Planta
 - Semilla demo hub Sevilla + cámara Huelva
 
-## Fase 2 — Operación viva
-- Movimientos putaway/picking con actualización de hueco en vivo
-- Inventario cíclico y bloqueos de calidad
-- Asignación flota ↔ operario en turno
-- Alertas (batería, caducidad, cut-off)
+## Fase 2 — Pasillo & picking (en curso)
+- Ubicación `Pasillo-Bahía-Nivel-Posición`
+- Vista pasillo rack selectivo (2 palets/bahía, cara de picking)
+- Flujo operario: ticket → escáner hueco → SSCC → confirmar
+- Flota stand-up double reach
 
 ## Fase 3 — Economía & RRHH
 - Coste por palet movido / por línea pick

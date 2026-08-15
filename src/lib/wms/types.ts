@@ -14,7 +14,13 @@ export type CategoryCode =
   | "no_food"
   | "perecederos";
 
-export type FleetKind = "contrapesada" | "retractil" | "transpaleta" | "recogepedidos" | "apilador";
+export type FleetKind =
+  | "contrapesada"
+  | "retractil"
+  | "retractil_doble"
+  | "transpaleta"
+  | "recogepedidos"
+  | "apilador";
 
 export type FleetStatus = "operativa" | "cargando" | "mantenimiento" | "fuera_servicio";
 
@@ -23,6 +29,34 @@ export type ShiftCode = "manana" | "tarde" | "noche";
 export type OperatorRoleFloor = "carretillero" | "picker" | "recepcion" | "expedicion" | "supervisor" | "calidad";
 
 export type MovementType = "entrada" | "salida" | "traslado" | "ajuste" | "inventario";
+
+/** Línea de picado para operario (escáner de pasillo). */
+export type PickLineStatus = "pendiente" | "en_curso" | "picada" | "faltante" | "omitida";
+
+export interface PickLine {
+  id: string;
+  waveId: string;
+  orderCode: string;
+  skuId: string;
+  qty: number;
+  qtyPicked: number;
+  slotId: string;
+  palletId: string | null;
+  status: PickLineStatus;
+  sequence: number;
+}
+
+export interface PickWave {
+  id: string;
+  code: string;
+  aisle: string;
+  siteId: string;
+  status: "abierta" | "en_curso" | "cerrada";
+  operatorId: string | null;
+  fleetId: string | null;
+  printedAt: string;
+  lines: PickLine[];
+}
 
 export interface WarehouseSite {
   id: string;
@@ -51,12 +85,19 @@ export interface Sku {
 
 export interface Slot {
   id: string;
-  code: string; // A-12-03-02
+  /** Código escaneable: Pasillo-Bahía-Nivel-Posición (A-03-02-1) */
+  code: string;
   siteId: string;
   zone: WarehouseZone;
   aisle: string;
+  /** Bahía / tramo entre montantes */
   rack: number;
+  /** Nivel 1 = cara de picking; superiores = reserva */
   level: number;
+  /** Posición en bahía (1–2 en rack selectivo / doble deep) */
+  position: 1 | 2;
+  /** Cara de picking (nivel bajo, accesible a pie / reach) */
+  pickFace: boolean;
   status: SlotStatus;
   capacityPallets: number;
   palletId: string | null;
@@ -171,6 +212,7 @@ export interface WmsSnapshot {
   outbound: OutboundOrder[];
   costs: CostLine[];
   movements: StockMovement[];
+  pickWaves: PickWave[];
 }
 
 export const CATEGORY_LABEL: Record<CategoryCode, { es: string; en: string }> = {
@@ -194,9 +236,10 @@ export const ZONE_LABEL: Record<WarehouseZone, { es: string; en: string }> = {
 export const FLEET_KIND_LABEL: Record<FleetKind, { es: string; en: string }> = {
   contrapesada: { es: "Contrapesada", en: "Counterbalance" },
   retractil: { es: "Retráctil", en: "Reach truck" },
+  retractil_doble: { es: "Retráctil doble (stand-up)", en: "Stand-up double reach" },
   transpaleta: { es: "Transpaleta", en: "Pallet truck" },
   recogepedidos: { es: "Recogepedidos", en: "Order picker" },
   apilador: { es: "Apilador", en: "Stacker" },
 };
 
-export const WMS_STORAGE_KEY = "cn-wms-hub-v1";
+export const WMS_STORAGE_KEY = "cn-wms-hub-v2";

@@ -60,6 +60,7 @@ const QUICK: {
   { id: "dashboard", labelEs: "Torre", labelEn: "Tower", icon: LayoutDashboard },
   { id: "stock", labelEs: "Stock", labelEn: "Stock", icon: Gauge },
   { id: "huecos", labelEs: "Huecos", labelEn: "Slots", icon: Layers },
+  { id: "picking", labelEs: "Picar", labelEn: "Pick", icon: Gauge },
   { id: "palets", labelEs: "Palets", labelEn: "Pallets", icon: CalendarDays },
   { id: "flota", labelEs: "Flota", labelEn: "Fleet", icon: Database },
 ];
@@ -93,6 +94,7 @@ const SECTION_TITLE_KEY: Partial<Record<AppSection, string>> = {
   dashboard: "nav_dashboard",
   stock: "nav_stock",
   huecos: "nav_slots",
+  picking: "nav_picking",
   palets: "nav_pallets",
   flota: "nav_fleet",
   recepcion: "nav_inbound",

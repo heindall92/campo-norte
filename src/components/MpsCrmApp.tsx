@@ -178,6 +178,7 @@ import {
   Presentation,
   RefreshCw,
   Save,
+  ScanBarcode,
   Search,
   Settings,
   Shield,
@@ -205,9 +206,9 @@ import {
   WmsOperatorsPanel,
   WmsOutboundPanel,
   WmsPalletsPanel,
-  WmsSlotsPanel,
   WmsStockPanel,
 } from "@/components/wms/WmsPanels";
+import { WmsPickingPanel, WmsSlotsPanel } from "@/components/wms/AislePicking";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Area,
@@ -231,6 +232,7 @@ const NAV_IDS: { id: Section; icon: typeof LayoutDashboard; labelKey: string }[]
   { id: "dashboard", icon: Warehouse, labelKey: "nav_dashboard" },
   { id: "stock", icon: Boxes, labelKey: "nav_stock" },
   { id: "huecos", icon: Grid3X3, labelKey: "nav_slots" },
+  { id: "picking", icon: ScanBarcode, labelKey: "nav_picking" },
   { id: "palets", icon: Package, labelKey: "nav_pallets" },
   { id: "flota", icon: Forklift, labelKey: "nav_fleet" },
   { id: "recepcion", icon: Truck, labelKey: "nav_inbound" },
@@ -4015,6 +4017,7 @@ export function MpsCrmApp() {
       {section === "dashboard" && <WmsDashboardPanel lang={lang} />}
       {section === "stock" && <WmsStockPanel lang={lang} />}
       {section === "huecos" && <WmsSlotsPanel lang={lang} />}
+      {section === "picking" && <WmsPickingPanel lang={lang} />}
       {section === "palets" && <WmsPalletsPanel lang={lang} />}
       {section === "flota" && <WmsFleetPanel lang={lang} />}
       {section === "recepcion" && <WmsInboundPanel lang={lang} />}

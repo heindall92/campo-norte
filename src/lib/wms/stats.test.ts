@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildWmsSeed, computeTowerKpis, occupancyByZone, stockByCategory } from "@/lib/wms";
+import { buildWmsSeed, computeTowerKpis } from "@/lib/wms";
 
 describe("wms seed & stats", () => {
   it("builds a usable warehouse snapshot", () => {
@@ -19,11 +19,12 @@ describe("wms seed & stats", () => {
     expect(kpis.costMonthEur).toBeGreaterThan(0);
   });
 
-  it("groups occupancy and stock", () => {
+  it("builds pick waves with aisle-bay-level-position codes", () => {
     const snap = buildWmsSeed();
-    const occ = occupancyByZone(snap.slots);
-    const stock = stockByCategory(snap.pallets, snap.skus, "es");
-    expect(occ.some((z) => z.zone === "seco")).toBe(true);
-    expect(stock.length).toBeGreaterThan(0);
+    expect(snap.pickWaves.length).toBeGreaterThan(0);
+    expect(snap.slots[0]?.position).toBeDefined();
+    expect(snap.slots.some((s) => s.pickFace)).toBe(true);
+    expect(snap.slots[0]?.code.split("-").length).toBe(4);
+    expect(snap.fleet.some((f) => f.kind === "retractil_doble")).toBe(true);
   });
 });

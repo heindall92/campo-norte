@@ -16,6 +16,7 @@ export type AppSection =
   | "dashboard"
   | "stock"
   | "huecos"
+  | "picking"
   | "palets"
   | "flota"
   | "recepcion"

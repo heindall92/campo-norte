@@ -10,7 +10,15 @@ export function loadWmsSnapshot(): WmsSnapshot {
     const raw = localStorage.getItem(WMS_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as WmsSnapshot;
-      if (parsed?.sites?.length && parsed?.slots?.length) return parsed;
+      if (
+        parsed?.sites?.length &&
+        parsed?.slots?.length &&
+        parsed.slots[0] &&
+        "position" in parsed.slots[0] &&
+        Array.isArray(parsed.pickWaves)
+      ) {
+        return parsed;
+      }
     }
   } catch {
     /* fall through */

@@ -5,6 +5,7 @@ import type {
   Operator,
   OutboundOrder,
   Pallet,
+  PickWave,
   Sku,
   Slot,
   StockMovement,
@@ -137,6 +138,7 @@ const SKUS: Sku[] = [
 
 function buildSlots(): Slot[] {
   const slots: Slot[] = [];
+  /** Rack selectivo: montantes azules · travesaños · 2 palets/bahía · 4 niveles */
   const zones: Array<{ zone: Slot["zone"]; aisle: string; racks: number; levels: number }> = [
     { zone: "seco", aisle: "A", racks: 12, levels: 4 },
     { zone: "seco", aisle: "B", racks: 10, levels: 4 },
@@ -150,23 +152,28 @@ function buildSlots(): Slot[] {
   for (const z of zones) {
     for (let rack = 1; rack <= z.racks; rack++) {
       for (let level = 1; level <= z.levels; level++) {
-        n += 1;
-        const code = `${z.aisle}-${String(rack).padStart(2, "0")}-${String(level).padStart(2, "0")}`;
-        const occupied = n % 5 !== 0 && z.zone !== "muelle";
-        const blocked = n % 37 === 0;
-        slots.push({
-          id: `slot-${code}`,
-          code,
-          siteId: SITE_SEV.id,
-          zone: z.zone,
-          aisle: z.aisle,
-          rack,
-          level,
-          status: blocked ? "bloqueado" : occupied ? "ocupado" : n % 11 === 0 ? "reservado" : "libre",
-          capacityPallets: z.zone === "muelle" ? 2 : 1,
-          palletId: null,
-          lastCountedAt: occupied ? "2026-08-12T06:30:00.000Z" : null,
-        });
+        const positions: Array<1 | 2> = z.zone === "muelle" ? [1] : [1, 2];
+        for (const position of positions) {
+          n += 1;
+          const code = `${z.aisle}-${String(rack).padStart(2, "0")}-${String(level).padStart(2, "0")}-${position}`;
+          const occupied = n % 5 !== 0 && z.zone !== "muelle";
+          const blocked = n % 37 === 0;
+          slots.push({
+            id: `slot-${code}`,
+            code,
+            siteId: SITE_SEV.id,
+            zone: z.zone,
+            aisle: z.aisle,
+            rack,
+            level,
+            position,
+            pickFace: level === 1 && z.zone !== "muelle",
+            status: blocked ? "bloqueado" : occupied ? "ocupado" : n % 11 === 0 ? "reservado" : "libre",
+            capacityPallets: 1,
+            palletId: null,
+            lastCountedAt: occupied ? "2026-08-12T06:30:00.000Z" : null,
+          });
+        }
       }
     }
   }
@@ -362,6 +369,21 @@ const FLEET: FleetUnit[] = [
     siteId: SITE_SEV.id,
     nextServiceAt: "2026-08-28",
     costPerHour: 11.2,
+  },
+  {
+    id: "fl-07",
+    code: "FL-E-07",
+    brand: "Crown",
+    model: "RR 5700 Stand-up",
+    kind: "retractil_doble",
+    status: "operativa",
+    batteryPct: 76,
+    hoursToday: 5.6,
+    hoursTotal: 980,
+    operatorId: "op-02",
+    siteId: SITE_SEV.id,
+    nextServiceAt: "2026-10-18",
+    costPerHour: 12.4,
   },
   {
     id: "fl-03",
@@ -610,6 +632,7 @@ const MOVEMENTS: StockMovement[] = [
 export function buildWmsSeed(): WmsSnapshot {
   const slots = buildSlots();
   const pallets = buildPallets(slots);
+  const pickWaves = buildPickWaves(slots, pallets);
   return {
     sites: [SITE_SEV, SITE_HUE],
     skus: SKUS,
@@ -621,5 +644,67 @@ export function buildWmsSeed(): WmsSnapshot {
     outbound: OUTBOUND,
     costs: COSTS,
     movements: MOVEMENTS,
+    pickWaves,
   };
+}
+
+function buildPickWaves(slots: Slot[], pallets: Pallet[]): PickWave[] {
+  const aisleA = slots.filter((s) => s.aisle === "A" && s.pickFace && s.palletId);
+  const lines = aisleA.slice(0, 8).map((slot, i) => {
+    const pallet = pallets.find((p) => p.id === slot.palletId);
+    return {
+      id: `pl-${i + 1}`,
+      waveId: "wave-01",
+      orderCode: i < 4 ? "OUT-SEV-8841" : "OUT-SEV-8842",
+      skuId: pallet?.skuId ?? "sku-aceite",
+      qty: [6, 4, 12, 8, 3, 10, 5, 7][i] ?? 4,
+      qtyPicked: 0,
+      slotId: slot.id,
+      palletId: slot.palletId,
+      status: "pendiente" as const,
+      sequence: i + 1,
+    };
+  });
+
+  return [
+    {
+      id: "wave-01",
+      code: "WAVE-A-0815-01",
+      aisle: "A",
+      siteId: SITE_SEV.id,
+      status: "abierta",
+      operatorId: "op-03",
+      fleetId: "fl-04",
+      printedAt: "2026-08-15T07:55:00.000Z",
+      lines,
+    },
+    {
+      id: "wave-02",
+      code: "WAVE-B-0815-02",
+      aisle: "B",
+      siteId: SITE_SEV.id,
+      status: "en_curso",
+      operatorId: "op-08",
+      fleetId: "fl-07",
+      printedAt: "2026-08-15T08:10:00.000Z",
+      lines: slots
+        .filter((s) => s.aisle === "B" && s.pickFace && s.palletId)
+        .slice(0, 5)
+        .map((slot, i) => {
+          const pallet = pallets.find((p) => p.id === slot.palletId);
+          return {
+            id: `pl-b-${i + 1}`,
+            waveId: "wave-02",
+            orderCode: "OUT-SEV-8840",
+            skuId: pallet?.skuId ?? "sku-agua",
+            qty: 4 + i,
+            qtyPicked: i < 2 ? 4 + i : 0,
+            slotId: slot.id,
+            palletId: slot.palletId,
+            status: (i < 2 ? "picada" : i === 2 ? "en_curso" : "pendiente") as PickWave["lines"][number]["status"],
+            sequence: i + 1,
+          };
+        }),
+    },
+  ];
 }
