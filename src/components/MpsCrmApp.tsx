@@ -151,6 +151,7 @@ import {
   Bike,
   BookOpen,
   Bot,
+  Boxes,
   Building2,
   Car,
   Activity,
@@ -160,13 +161,16 @@ import {
   Database,
   Download,
   FileText,
+  Forklift,
   Gauge,
+  Grid3X3,
   HardDrive,
   LayoutDashboard,
   Lightbulb,
   Loader2,
   MessageSquareWarning,
   Moon,
+  Package,
   Pencil,
   Phone,
   Plug,
@@ -174,6 +178,7 @@ import {
   Presentation,
   RefreshCw,
   Save,
+  ScanBarcode,
   Search,
   Settings,
   Shield,
@@ -181,16 +186,29 @@ import {
   Sparkles,
   Sun,
   Target,
+  Truck,
   Upload,
   Users,
   ShieldCheck,
   ContactRound,
   UsersRound,
   Wallet,
+  Warehouse,
   Workflow,
   CalendarDays,
   Zap,
 } from "lucide-react";
+import {
+  WmsCostsPanel,
+  WmsDashboardPanel,
+  WmsFleetPanel,
+  WmsInboundPanel,
+  WmsOperatorsPanel,
+  WmsOutboundPanel,
+  WmsPalletsPanel,
+  WmsStockPanel,
+} from "@/components/wms/WmsPanels";
+import { WmsPickingPanel, WmsSlotsPanel } from "@/components/wms/AislePicking";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Area,
@@ -211,16 +229,25 @@ type Theme = "light" | "dark";
 type Section = AppSection;
 
 const NAV_IDS: { id: Section; icon: typeof LayoutDashboard; labelKey: string }[] = [
-  { id: "dashboard", icon: LayoutDashboard, labelKey: "nav_dashboard" },
-  { id: "leads", icon: Gauge, labelKey: "nav_leads" },
-  { id: "clientes", icon: Users, labelKey: "nav_clients" },
-  { id: "reservas", icon: CalendarDays, labelKey: "nav_reservations" },
+  { id: "dashboard", icon: Warehouse, labelKey: "nav_dashboard" },
+  { id: "stock", icon: Boxes, labelKey: "nav_stock" },
+  { id: "huecos", icon: Grid3X3, labelKey: "nav_slots" },
+  { id: "picking", icon: ScanBarcode, labelKey: "nav_picking" },
+  { id: "palets", icon: Package, labelKey: "nav_pallets" },
+  { id: "flota", icon: Forklift, labelKey: "nav_fleet" },
+  { id: "recepcion", icon: Truck, labelKey: "nav_inbound" },
+  { id: "expedicion", icon: Package, labelKey: "nav_outbound" },
+  { id: "operarios", icon: Users, labelKey: "nav_operators" },
+  { id: "costes", icon: Wallet, labelKey: "nav_costs" },
   { id: "facturas", icon: FileText, labelKey: "nav_invoices" },
   { id: "tesoreria", icon: Wallet, labelKey: "nav_treasury" },
   { id: "aprobaciones", icon: ShieldCheck, labelKey: "nav_approvals" },
+  { id: "conocimiento", icon: BookOpen, labelKey: "nav_knowledge" },
+  { id: "leads", icon: Gauge, labelKey: "nav_leads" },
+  { id: "clientes", icon: Users, labelKey: "nav_clients" },
+  { id: "reservas", icon: CalendarDays, labelKey: "nav_reservations" },
   { id: "equipo", icon: ContactRound, labelKey: "nav_team" },
   { id: "contenido", icon: Sparkles, labelKey: "nav_content" },
-  { id: "conocimiento", icon: BookOpen, labelKey: "nav_knowledge" },
   { id: "automatizaciones", icon: Workflow, labelKey: "nav_automations" },
   { id: "propuesta", icon: ClipboardList, labelKey: "nav_pitch" },
   { id: "hub", icon: Database, labelKey: "nav_hub" },
@@ -1734,7 +1761,7 @@ function TeamSection({ lang }: { lang: Lang }) {
   );
 }
 
-function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
+export function DashboardPanel({ lang, theme }: { lang: Lang; theme: Theme }) {
   const hub = useDataHub();
   const isMobile = useIsMobile();
   const { leads } = hub;
@@ -3987,7 +4014,16 @@ export function MpsCrmApp() {
   const sectionPanels = (
     <>
       {section === "hub" && <HubPanel lang={lang} />}
-      {section === "dashboard" && <DashboardPanel lang={lang} theme={theme} />}
+      {section === "dashboard" && <WmsDashboardPanel lang={lang} />}
+      {section === "stock" && <WmsStockPanel lang={lang} />}
+      {section === "huecos" && <WmsSlotsPanel lang={lang} />}
+      {section === "picking" && <WmsPickingPanel lang={lang} />}
+      {section === "palets" && <WmsPalletsPanel lang={lang} />}
+      {section === "flota" && <WmsFleetPanel lang={lang} />}
+      {section === "recepcion" && <WmsInboundPanel lang={lang} />}
+      {section === "expedicion" && <WmsOutboundPanel lang={lang} />}
+      {section === "operarios" && <WmsOperatorsPanel lang={lang} />}
+      {section === "costes" && <WmsCostsPanel lang={lang} />}
       {section === "leads" && <LeadsPanel lang={lang} />}
       {section === "clientes" && <ClientsPanel lang={lang} />}
       {section === "reservas" && <ReservationsPanel lang={lang} />}

@@ -76,7 +76,7 @@ export function LoginScreen() {
               className="mt-1.5 text-[clamp(0.8rem,0.4vw+0.7rem,0.95rem)] !text-white/85"
               style={{ color: "rgba(255,255,255,0.85)", textShadow: "0 1px 10px rgba(0,0,0,0.5)" }}
             >
-              Growth OS · acceso interno del equipo
+              WMS OS · torre de control del almacén
             </p>
           </div>
 
@@ -91,7 +91,7 @@ export function LoginScreen() {
                   ? demoAuth
                     ? "Supabase + demo equipo"
                     : "Acceso seguro (Supabase)"
-                  : "Demo · equipo Campo Norte"}
+                  : "Demo · Campo Norte Logística"}
               </span>
             </p>
 

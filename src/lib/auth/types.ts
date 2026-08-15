@@ -12,10 +12,10 @@ export interface AppUser {
 }
 
 export const ROLE_LABEL: Record<UserRole, string> = {
-  admin: "Admin",
-  ops: "Ops",
-  booking: "Booking",
-  guide: "Guía",
+  admin: "Dirección",
+  ops: "Almacén",
+  booking: "Office",
+  guide: "Planta",
 };
 
 /**
@@ -35,7 +35,7 @@ export const LOCAL_TEAM_USERS: Array<AppUser & { password: string }> = [
     email: "sofia@camponorte.demo",
     name: "Sofía Navarro",
     role: "admin",
-    roleLabel: "Admin",
+    roleLabel: "Dirección",
     avatarInitial: "S",
     provider: "local",
     password: DEMO_PASSWORD,
@@ -45,7 +45,7 @@ export const LOCAL_TEAM_USERS: Array<AppUser & { password: string }> = [
     email: "marta@camponorte.demo",
     name: "Marta Vega",
     role: "booking",
-    roleLabel: "Booking",
+    roleLabel: "Office",
     avatarInitial: "M",
     provider: "local",
     password: DEMO_PASSWORD,
@@ -55,7 +55,7 @@ export const LOCAL_TEAM_USERS: Array<AppUser & { password: string }> = [
     email: "luis@camponorte.demo",
     name: "Luis Ortega",
     role: "ops",
-    roleLabel: "Ops",
+    roleLabel: "Almacén",
     avatarInitial: "L",
     provider: "local",
     password: DEMO_PASSWORD,
@@ -65,7 +65,7 @@ export const LOCAL_TEAM_USERS: Array<AppUser & { password: string }> = [
     email: "jorge@camponorte.demo",
     name: "Jorge Peña",
     role: "guide",
-    roleLabel: "Guía",
+    roleLabel: "Planta",
     avatarInitial: "J",
     provider: "local",
     password: DEMO_PASSWORD,

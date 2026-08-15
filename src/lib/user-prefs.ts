@@ -107,7 +107,7 @@ export const ACCENT_PALETTE: Record<
 
 export const DEFAULT_USER_PREFS: UserPrefs = {
   theme: "light",
-  accent: "electric",
+  accent: "amber",
   profileLayout: "settings",
   leadPriorityMode: DEFAULT_LEAD_PRIORITY_MODE,
 };
