@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "license": "UNLICENSED",
-  "description": "Campo Norte — Growth OS / CRM interno (licencia comercial de pago)",
+  "description": "Campo Norte — WMS OS / ecosistema de almacén (licencia comercial)",
   "type": "module",
   "scripts": {
     "dev": "vite",

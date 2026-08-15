@@ -89,6 +89,14 @@ export function sectionToAccessEvent(section: AppSection): AccessEvent | null {
   if (
     section === "dashboard" ||
     section === "hub" ||
+    section === "stock" ||
+    section === "huecos" ||
+    section === "palets" ||
+    section === "flota" ||
+    section === "recepcion" ||
+    section === "expedicion" ||
+    section === "operarios" ||
+    section === "costes" ||
     section === "leads" ||
     section === "clientes" ||
     section === "reservas" ||

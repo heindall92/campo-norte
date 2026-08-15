@@ -57,23 +57,31 @@ const QUICK: {
   labelEn: string;
   icon: LucideIcon;
 }[] = [
-  { id: "dashboard", labelEs: "Dashboard", labelEn: "Dashboard", icon: LayoutDashboard },
-  { id: "leads", labelEs: "Leads", labelEn: "Leads", icon: Gauge },
-  { id: "reservas", labelEs: "Reservas", labelEn: "Bookings", icon: CalendarDays },
-  { id: "clientes", labelEs: "Clientes", labelEn: "Clients", icon: Users },
-  { id: "hub", labelEs: "Hub", labelEn: "Hub", icon: Database },
+  { id: "dashboard", labelEs: "Torre", labelEn: "Tower", icon: LayoutDashboard },
+  { id: "stock", labelEs: "Stock", labelEn: "Stock", icon: Gauge },
+  { id: "huecos", labelEs: "Huecos", labelEn: "Slots", icon: Layers },
+  { id: "palets", labelEs: "Palets", labelEn: "Pallets", icon: CalendarDays },
+  { id: "flota", labelEs: "Flota", labelEn: "Fleet", icon: Database },
 ];
 
 const MORE_SECTIONS: { id: AppSection; labelEs: string; labelEn: string; icon: LucideIcon }[] = [
+  { id: "recepcion", labelEs: "Recepción", labelEn: "Receiving", icon: ClipboardList },
+  { id: "expedicion", labelEs: "Expedición", labelEn: "Outbound", icon: Presentation },
+  { id: "operarios", labelEs: "Operarios", labelEn: "Operators", icon: Users },
+  { id: "costes", labelEs: "Costes", labelEn: "Costs", icon: Wallet },
   { id: "facturas", labelEs: "Facturas", labelEn: "Invoices", icon: FileText },
   { id: "tesoreria", labelEs: "Tesorería", labelEn: "Treasury", icon: Wallet },
   { id: "aprobaciones", labelEs: "Aprobaciones", labelEn: "Approvals", icon: ShieldCheck },
   { id: "equipo", labelEs: "Equipo", labelEn: "Team", icon: ContactRound },
+  { id: "clientes", labelEs: "Clientes", labelEn: "Clients", icon: Users },
+  { id: "leads", labelEs: "Comercial", labelEn: "Commercial", icon: Gauge },
+  { id: "reservas", labelEs: "Reservas", labelEn: "Bookings", icon: CalendarDays },
   { id: "contenido", labelEs: "Contenido", labelEn: "Content", icon: Sparkles },
   { id: "conocimiento", labelEs: "Conocimiento", labelEn: "Knowledge", icon: BookOpen },
   { id: "automatizaciones", labelEs: "Automatizaciones", labelEn: "Automations", icon: Workflow },
   { id: "propuesta", labelEs: "Propuesta", labelEn: "Pitch", icon: ClipboardList },
   { id: "slides", labelEs: "Presentación", labelEn: "Slides", icon: Presentation },
+  { id: "hub", labelEs: "Hub", labelEn: "Hub", icon: Database },
   { id: "ajustes", labelEs: "Ajustes", labelEn: "Settings", icon: Settings },
 ];
 
@@ -83,6 +91,14 @@ const MORE_SECTIONS: { id: AppSection; labelEs: string; labelEn: string; icon: L
  */
 const SECTION_TITLE_KEY: Partial<Record<AppSection, string>> = {
   dashboard: "nav_dashboard",
+  stock: "nav_stock",
+  huecos: "nav_slots",
+  palets: "nav_pallets",
+  flota: "nav_fleet",
+  recepcion: "nav_inbound",
+  expedicion: "nav_outbound",
+  operarios: "nav_operators",
+  costes: "nav_costs",
   hub: "nav_hub",
   facturas: "nav_invoices",
   tesoreria: "nav_treasury",

@@ -32,8 +32,8 @@
   --mps-red-400: #f87171;
   --mps-amber-600: #9a3412;
   --mps-amber-300: #fdba74;
-  --mps-blue-600: #2563eb;
-  --mps-blue-400: #3b82f6;
+  --mps-blue-600: #b45309;
+  --mps-blue-400: #f59e0b;
 
   --radius-card: 1rem;
   --radius-chip: 0.625rem;
@@ -57,12 +57,12 @@ html[data-theme="light"] {
   --sidebar: rgba(15, 23, 42, 0.88);
   --sidebar-text: #f8fafc;
   --sidebar-muted: #cbd5e1;
-  /* Default: azul eléctrico (override por prefs de usuario) */
-  --accent: #2563eb;
-  --accent-2: #0ea5e9;
+  /* Default: ámbar industrial (override por prefs de usuario) */
+  --accent: #b45309;
+  --accent-2: #ca8a04;
   --chip: rgba(255, 255, 255, 0.9);
-  --chart: #2563eb;
-  --chart-2: #0ea5e9;
+  --chart: #b45309;
+  --chart-2: #ca8a04;
   /* Series económicas (estructura Aurora, paleta camponorte) */
   --chart-in: var(--mps-green-600);
   --chart-out: var(--mps-red-600);
@@ -116,12 +116,12 @@ html[data-theme="dark"] {
   --sidebar: rgba(2, 6, 23, 0.92);
   --sidebar-text: #f8fafc;
   --sidebar-muted: #94a3b8;
-  /* Default oscuro: azul eléctrico luminoso */
-  --accent: #3b82f6;
-  --accent-2: #38bdf8;
+  /* Default oscuro: ámbar industrial */
+  --accent: #f59e0b;
+  --accent-2: #fbbf24;
   --chip: rgba(15, 23, 42, 0.85);
-  --chart: #3b82f6;
-  --chart-2: #38bdf8;
+  --chart: #f59e0b;
+  --chart-2: #fbbf24;
   --chart-in: var(--mps-green-400);
   --chart-out: var(--mps-red-400);
   --chart-forecast: var(--mps-amber-300);
